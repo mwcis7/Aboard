@@ -157,30 +157,31 @@
     color: #34C759;
 }
 
+/* Remove button in the middle */
 .score-remove-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
     width: 20px;
     height: 20px;
     border: none;
     border-radius: 50%;
     background-color: transparent;
-    color: #ccc;
+    color: #999;
     cursor: pointer;
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
+    margin: 0 2px;
+    align-self: center;
+    opacity: 0; /* Hidden by default */
 }
 
 .score-column:hover .score-remove-btn {
-    display: flex;
+    opacity: 1; /* Show on hover */
 }
 
 .score-remove-btn:hover {
-    background-color: #FF3B30;
-    color: #fff;
+    background-color: #f0f0f0;
+    color: #FF3B30;
 }
 
 /* Settings Modal Specifics */

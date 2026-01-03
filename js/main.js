@@ -654,6 +654,31 @@ class DrawingBoard {
                 this.imageControls.showControls(imgData);
             }
         });
+
+        // Background playback toggle (for GIFs)
+        const playbackBtn = document.getElementById('bg-image-playback-btn');
+        if (playbackBtn) {
+            playbackBtn.addEventListener('click', () => {
+                this.backgroundManager.toggleImagePlayback();
+                // Update icon
+                if (this.backgroundManager.isImagePaused) {
+                    playbackBtn.classList.add('paused');
+                    playbackBtn.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                    `;
+                } else {
+                    playbackBtn.classList.remove('paused');
+                    playbackBtn.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="6" y="4" width="4" height="16"></rect>
+                            <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                    `;
+                }
+            });
+        }
         
         // Pattern density slider
         const patternDensitySlider = document.getElementById('pattern-density-slider');

@@ -1363,6 +1363,7 @@ class I18n {
             return;
         }
         
+        const oldLocale = this.currentLocale;
         this.currentLocale = newLocale;
         this.saveLocale(newLocale);
         
@@ -1376,7 +1377,12 @@ class I18n {
         document.documentElement.lang = newLocale;
         
         // Dispatch event for other modules to react to language change
-        window.dispatchEvent(new CustomEvent('localeChanged', { detail: { locale: newLocale } }));
+        window.dispatchEvent(new CustomEvent('localeChanged', {
+            detail: {
+                locale: newLocale,
+                oldLocale: oldLocale
+            }
+        }));
     }
 
     /**

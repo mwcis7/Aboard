@@ -14,6 +14,8 @@ class BackgroundManager {
         this.backgroundImage = null;
         this.backgroundImageData = localStorage.getItem('backgroundImageData') || null;
         this.imageSize = parseFloat(localStorage.getItem('imageSize')) || 1.0;
+        this.isImagePaused = false; // State for GIF playback control
+        this.imageStaticData = null; // Store static frame for paused GIF
         
         // Coordinate system origin offset
         this.coordinateOriginX = parseFloat(localStorage.getItem('coordinateOriginX')) || 0;
@@ -163,26 +165,28 @@ class BackgroundManager {
             
             imgElement.style.opacity = this.patternIntensity;
 
+            // Handle paused state (freeze GIF)
+            if (this.isImagePaused && this.imageStaticData) {
+                if (imgElement.src !== this.imageStaticData) {
+                    imgElement.src = this.imageStaticData;
+                }
+            } else {
+                if (imgElement.src !== this.backgroundImageData) {
+                    imgElement.src = this.backgroundImageData;
+                }
+            }
+
             if (this.imageTransform.width > 0 && this.imageTransform.height > 0) {
                 // Apply transformations using CSS
-                // The transform object has x, y, width, height, rotation, scale
-                // We need to position the img element absolute at x,y with width/height
-                // And apply rotation/scale
-
                 imgElement.style.left = `${this.imageTransform.x}px`;
                 imgElement.style.top = `${this.imageTransform.y}px`;
                 imgElement.style.width = `${this.imageTransform.width}px`;
                 imgElement.style.height = `${this.imageTransform.height}px`;
 
-                // Rotation and scale.
-                // Note: BackgroundManager.drawImagePattern used ctx.translate/rotate/scale.
-                // We need to match that CSS transform.
-                // Center of rotation was center of the image box.
                 imgElement.style.transformOrigin = 'center center';
                 imgElement.style.transform = `rotate(${this.imageTransform.rotation}deg) scale(${this.imageTransform.scale})`;
             } else {
                 // Fallback centering logic
-                // We need image dimensions.
                 if (imgElement.naturalWidth) {
                     const scaledWidth = imgElement.naturalWidth * this.imageSize;
                     const scaledHeight = imgElement.naturalHeight * this.imageSize;
@@ -210,7 +214,7 @@ class BackgroundManager {
             // OR: We can rely on main.js to handle it if we add a class or id that main.js picks up?
             // Actually, main.js explicitly selects #canvas and #background-canvas.
             // I should update main.js to also transform #background-image-element.
-            
+
         } else {
             if (imgElement) {
                 imgElement.style.display = 'none';
@@ -454,6 +458,8 @@ class BackgroundManager {
     
     setBackgroundImage(imageData) {
         this.backgroundImageData = imageData;
+        this.isImagePaused = false;
+        this.imageStaticData = null;
         localStorage.setItem('backgroundImageData', imageData);
         
         // We don't strictly need to create an Image object for canvas drawing anymore
@@ -461,6 +467,44 @@ class BackgroundManager {
         // We set pattern to image and trigger drawBackground which updates DOM element.
         this.backgroundPattern = 'image';
         this.drawBackground();
+    }
+
+    toggleImagePlayback() {
+        if (!this.backgroundPattern === 'image' || !this.backgroundImageData) return;
+
+        this.isImagePaused = !this.isImagePaused;
+
+        if (this.isImagePaused) {
+            // Capture current frame
+            this.captureStaticFrame();
+        } else {
+            // Resume playback (restore original src)
+            this.imageStaticData = null;
+            this.updateBackgroundImageElement();
+        }
+    }
+
+    captureStaticFrame() {
+        const imgElement = document.getElementById('background-image-element');
+        if (!imgElement) return;
+
+        // Create a temporary canvas to draw the current frame
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set dimensions to match natural size of image
+        canvas.width = imgElement.naturalWidth || imgElement.width;
+        canvas.height = imgElement.naturalHeight || imgElement.height;
+
+        try {
+            // Draw the current state of the img element
+            ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+            this.imageStaticData = canvas.toDataURL('image/png');
+            this.updateBackgroundImageElement();
+        } catch (e) {
+            console.error('Failed to capture static frame:', e);
+            this.isImagePaused = false; // Revert if failed
+        }
     }
     
     setImageSize(size) {

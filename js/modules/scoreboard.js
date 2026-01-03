@@ -100,6 +100,49 @@ class ScoreboardInstance {
 
         this.renderTeams();
         this.setupEvents();
+
+        // Listen for locale changes
+        window.addEventListener('localeChanged', (e) => {
+            this.handleLocaleChange(e.detail.locale, e.detail.oldLocale);
+        });
+    }
+
+    handleLocaleChange(newLocale, oldLocale) {
+        // Simple regex to match default team names in various languages
+        // e.g., "Team A", "队伍 A", "Équipe A", etc.
+        // We assume the pattern is "Name [A-Z]"
+        const teamNameRegex = /^(.+)\s([A-Z])$/;
+
+        // Get the default "Team" prefix for the old locale if possible
+        // Since we don't have access to old translations easily, we'll try to guess based on current names
+        // or just apply the new locale's default name if it matches a known pattern.
+
+        // Better approach: Check if the name matches the *current* default name pattern
+        // and if so, update it to the *new* default name pattern.
+
+        // Since we can't easily get the old translation, we will rely on the structure.
+        // If a team name ends with a space and a single uppercase letter, we assume it's a default name.
+
+        const newTeamNameBase = window.i18n.t('scoreboard.teamDefault') || 'Team';
+
+        let changed = false;
+        this.config.teams.forEach(team => {
+            const match = team.name.match(teamNameRegex);
+            if (match) {
+                // It looks like a default name "Something X"
+                // Check if "Something" is a known localization of "Team"
+                // Actually, let's just update it if it matches the pattern to the new locale
+                // This might be aggressive but users requested "switch to English, team name also switch"
+                const suffix = match[2];
+                team.name = `${newTeamNameBase} ${suffix}`;
+                changed = true;
+            }
+        });
+
+        if (changed) {
+            this.renderTeams();
+            this.saveState();
+        }
     }
 
     renderTeams() {
@@ -120,6 +163,12 @@ class ScoreboardInstance {
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
                     </button>
+                    <button class="score-remove-btn" title="${window.i18n.t('scoreboard.removeTeam')}">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
                     <button class="score-btn plus">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -127,12 +176,6 @@ class ScoreboardInstance {
                         </svg>
                     </button>
                 </div>
-                <button class="score-remove-btn" title="${window.i18n.t('scoreboard.removeTeam')}">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
             `;
 
             // Name edit
@@ -269,10 +312,56 @@ class ScoreboardInstance {
         });
 
         this.element.querySelector('.scoreboard-reset-btn').addEventListener('click', () => {
-            if (confirm(window.i18n.t('scoreboard.confirmReset'))) {
-                this.resetScores();
-            }
+            this.showResetConfirmation();
         });
+    }
+
+    showResetConfirmation() {
+        // Create custom modal for reset confirmation
+        const modalId = 'scoreboard-reset-modal';
+        let modal = document.getElementById(modalId);
+
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content confirm-modal-content">
+                    <div class="modal-header">
+                        <h2>${window.i18n.t('scoreboard.title')}</h2>
+                    </div>
+                    <div class="modal-body">
+                        <p class="confirm-message">${window.i18n.t('scoreboard.confirmReset')}</p>
+                        <div class="confirm-buttons">
+                            <button class="confirm-btn cancel-btn">${window.i18n.t('common.cancel')}</button>
+                            <button class="confirm-btn ok-btn">${window.i18n.t('common.confirm')}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Event listeners
+            const cancelBtn = modal.querySelector('.cancel-btn');
+            const okBtn = modal.querySelector('.ok-btn');
+
+            cancelBtn.addEventListener('click', () => {
+                modal.classList.remove('show');
+            });
+
+            okBtn.addEventListener('click', () => {
+                this.resetScores();
+                modal.classList.remove('show');
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                }
+            });
+        }
+
+        modal.classList.add('show');
     }
 
     destroy() {
