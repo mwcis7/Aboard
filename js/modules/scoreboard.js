@@ -99,6 +99,12 @@ class ScoreboardInstance {
                         </svg>
                     </button>
                 </div>
+                <button class="score-remove-btn" title="${window.i18n.t('scoreboard.removeTeam')}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             `;
 
             // Name edit
@@ -124,13 +130,16 @@ class ScoreboardInstance {
                 this.updateScore(index);
             });
 
-            // Context menu to remove team
-            col.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                if (confirm(window.i18n.t('scoreboard.confirmRemoveTeam'))) {
-                    this.removeTeam(index);
-                }
-            });
+            // Remove team button
+            const removeBtn = col.querySelector('.score-remove-btn');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm(window.i18n.t('scoreboard.confirmRemoveTeam'))) {
+                        this.removeTeam(index);
+                    }
+                });
+            }
 
             container.appendChild(col);
         });
@@ -169,6 +178,8 @@ class ScoreboardInstance {
 
         const startDrag = (e) => {
             if (e.target.closest('button')) return;
+            // Stop propagation to prevent drawing
+            e.stopPropagation();
 
             this.isDragging = true;
             this.element.classList.add('dragging');

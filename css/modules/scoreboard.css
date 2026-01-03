@@ -157,6 +157,32 @@
     color: #34C759;
 }
 
+.score-remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 50%;
+    background-color: transparent;
+    color: #ccc;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.score-column:hover .score-remove-btn {
+    display: flex;
+}
+
+.score-remove-btn:hover {
+    background-color: #FF3B30;
+    color: #fff;
+}
+
 /* Settings Modal Specifics */
 .scoreboard-modal-content {
     max-width: 400px;
