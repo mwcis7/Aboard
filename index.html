@@ -13,6 +13,8 @@
     <link rel="stylesheet" href="css/modules/teaching-tools.css">
     <link rel="stylesheet" href="css/modules/shape.css">
     <link rel="stylesheet" href="css/modules/line-style-modal.css">
+    <link rel="stylesheet" href="css/modules/random-picker.css">
+    <link rel="stylesheet" href="css/modules/scoreboard.css">
 </head>
 <body>
     <!-- Zoom controls in top right corner -->
@@ -390,6 +392,19 @@
                         <path d="M12 2v2"></path>
                     </svg>
                     <span data-i18n="features.timer">Timer</span>
+                </button>
+                <button id="random-picker-feature-btn" class="feature-btn" data-i18n-title="features.randomPicker">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14"></path>
+                        <path d="M12 5l7 7-7 7"></path>
+                    </svg>
+                    <span data-i18n="features.randomPicker">Picker</span>
+                </button>
+                <button id="scoreboard-feature-btn" class="feature-btn" data-i18n-title="features.scoreboard">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                    </svg>
+                    <span data-i18n="features.scoreboard">Score</span>
                 </button>
             </div>
         </div>
@@ -1452,6 +1467,8 @@
     <script src="js/modules/teaching-tools.js"></script>
     <script src="js/modules/shape-drawing.js"></script>
     <script src="js/modules/line-style-modal.js"></script>
+    <script src="js/modules/random-picker.js"></script>
+    <script src="js/modules/scoreboard.js"></script>
     <script src="js/settings.js"></script>
     <script src="js/announcement.js"></script>
     <script src="js/export.js"></script>

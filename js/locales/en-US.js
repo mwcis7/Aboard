@@ -395,7 +395,35 @@ window.translations = {
         title: 'Features',
         moreFeatures: 'More Features',
         time: 'Time',
-        timer: 'Timer'
+        timer: 'Timer',
+        randomPicker: 'Picker',
+        scoreboard: 'Scoreboard'
+    },
+
+    // Random Picker
+    randomPicker: {
+        namePicker: 'Name Picker',
+        numberPicker: 'Number Picker',
+        noNames: 'Add names first',
+        settingsTitle: 'Picker Settings',
+        modeName: 'Name Mode',
+        modeNumber: 'Number Mode',
+        titleLabel: 'Title',
+        titlePlaceholder: 'Custom title (Optional)',
+        namesLabel: 'Names List (One per line)',
+        namesPlaceholder: 'Alice\nBob\nCharlie',
+        allowRepeats: 'Allow Repeats',
+        rangeLabel: 'Number Range'
+    },
+
+    // Scoreboard
+    scoreboard: {
+        title: 'Scoreboard',
+        addTeam: 'Add Team',
+        reset: 'Reset Scores',
+        confirmRemoveTeam: 'Are you sure you want to remove this team?',
+        teamDefault: 'Team',
+        confirmReset: 'Are you sure you want to reset all scores?'
     },
 
     // Teaching Tools
