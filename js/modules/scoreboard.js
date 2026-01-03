@@ -7,12 +7,33 @@ class ScoreboardInstance {
     constructor(id, manager, config = {}) {
         this.id = id;
         this.manager = manager;
+
+        // Load saved state if available
+        const savedState = localStorage.getItem('scoreboard_data');
+        let initialTeams = null;
+        if (savedState) {
+            try {
+                const parsed = JSON.parse(savedState);
+                if (parsed.teams && Array.isArray(parsed.teams)) {
+                    initialTeams = parsed.teams;
+                }
+            } catch (e) {
+                console.error('Failed to load scoreboard data', e);
+            }
+        }
+
+        // If no saved teams, use defaults with localized names
+        if (!initialTeams && !config.teams) {
+            const teamNameBase = window.i18n.t('scoreboard.teamDefault') || 'Team';
+            initialTeams = [
+                { name: `${teamNameBase} A`, score: 0 },
+                { name: `${teamNameBase} B`, score: 0 }
+            ];
+        }
+
         this.config = {
             title: '',
-            teams: [
-                { name: 'Team A', score: 0 },
-                { name: 'Team B', score: 0 }
-            ],
+            teams: initialTeams || config.teams,
             ...config
         };
 
@@ -22,6 +43,13 @@ class ScoreboardInstance {
         this.isDragging = false;
 
         this.createElement();
+    }
+
+    saveState() {
+        const data = {
+            teams: this.config.teams
+        };
+        localStorage.setItem('scoreboard_data', JSON.stringify(data));
     }
 
     createElement() {
@@ -111,6 +139,7 @@ class ScoreboardInstance {
             const nameEl = col.querySelector('.score-team-name');
             nameEl.addEventListener('blur', (e) => {
                 this.config.teams[index].name = e.target.textContent;
+                this.saveState();
             });
             nameEl.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
@@ -123,11 +152,13 @@ class ScoreboardInstance {
             col.querySelector('.score-btn.minus').addEventListener('click', () => {
                 this.config.teams[index].score--;
                 this.updateScore(index);
+                this.saveState();
             });
 
             col.querySelector('.score-btn.plus').addEventListener('click', () => {
                 this.config.teams[index].score++;
                 this.updateScore(index);
+                this.saveState();
             });
 
             // Remove team button
@@ -159,17 +190,20 @@ class ScoreboardInstance {
             score: 0
         });
         this.renderTeams();
+        this.saveState();
     }
 
     removeTeam(index) {
         if (this.config.teams.length <= 1) return; // Keep at least one
         this.config.teams.splice(index, 1);
         this.renderTeams();
+        this.saveState();
     }
 
     resetScores() {
         this.config.teams.forEach(t => t.score = 0);
         this.renderTeams();
+        this.saveState();
     }
 
     setupEvents() {
