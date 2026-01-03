@@ -395,7 +395,35 @@ window.translations = {
         title: '小功能',
         moreFeatures: '更多功能',
         time: '时间',
-        timer: '计时'
+        timer: '计时',
+        randomPicker: '点名器',
+        scoreboard: '计分板'
+    },
+
+    // Random Picker
+    randomPicker: {
+        namePicker: '姓名点名器',
+        numberPicker: '数字点名器',
+        noNames: '请添加名单',
+        settingsTitle: '点名器设置',
+        modeName: '姓名模式',
+        modeNumber: '数字模式',
+        titleLabel: '标题',
+        titlePlaceholder: '自定义标题（可选）',
+        namesLabel: '名单列表（每行一个）',
+        namesPlaceholder: '张三\n李四\n王五',
+        allowRepeats: '允许重复抽取',
+        rangeLabel: '数字范围'
+    },
+
+    // Scoreboard
+    scoreboard: {
+        title: '计分板',
+        addTeam: '添加队伍',
+        reset: '重置分数',
+        confirmRemoveTeam: '确定要移除这个队伍吗？',
+        teamDefault: '队伍',
+        confirmReset: '确定要重置所有分数吗？'
     },
 
     // Teaching Tools

@@ -1,0 +1,448 @@
+/**
+ * Random Picker Module
+ * Allows users to pick random names or numbers
+ */
+
+class RandomPickerInstance {
+    constructor(id, manager, config = {}) {
+        this.id = id;
+        this.manager = manager;
+        this.config = {
+            mode: 'name', // 'name' or 'number'
+            names: [], // Array of names
+            min: 1,
+            max: 50,
+            allowRepeats: true,
+            title: '',
+            ...config
+        };
+
+        // State
+        this.isAnimating = false;
+        this.remainingNames = [...(this.config.names || [])];
+        this.animationInterval = null;
+
+        // UI
+        this.element = null;
+        this.resultElement = null;
+        this.dragOffset = { x: 0, y: 0 };
+        this.isDragging = false;
+
+        this.createElement();
+    }
+
+    createElement() {
+        const div = document.createElement('div');
+        div.className = 'random-picker-widget feature-widget';
+        div.id = `random-picker-${this.id}`;
+
+        // Default position
+        const offset = (this.id % 5) * 20;
+        div.style.left = `${window.innerWidth / 2 - 125 + offset}px`;
+        div.style.top = `${window.innerHeight / 2 - 100 + offset}px`;
+
+        const title = this.config.title || (this.config.mode === 'name' ?
+            window.i18n.t('randomPicker.namePicker') :
+            window.i18n.t('randomPicker.numberPicker'));
+
+        div.innerHTML = `
+            <div class="random-picker-header">
+                <span class="random-picker-title">${title}</span>
+                <button class="random-picker-close-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="random-picker-content">
+                <div class="random-picker-result">?</div>
+                <div class="random-picker-controls">
+                    <button class="random-picker-btn random-picker-start-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14"></path>
+                            <path d="M12 5l7 7-7 7"></path>
+                        </svg>
+                        <span>${window.i18n.t('common.start')}</span>
+                    </button>
+                    <button class="random-picker-btn random-picker-settings-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(div);
+        this.element = div;
+        this.resultElement = div.querySelector('.random-picker-result');
+
+        this.setupEvents();
+    }
+
+    setupEvents() {
+        // Dragging
+        const header = this.element.querySelector('.random-picker-header');
+
+        const startDrag = (e) => {
+            if (e.target.closest('.random-picker-close-btn')) return;
+
+            this.isDragging = true;
+            this.element.classList.add('dragging');
+
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            const rect = this.element.getBoundingClientRect();
+            this.dragOffset.x = clientX - rect.left;
+            this.dragOffset.y = clientY - rect.top;
+
+            e.preventDefault();
+        };
+
+        const doDrag = (e) => {
+            if (!this.isDragging) return;
+
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+            let x = clientX - this.dragOffset.x;
+            let y = clientY - this.dragOffset.y;
+
+            // Constrain to window
+            const rect = this.element.getBoundingClientRect();
+            x = Math.max(0, Math.min(window.innerWidth - rect.width, x));
+            y = Math.max(0, Math.min(window.innerHeight - rect.height, y));
+
+            this.element.style.left = `${x}px`;
+            this.element.style.top = `${y}px`;
+        };
+
+        const stopDrag = () => {
+            this.isDragging = false;
+            this.element.classList.remove('dragging');
+        };
+
+        header.addEventListener('mousedown', startDrag);
+        header.addEventListener('touchstart', startDrag);
+
+        document.addEventListener('mousemove', doDrag);
+        document.addEventListener('touchmove', doDrag, { passive: false });
+
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchend', stopDrag);
+
+        // Close
+        this.element.querySelector('.random-picker-close-btn').addEventListener('click', () => {
+            this.destroy();
+        });
+
+        // Start
+        this.element.querySelector('.random-picker-start-btn').addEventListener('click', () => {
+            this.togglePick();
+        });
+
+        // Settings
+        this.element.querySelector('.random-picker-settings-btn').addEventListener('click', () => {
+            this.manager.showSettings(this);
+        });
+    }
+
+    togglePick() {
+        if (this.isAnimating) {
+            // Stop immediately and pick
+            this.stopAnimation();
+        } else {
+            // Start picking
+            this.startPick();
+        }
+    }
+
+    startPick() {
+        if (this.isAnimating) return;
+
+        this.isAnimating = true;
+        this.resultElement.classList.add('animating');
+        const startBtn = this.element.querySelector('.random-picker-start-btn span');
+        startBtn.textContent = window.i18n.t('common.stop');
+
+        // Determine pool
+        let pool = [];
+        if (this.config.mode === 'name') {
+            if (this.config.names.length === 0) {
+                this.resultElement.textContent = window.i18n.t('randomPicker.noNames');
+                this.isAnimating = false;
+                this.resultElement.classList.remove('animating');
+                startBtn.textContent = window.i18n.t('common.start');
+                return;
+            }
+
+            if (!this.config.allowRepeats) {
+                if (this.remainingNames.length === 0) {
+                    // Reset if all used
+                    this.remainingNames = [...this.config.names];
+                }
+                pool = this.remainingNames;
+            } else {
+                pool = this.config.names;
+            }
+        } else {
+            // Number mode
+            const min = parseInt(this.config.min);
+            const max = parseInt(this.config.max);
+            // Create a small pool for animation visual
+            for (let i = 0; i < 20; i++) {
+                pool.push(Math.floor(Math.random() * (max - min + 1)) + min);
+            }
+        }
+
+        // Animation loop
+        this.animationInterval = setInterval(() => {
+            const randomItem = pool[Math.floor(Math.random() * pool.length)];
+            this.resultElement.textContent = randomItem;
+        }, 50);
+
+        // Auto stop after random time (e.g. 1-2 seconds) if not manual stop
+        /*
+        setTimeout(() => {
+            if (this.isAnimating) this.stopAnimation();
+        }, 1000 + Math.random() * 1000);
+        */
+    }
+
+    stopAnimation() {
+        if (!this.isAnimating) return;
+
+        clearInterval(this.animationInterval);
+        this.isAnimating = false;
+        this.resultElement.classList.remove('animating');
+
+        const startBtn = this.element.querySelector('.random-picker-start-btn span');
+        startBtn.textContent = window.i18n.t('common.start');
+
+        // Pick final result
+        let result;
+        if (this.config.mode === 'name') {
+            let pool = this.config.allowRepeats ? this.config.names : this.remainingNames;
+            if (pool.length === 0) {
+                 // Should have reset in startPick, but just in case
+                this.remainingNames = [...this.config.names];
+                pool = this.remainingNames;
+            }
+
+            const index = Math.floor(Math.random() * pool.length);
+            result = pool[index];
+
+            if (!this.config.allowRepeats) {
+                this.remainingNames.splice(index, 1);
+            }
+        } else {
+            const min = parseInt(this.config.min);
+            const max = parseInt(this.config.max);
+            result = Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        this.resultElement.textContent = result;
+
+        // Scale animation
+        this.resultElement.style.transform = 'scale(1.5)';
+        setTimeout(() => {
+            this.resultElement.style.transform = 'scale(1)';
+        }, 300);
+    }
+
+    updateConfig(newConfig) {
+        // If mode changed or names changed, reset remaining
+        if (newConfig.mode !== this.config.mode ||
+            JSON.stringify(newConfig.names) !== JSON.stringify(this.config.names)) {
+            this.remainingNames = [...(newConfig.names || [])];
+        }
+
+        this.config = { ...this.config, ...newConfig };
+
+        // Update title
+        const titleEl = this.element.querySelector('.random-picker-title');
+        titleEl.textContent = this.config.title || (this.config.mode === 'name' ?
+            window.i18n.t('randomPicker.namePicker') :
+            window.i18n.t('randomPicker.numberPicker'));
+
+        // Reset result
+        this.resultElement.textContent = '?';
+    }
+
+    destroy() {
+        clearInterval(this.animationInterval);
+        this.element.remove();
+        this.manager.remove(this.id);
+    }
+}
+
+class RandomPickerManager {
+    constructor() {
+        this.instances = new Map();
+        this.nextId = 1;
+        this.createSettingsModal();
+    }
+
+    createSettingsModal() {
+        const modal = document.createElement('div');
+        modal.id = 'random-picker-settings-modal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content random-picker-modal-content">
+                <div class="modal-header">
+                    <h2>${window.i18n.t('randomPicker.settingsTitle') || '点名器设置'}</h2>
+                    <button class="modal-close-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="random-picker-mode-switch">
+                        <button class="random-picker-mode-btn active" data-mode="name">${window.i18n.t('randomPicker.modeName') || '姓名模式'}</button>
+                        <button class="random-picker-mode-btn" data-mode="number">${window.i18n.t('randomPicker.modeNumber') || '数字模式'}</button>
+                    </div>
+
+                    <div class="random-picker-input-group">
+                        <label>${window.i18n.t('randomPicker.titleLabel') || '标题'}</label>
+                        <input type="text" id="rp-title-input" class="export-filename-input" placeholder="${window.i18n.t('randomPicker.titlePlaceholder') || '自定义标题（可选）'}">
+                    </div>
+
+                    <div id="rp-name-settings">
+                        <div class="random-picker-input-group">
+                            <label>${window.i18n.t('randomPicker.namesLabel') || '名单列表（每行一个）'}</label>
+                            <textarea id="rp-names-input" class="random-picker-textarea" placeholder="${window.i18n.t('randomPicker.namesPlaceholder') || '张三\n李四\n王五'}"></textarea>
+                        </div>
+                        <label class="random-picker-checkbox">
+                            <input type="checkbox" id="rp-allow-repeats" checked>
+                            <span>${window.i18n.t('randomPicker.allowRepeats') || '允许重复抽取'}</span>
+                        </label>
+                    </div>
+
+                    <div id="rp-number-settings" style="display: none;">
+                        <div class="random-picker-input-group">
+                            <label>${window.i18n.t('randomPicker.rangeLabel') || '数字范围'}</label>
+                            <div class="random-picker-range-inputs">
+                                <input type="number" id="rp-min-input" class="random-picker-number-input" value="1">
+                                <span>-</span>
+                                <input type="number" id="rp-max-input" class="random-picker-number-input" value="50">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="confirm-buttons">
+                        <button class="confirm-btn ok-btn" id="rp-save-btn">${window.i18n.t('common.confirm')}</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // Events
+        modal.querySelector('.modal-close-btn').addEventListener('click', () => {
+            modal.classList.remove('show');
+        });
+
+        const modeBtns = modal.querySelectorAll('.random-picker-mode-btn');
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                modeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const mode = btn.dataset.mode;
+                if (mode === 'name') {
+                    document.getElementById('rp-name-settings').style.display = 'block';
+                    document.getElementById('rp-number-settings').style.display = 'none';
+                } else {
+                    document.getElementById('rp-name-settings').style.display = 'none';
+                    document.getElementById('rp-number-settings').style.display = 'block';
+                }
+            });
+        });
+
+        document.getElementById('rp-save-btn').addEventListener('click', () => {
+            this.saveSettings();
+        });
+    }
+
+    create() {
+        // Create with defaults, then show settings? Or just create.
+        // Let's create with default settings.
+        const id = this.nextId++;
+        const instance = new RandomPickerInstance(id, this);
+        this.instances.set(id, instance);
+
+        // Populate with example names if empty
+        instance.updateConfig({
+            names: ['Student A', 'Student B', 'Student C']
+        });
+    }
+
+    remove(id) {
+        this.instances.delete(id);
+    }
+
+    showSettings(instance) {
+        this.currentInstance = instance;
+        const modal = document.getElementById('random-picker-settings-modal');
+
+        // Populate form
+        const config = instance.config;
+
+        // Mode
+        const modeBtns = modal.querySelectorAll('.random-picker-mode-btn');
+        modeBtns.forEach(b => {
+            if (b.dataset.mode === config.mode) {
+                b.click(); // This also handles display toggling
+            }
+        });
+
+        // Title
+        document.getElementById('rp-title-input').value = config.title || '';
+
+        // Names
+        document.getElementById('rp-names-input').value = (config.names || []).join('\n');
+        document.getElementById('rp-allow-repeats').checked = config.allowRepeats;
+
+        // Numbers
+        document.getElementById('rp-min-input').value = config.min;
+        document.getElementById('rp-max-input').value = config.max;
+
+        modal.classList.add('show');
+    }
+
+    saveSettings() {
+        if (!this.currentInstance) return;
+
+        const modal = document.getElementById('random-picker-settings-modal');
+        const mode = modal.querySelector('.random-picker-mode-btn.active').dataset.mode;
+        const title = document.getElementById('rp-title-input').value;
+
+        const config = {
+            mode,
+            title
+        };
+
+        if (mode === 'name') {
+            const namesText = document.getElementById('rp-names-input').value;
+            config.names = namesText.split('\n').map(s => s.trim()).filter(s => s);
+            config.allowRepeats = document.getElementById('rp-allow-repeats').checked;
+        } else {
+            config.min = parseInt(document.getElementById('rp-min-input').value) || 1;
+            config.max = parseInt(document.getElementById('rp-max-input').value) || 50;
+        }
+
+        this.currentInstance.updateConfig(config);
+        modal.classList.remove('show');
+        this.currentInstance = null;
+    }
+}
+
+// Export
+if (typeof window !== 'undefined') {
+    window.RandomPickerManager = RandomPickerManager;
+}

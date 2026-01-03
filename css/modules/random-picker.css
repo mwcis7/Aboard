@@ -1,0 +1,225 @@
+.random-picker-widget {
+    position: fixed;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 250px;
+    overflow: hidden;
+    user-select: none;
+    cursor: default;
+    transition: box-shadow 0.2s;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.random-picker-widget.dragging {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    cursor: grabbing;
+}
+
+.random-picker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: grab;
+}
+
+.random-picker-widget.dragging .random-picker-header {
+    cursor: grabbing;
+}
+
+.random-picker-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    pointer-events: none;
+}
+
+.random-picker-close-btn {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 6px;
+    background-color: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    transition: all 0.2s ease;
+}
+
+.random-picker-close-btn:hover {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.random-picker-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    position: relative;
+    background-color: #fff;
+}
+
+.random-picker-result {
+    font-size: 42px;
+    font-weight: bold;
+    color: #333;
+    text-align: center;
+    min-height: 50px;
+    margin-bottom: 20px;
+    line-height: 1.2;
+    transition: transform 0.1s;
+}
+
+.random-picker-result.animating {
+    color: var(--theme-color, #007AFF);
+}
+
+.random-picker-controls {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.random-picker-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.random-picker-start-btn {
+    background-color: var(--theme-color, #007AFF);
+    color: #fff;
+}
+
+.random-picker-start-btn:hover {
+    filter: brightness(1.1);
+}
+
+.random-picker-start-btn:active {
+    transform: translateY(1px);
+}
+
+.random-picker-settings-btn {
+    background-color: #f0f0f0;
+    color: #333;
+    max-width: 40px;
+}
+
+.random-picker-settings-btn:hover {
+    background-color: #e0e0e0;
+}
+
+/* Settings Modal Specifics */
+.random-picker-modal-content {
+    max-width: 500px;
+}
+
+.random-picker-mode-switch {
+    display: flex;
+    background: #f0f0f0;
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 20px;
+}
+
+.random-picker-mode-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.random-picker-mode-btn.active {
+    background: #fff;
+    color: var(--theme-color, #007AFF);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-weight: 500;
+}
+
+.random-picker-input-group {
+    margin-bottom: 20px;
+}
+
+.random-picker-input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.random-picker-textarea {
+    width: 100%;
+    height: 150px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.random-picker-textarea:focus {
+    outline: none;
+    border-color: var(--theme-color, #007AFF);
+}
+
+.random-picker-range-inputs {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.random-picker-number-input {
+    width: 80px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.random-picker-hint {
+    font-size: 12px;
+    color: #999;
+    margin-top: 6px;
+}
+
+.random-picker-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+
+.random-picker-checkbox input {
+    cursor: pointer;
+}
+
+.random-picker-checkbox span {
+    font-size: 14px;
+    color: #333;
+}

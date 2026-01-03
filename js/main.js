@@ -30,6 +30,8 @@ class DrawingBoard {
         this.announcementManager = new AnnouncementManager();
         this.exportManager = new ExportManager(this.canvas, this.bgCanvas, this);
         this.teachingToolsManager = new TeachingToolsManager(this.canvas, this.ctx, this.historyManager);
+        this.randomPickerManager = new RandomPickerManager();
+        this.scoreboardManager = new ScoreboardManager();
         
         // Set callback for teaching tools insertion to auto-switch to pen
         this.teachingToolsManager.onToolsInserted = () => {
@@ -817,6 +819,26 @@ class DrawingBoard {
             timerFeatureBtn.addEventListener('click', () => {
                 this.timerManager.showSettingsModal();
                 // Auto-switch to pen tool after opening timer
+                this.closeFeaturePanel();
+                this.switchToPen();
+            });
+        }
+
+        // Random Picker Feature Button
+        const randomPickerBtn = document.getElementById('random-picker-feature-btn');
+        if (randomPickerBtn) {
+            randomPickerBtn.addEventListener('click', () => {
+                this.randomPickerManager.create();
+                this.closeFeaturePanel();
+                this.switchToPen();
+            });
+        }
+
+        // Scoreboard Feature Button
+        const scoreboardBtn = document.getElementById('scoreboard-feature-btn');
+        if (scoreboardBtn) {
+            scoreboardBtn.addEventListener('click', () => {
+                this.scoreboardManager.create();
                 this.closeFeaturePanel();
                 this.switchToPen();
             });
