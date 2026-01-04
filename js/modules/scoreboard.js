@@ -192,13 +192,23 @@ class ScoreboardInstance {
             });
 
             // Score controls
-            col.querySelector('.score-btn.minus').addEventListener('click', () => {
+            const minusBtn = col.querySelector('.score-btn.minus');
+            const plusBtn = col.querySelector('.score-btn.plus');
+
+            [minusBtn, plusBtn].forEach(btn => {
+                if (btn) {
+                    btn.addEventListener('mousedown', e => e.stopPropagation());
+                    btn.addEventListener('touchstart', e => e.stopPropagation());
+                }
+            });
+
+            minusBtn.addEventListener('click', () => {
                 this.config.teams[index].score--;
                 this.updateScore(index);
                 this.saveState();
             });
 
-            col.querySelector('.score-btn.plus').addEventListener('click', () => {
+            plusBtn.addEventListener('click', () => {
                 this.config.teams[index].score++;
                 this.updateScore(index);
                 this.saveState();
@@ -207,11 +217,12 @@ class ScoreboardInstance {
             // Remove team button
             const removeBtn = col.querySelector('.score-remove-btn');
             if (removeBtn) {
+                removeBtn.addEventListener('mousedown', e => e.stopPropagation());
+                removeBtn.addEventListener('touchstart', e => e.stopPropagation());
+
                 removeBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    if (confirm(window.i18n.t('scoreboard.confirmRemoveTeam'))) {
-                        this.removeTeam(index);
-                    }
+                    this.showRemoveTeamConfirmation(index);
                 });
             }
 
@@ -303,6 +314,19 @@ class ScoreboardInstance {
         document.addEventListener('touchend', stopDrag);
 
         // Buttons
+        const btns = [
+            this.element.querySelector('.scoreboard-close-btn'),
+            this.element.querySelector('.scoreboard-add-team-btn'),
+            this.element.querySelector('.scoreboard-reset-btn')
+        ];
+
+        btns.forEach(btn => {
+            if (!btn) return;
+            // Stop propagation to prevent drawing
+            btn.addEventListener('mousedown', e => e.stopPropagation());
+            btn.addEventListener('touchstart', e => e.stopPropagation());
+        });
+
         this.element.querySelector('.scoreboard-close-btn').addEventListener('click', () => {
             this.destroy();
         });
@@ -359,8 +383,77 @@ class ScoreboardInstance {
                     modal.classList.remove('show');
                 }
             });
+        } else {
+             // Update text in case language changed
+             modal.querySelector('.modal-header h2').textContent = window.i18n.t('scoreboard.title');
+             modal.querySelector('.confirm-message').textContent = window.i18n.t('scoreboard.confirmReset');
+             modal.querySelector('.cancel-btn').textContent = window.i18n.t('common.cancel');
+             modal.querySelector('.ok-btn').textContent = window.i18n.t('common.confirm');
         }
 
+        modal.classList.add('show');
+    }
+
+    showRemoveTeamConfirmation(index) {
+        const modalId = 'scoreboard-remove-team-modal';
+        let modal = document.getElementById(modalId);
+
+        // We need to recreate or update the listener for the current index
+        // Since the index changes, let's just create a new one or handle the OK click dynamically
+        // But the simplest way is to store the pending index
+
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content confirm-modal-content">
+                    <div class="modal-header">
+                        <h2>${window.i18n.t('scoreboard.title')}</h2>
+                    </div>
+                    <div class="modal-body">
+                        <p class="confirm-message">${window.i18n.t('scoreboard.confirmRemoveTeam')}</p>
+                        <div class="confirm-buttons">
+                            <button class="confirm-btn cancel-btn">${window.i18n.t('common.cancel')}</button>
+                            <button class="confirm-btn ok-btn">${window.i18n.t('common.confirm')}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            const cancelBtn = modal.querySelector('.cancel-btn');
+            const okBtn = modal.querySelector('.ok-btn');
+
+            cancelBtn.addEventListener('click', () => {
+                modal.classList.remove('show');
+            });
+
+            // Store the listener function so we can remove it if we wanted to be perfectly clean,
+            // but for a singleton modal, we can just assign a new one or use a data attribute.
+            // Using a property on the modal element is easy.
+            okBtn.addEventListener('click', () => {
+                const pendingIndex = parseInt(modal.dataset.pendingIndex);
+                if (!isNaN(pendingIndex)) {
+                    this.removeTeam(pendingIndex);
+                }
+                modal.classList.remove('show');
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                }
+            });
+        } else {
+             // Update text
+             modal.querySelector('.modal-header h2').textContent = window.i18n.t('scoreboard.title');
+             modal.querySelector('.confirm-message').textContent = window.i18n.t('scoreboard.confirmRemoveTeam');
+             modal.querySelector('.cancel-btn').textContent = window.i18n.t('common.cancel');
+             modal.querySelector('.ok-btn').textContent = window.i18n.t('common.confirm');
+        }
+
+        modal.dataset.pendingIndex = index;
         modal.classList.add('show');
     }
 
