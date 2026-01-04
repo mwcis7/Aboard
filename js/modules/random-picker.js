@@ -136,6 +136,20 @@ class RandomPickerInstance {
         document.addEventListener('mouseup', stopDrag);
         document.addEventListener('touchend', stopDrag);
 
+        // Buttons propagation
+        const btns = [
+            this.element.querySelector('.random-picker-close-btn'),
+            this.element.querySelector('.random-picker-start-btn'),
+            this.element.querySelector('.random-picker-settings-btn')
+        ];
+
+        btns.forEach(btn => {
+            if (btn) {
+                btn.addEventListener('mousedown', e => e.stopPropagation());
+                btn.addEventListener('touchstart', e => e.stopPropagation());
+            }
+        });
+
         // Close
         this.element.querySelector('.random-picker-close-btn').addEventListener('click', () => {
             this.destroy();
@@ -299,7 +313,7 @@ class RandomPickerManager {
         modal.innerHTML = `
             <div class="modal-content random-picker-modal-content">
                 <div class="modal-header">
-                    <h2>${window.i18n.t('randomPicker.settingsTitle') || '点名器设置'}</h2>
+                    <h2>${window.i18n.t('randomPicker.settingsTitle')}</h2>
                     <button class="modal-close-btn">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -309,29 +323,29 @@ class RandomPickerManager {
                 </div>
                 <div class="modal-body">
                     <div class="random-picker-mode-switch">
-                        <button class="random-picker-mode-btn active" data-mode="name">${window.i18n.t('randomPicker.modeName') || '姓名模式'}</button>
-                        <button class="random-picker-mode-btn" data-mode="number">${window.i18n.t('randomPicker.modeNumber') || '数字模式'}</button>
+                        <button class="random-picker-mode-btn active" data-mode="name">${window.i18n.t('randomPicker.modeName')}</button>
+                        <button class="random-picker-mode-btn" data-mode="number">${window.i18n.t('randomPicker.modeNumber')}</button>
                     </div>
 
                     <div class="random-picker-input-group">
-                        <label>${window.i18n.t('randomPicker.titleLabel') || '标题'}</label>
-                        <input type="text" id="rp-title-input" class="export-filename-input" placeholder="${window.i18n.t('randomPicker.titlePlaceholder') || '自定义标题（可选）'}">
+                        <label>${window.i18n.t('randomPicker.titleLabel')}</label>
+                        <input type="text" id="rp-title-input" class="export-filename-input" placeholder="${window.i18n.t('randomPicker.titlePlaceholder')}">
                     </div>
 
                     <div id="rp-name-settings">
                         <div class="random-picker-input-group">
-                            <label>${window.i18n.t('randomPicker.namesLabel') || '名单列表（每行一个）'}</label>
-                            <textarea id="rp-names-input" class="random-picker-textarea" placeholder="${window.i18n.t('randomPicker.namesPlaceholder') || '张三\n李四\n王五'}"></textarea>
+                            <label>${window.i18n.t('randomPicker.namesLabel')}</label>
+                            <textarea id="rp-names-input" class="random-picker-textarea" placeholder="${window.i18n.t('randomPicker.namesPlaceholder')}"></textarea>
                         </div>
                         <label class="random-picker-checkbox">
                             <input type="checkbox" id="rp-allow-repeats" checked>
-                            <span>${window.i18n.t('randomPicker.allowRepeats') || '允许重复抽取'}</span>
+                            <span>${window.i18n.t('randomPicker.allowRepeats')}</span>
                         </label>
                     </div>
 
                     <div id="rp-number-settings" style="display: none;">
                         <div class="random-picker-input-group">
-                            <label>${window.i18n.t('randomPicker.rangeLabel') || '数字范围'}</label>
+                            <label>${window.i18n.t('randomPicker.rangeLabel')}</label>
                             <div class="random-picker-range-inputs">
                                 <input type="number" id="rp-min-input" class="random-picker-number-input" value="1">
                                 <span>-</span>
@@ -383,7 +397,7 @@ class RandomPickerManager {
         this.instances.set(id, instance);
 
         // Populate with example names if empty
-        const defaultNames = (window.i18n.t('randomPicker.defaultNames') || 'Student A\nStudent B\nStudent C').split('\n');
+        const defaultNames = window.i18n.t('randomPicker.defaultNames').split('\n');
         instance.updateConfig({
             names: defaultNames
         });

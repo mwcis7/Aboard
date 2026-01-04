@@ -162,13 +162,13 @@ class ExportManager {
         container.innerHTML = '';
         
         if (!this.drawingBoard || !this.drawingBoard.pages) {
-            container.innerHTML = '<p class="export-hint">当前为无限画布模式，请在设置中启用分页模式以使用此功能。</p>';
+            container.innerHTML = `<p class="export-hint">${window.i18n.t('export.paginationRequired')}</p>`;
             return;
         }
         
         const pageCount = this.drawingBoard.pages.length;
         if (pageCount === 0) {
-            container.innerHTML = '<p class="export-hint">没有可导出的页面。</p>';
+            container.innerHTML = `<p class="export-hint">${window.i18n.t('export.noPages')}</p>`;
             return;
         }
         
@@ -321,7 +321,7 @@ class ExportManager {
         // Get selected page buttons
         const selectedButtons = document.querySelectorAll('.page-selection-btn.selected');
         if (selectedButtons.length === 0) {
-            alert('请至少选择一个页面进行导出');
+            alert(window.i18n.t('export.selectAtLeastOnePage') || '请至少选择一个页面进行导出');
             return;
         }
         

@@ -475,23 +475,28 @@ window.translations = {
         fullscreenMode: '全屏模式',
         fullscreenFontSize: '全屏字体大小',
         fullscreenFontSizeLabel: '全屏字体大小：当前',
+        fullscreenFontSizeHint: '调整全屏时间显示的字体大小，范围10%-85%',
         fullscreenSliderLabel: '字体大小调节 (10%-85%)',
         customColor: '自定义颜色',
-        transparent: '透明'
+        transparent: '透明',
+        fullscreenDisabled: '关闭',
+        fullscreenSingle: '单击',
+        fullscreenDouble: '双击'
     },
 
     // Timer
     timer: {
+        title: '计时器',
         settingsTitle: '计时器设置',
         mode: '模式',
         selectMode: '选择模式',
         countdown: '倒计时',
         stopwatch: '正计时',
-        duration: '计时时长（分钟）',
+        duration: '设置总时间',
         hours: '小时',
         minutes: '分钟',
         seconds: '秒',
-        title: '计时器标题（可选）',
+        timerTitle: '计时器标题（可选）',
         titlePlaceholder: '例如：课堂演讲、考试时间等',
         setTime: '设置时间',
         setStartTime: '设置开始时间',

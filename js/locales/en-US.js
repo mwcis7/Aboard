@@ -475,23 +475,28 @@ window.translations = {
         fullscreenMode: 'Fullscreen Mode',
         fullscreenFontSize: 'Fullscreen Font Size',
         fullscreenFontSizeLabel: 'Fullscreen Font Size: Current',
+        fullscreenFontSizeHint: 'Adjust fullscreen font size (10%-85%)',
         fullscreenSliderLabel: 'Font Size (10%-85%)',
         customColor: 'Custom Color',
-        transparent: 'Transparent'
+        transparent: 'Transparent',
+        fullscreenDisabled: 'Disabled',
+        fullscreenSingle: 'Single Click',
+        fullscreenDouble: 'Double Click'
     },
 
     // Timer
     timer: {
+        title: 'Timer',
         settingsTitle: 'Timer Settings',
         mode: 'Mode',
         selectMode: 'Select Mode',
         countdown: 'Countdown',
         stopwatch: 'Stopwatch',
-        duration: 'Duration (Minutes)',
+        duration: 'Set Duration',
         hours: 'Hours',
         minutes: 'Minutes',
         seconds: 'Seconds',
-        title: 'Timer Title (Optional)',
+        timerTitle: 'Timer Title (Optional)',
         titlePlaceholder: 'e.g., Presentation, Exam, etc.',
         setTime: 'Set Time',
         setStartTime: 'Set Start Time',
@@ -542,7 +547,18 @@ window.translations = {
         continue: 'Continue',
         pause: 'Pause',
         reset: 'Reset',
-        stop: 'Stop'
+        stop: 'Stop',
+        minimal: 'Minimal',
+        minimalMode: 'Minimal Mode (Double-click to restore)',
+        alertSetTime: 'Please set the countdown time',
+        alertTitle: 'Alert'
+    },
+
+    // Export
+    export: {
+        selectAtLeastOnePage: 'Please select at least one page to export',
+        paginationRequired: 'Currently in Infinite Canvas mode. Please enable Pagination Mode in Settings to use this feature.',
+        noPages: 'No pages to export.'
     },
 
     // Timezone names
