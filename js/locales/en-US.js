@@ -399,7 +399,8 @@ window.translations = {
         time: 'Time',
         timer: 'Timer',
         randomPicker: 'Picker',
-        scoreboard: 'Score'
+        scoreboard: 'Score',
+        insertImage: 'Insert Image'
     },
 
     // Random Picker
