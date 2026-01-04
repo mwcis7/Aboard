@@ -109,6 +109,10 @@
     color: #fff;
 }
 
+.random-picker-start-btn.is-stop {
+    background-color: #FF3B30;
+}
+
 .random-picker-start-btn:hover {
     filter: brightness(1.1);
 }

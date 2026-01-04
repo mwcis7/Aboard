@@ -157,6 +157,33 @@
     color: #34C759;
 }
 
+/* Remove button in the middle */
+.score-remove-btn {
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 50%;
+    background-color: transparent;
+    color: #999;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    margin: 0 2px;
+    align-self: center;
+    opacity: 0; /* Hidden by default */
+}
+
+.score-column:hover .score-remove-btn {
+    opacity: 1; /* Show on hover */
+}
+
+.score-remove-btn:hover {
+    background-color: #f0f0f0;
+    color: #FF3B30;
+}
+
 /* Settings Modal Specifics */
 .scoreboard-modal-content {
     max-width: 400px;

@@ -88,6 +88,8 @@ class RandomPickerInstance {
 
         const startDrag = (e) => {
             if (e.target.closest('.random-picker-close-btn')) return;
+            // Stop propagation to prevent drawing
+            e.stopPropagation();
 
             this.isDragging = true;
             this.element.classList.add('dragging');
@@ -165,8 +167,10 @@ class RandomPickerInstance {
 
         this.isAnimating = true;
         this.resultElement.classList.add('animating');
-        const startBtn = this.element.querySelector('.random-picker-start-btn span');
-        startBtn.textContent = window.i18n.t('common.stop');
+        const startBtnEl = this.element.querySelector('.random-picker-start-btn');
+        const startBtnSpan = startBtnEl.querySelector('span');
+        startBtnSpan.textContent = window.i18n.t('common.stop');
+        startBtnEl.classList.add('is-stop');
 
         // Determine pool
         let pool = [];
@@ -219,8 +223,10 @@ class RandomPickerInstance {
         this.isAnimating = false;
         this.resultElement.classList.remove('animating');
 
-        const startBtn = this.element.querySelector('.random-picker-start-btn span');
-        startBtn.textContent = window.i18n.t('common.start');
+        const startBtnEl = this.element.querySelector('.random-picker-start-btn');
+        const startBtnSpan = startBtnEl.querySelector('span');
+        startBtnSpan.textContent = window.i18n.t('common.start');
+        startBtnEl.classList.remove('is-stop');
 
         // Pick final result
         let result;
@@ -377,8 +383,9 @@ class RandomPickerManager {
         this.instances.set(id, instance);
 
         // Populate with example names if empty
+        const defaultNames = (window.i18n.t('randomPicker.defaultNames') || 'Student A\nStudent B\nStudent C').split('\n');
         instance.updateConfig({
-            names: ['Student A', 'Student B', 'Student C']
+            names: defaultNames
         });
     }
 

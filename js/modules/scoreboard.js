@@ -7,12 +7,33 @@ class ScoreboardInstance {
     constructor(id, manager, config = {}) {
         this.id = id;
         this.manager = manager;
+
+        // Load saved state if available
+        const savedState = localStorage.getItem('scoreboard_data');
+        let initialTeams = null;
+        if (savedState) {
+            try {
+                const parsed = JSON.parse(savedState);
+                if (parsed.teams && Array.isArray(parsed.teams)) {
+                    initialTeams = parsed.teams;
+                }
+            } catch (e) {
+                console.error('Failed to load scoreboard data', e);
+            }
+        }
+
+        // If no saved teams, use defaults with localized names
+        if (!initialTeams && !config.teams) {
+            const teamNameBase = window.i18n.t('scoreboard.teamDefault') || 'Team';
+            initialTeams = [
+                { name: `${teamNameBase} A`, score: 0 },
+                { name: `${teamNameBase} B`, score: 0 }
+            ];
+        }
+
         this.config = {
             title: '',
-            teams: [
-                { name: 'Team A', score: 0 },
-                { name: 'Team B', score: 0 }
-            ],
+            teams: initialTeams || config.teams,
             ...config
         };
 
@@ -22,6 +43,13 @@ class ScoreboardInstance {
         this.isDragging = false;
 
         this.createElement();
+    }
+
+    saveState() {
+        const data = {
+            teams: this.config.teams
+        };
+        localStorage.setItem('scoreboard_data', JSON.stringify(data));
     }
 
     createElement() {
@@ -72,6 +100,49 @@ class ScoreboardInstance {
 
         this.renderTeams();
         this.setupEvents();
+
+        // Listen for locale changes
+        window.addEventListener('localeChanged', (e) => {
+            this.handleLocaleChange(e.detail.locale, e.detail.oldLocale);
+        });
+    }
+
+    handleLocaleChange(newLocale, oldLocale) {
+        // Simple regex to match default team names in various languages
+        // e.g., "Team A", "队伍 A", "Équipe A", etc.
+        // We assume the pattern is "Name [A-Z]"
+        const teamNameRegex = /^(.+)\s([A-Z])$/;
+
+        // Get the default "Team" prefix for the old locale if possible
+        // Since we don't have access to old translations easily, we'll try to guess based on current names
+        // or just apply the new locale's default name if it matches a known pattern.
+
+        // Better approach: Check if the name matches the *current* default name pattern
+        // and if so, update it to the *new* default name pattern.
+
+        // Since we can't easily get the old translation, we will rely on the structure.
+        // If a team name ends with a space and a single uppercase letter, we assume it's a default name.
+
+        const newTeamNameBase = window.i18n.t('scoreboard.teamDefault') || 'Team';
+
+        let changed = false;
+        this.config.teams.forEach(team => {
+            const match = team.name.match(teamNameRegex);
+            if (match) {
+                // It looks like a default name "Something X"
+                // Check if "Something" is a known localization of "Team"
+                // Actually, let's just update it if it matches the pattern to the new locale
+                // This might be aggressive but users requested "switch to English, team name also switch"
+                const suffix = match[2];
+                team.name = `${newTeamNameBase} ${suffix}`;
+                changed = true;
+            }
+        });
+
+        if (changed) {
+            this.renderTeams();
+            this.saveState();
+        }
     }
 
     renderTeams() {
@@ -92,6 +163,12 @@ class ScoreboardInstance {
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
                     </button>
+                    <button class="score-remove-btn" title="${window.i18n.t('scoreboard.removeTeam')}">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
                     <button class="score-btn plus">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -105,6 +182,7 @@ class ScoreboardInstance {
             const nameEl = col.querySelector('.score-team-name');
             nameEl.addEventListener('blur', (e) => {
                 this.config.teams[index].name = e.target.textContent;
+                this.saveState();
             });
             nameEl.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
@@ -117,20 +195,25 @@ class ScoreboardInstance {
             col.querySelector('.score-btn.minus').addEventListener('click', () => {
                 this.config.teams[index].score--;
                 this.updateScore(index);
+                this.saveState();
             });
 
             col.querySelector('.score-btn.plus').addEventListener('click', () => {
                 this.config.teams[index].score++;
                 this.updateScore(index);
+                this.saveState();
             });
 
-            // Context menu to remove team
-            col.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                if (confirm(window.i18n.t('scoreboard.confirmRemoveTeam'))) {
-                    this.removeTeam(index);
-                }
-            });
+            // Remove team button
+            const removeBtn = col.querySelector('.score-remove-btn');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (confirm(window.i18n.t('scoreboard.confirmRemoveTeam'))) {
+                        this.removeTeam(index);
+                    }
+                });
+            }
 
             container.appendChild(col);
         });
@@ -150,17 +233,20 @@ class ScoreboardInstance {
             score: 0
         });
         this.renderTeams();
+        this.saveState();
     }
 
     removeTeam(index) {
         if (this.config.teams.length <= 1) return; // Keep at least one
         this.config.teams.splice(index, 1);
         this.renderTeams();
+        this.saveState();
     }
 
     resetScores() {
         this.config.teams.forEach(t => t.score = 0);
         this.renderTeams();
+        this.saveState();
     }
 
     setupEvents() {
@@ -169,6 +255,8 @@ class ScoreboardInstance {
 
         const startDrag = (e) => {
             if (e.target.closest('button')) return;
+            // Stop propagation to prevent drawing
+            e.stopPropagation();
 
             this.isDragging = true;
             this.element.classList.add('dragging');
@@ -224,10 +312,56 @@ class ScoreboardInstance {
         });
 
         this.element.querySelector('.scoreboard-reset-btn').addEventListener('click', () => {
-            if (confirm(window.i18n.t('scoreboard.confirmReset'))) {
-                this.resetScores();
-            }
+            this.showResetConfirmation();
         });
+    }
+
+    showResetConfirmation() {
+        // Create custom modal for reset confirmation
+        const modalId = 'scoreboard-reset-modal';
+        let modal = document.getElementById(modalId);
+
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = modalId;
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content confirm-modal-content">
+                    <div class="modal-header">
+                        <h2>${window.i18n.t('scoreboard.title')}</h2>
+                    </div>
+                    <div class="modal-body">
+                        <p class="confirm-message">${window.i18n.t('scoreboard.confirmReset')}</p>
+                        <div class="confirm-buttons">
+                            <button class="confirm-btn cancel-btn">${window.i18n.t('common.cancel')}</button>
+                            <button class="confirm-btn ok-btn">${window.i18n.t('common.confirm')}</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Event listeners
+            const cancelBtn = modal.querySelector('.cancel-btn');
+            const okBtn = modal.querySelector('.ok-btn');
+
+            cancelBtn.addEventListener('click', () => {
+                modal.classList.remove('show');
+            });
+
+            okBtn.addEventListener('click', () => {
+                this.resetScores();
+                modal.classList.remove('show');
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                }
+            });
+        }
+
+        modal.classList.add('show');
     }
 
     destroy() {

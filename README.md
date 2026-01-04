@@ -351,6 +351,8 @@ Aboard/
 │   │   ├── edge-drawing.js # 边缘绘制模块（沿教具边缘画线）
 │   │   ├── teaching-tools.js # 教具功能模块
 │   │   ├── shape-drawing.js # 形状绘制模块（支持直线、矩形、圆形）
+│   │   ├── random-picker.js # 点名器模块
+│   │   ├── scoreboard.js  # 计分板模块
 │   │   ├── line-style-modal.js # 线条样式设置弹窗模块
 │   │   └── i18n.js        # 国际化核心模块
 │   └── main.js            # 主应用入口
@@ -389,6 +391,8 @@ Aboard/
 - **ExportManager** - 导出管理，处理画布导出功能
 - **TeachingToolsManager** - 教具管理，处理直尺和三角板的插入、移动、旋转和缩放
 - **EdgeDrawingManager** - 边缘绘制管理，处理沿教具边缘画线功能
+- **RandomPickerManager** - 点名器管理，处理点名器逻辑
+- **ScoreboardManager** - 计分板管理，处理计分功能
 - **DrawingBoard** - 主应用类，集成所有模块并协调交互
 
 ### 性能优化

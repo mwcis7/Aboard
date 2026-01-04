@@ -18,7 +18,9 @@ window.translations = {
         no: '否',
         ok: '好的',
         apply: '应用',
-        reset: '重置'
+        reset: '重置',
+        start: '开始',
+        stop: '停止'
     },
 
     // App Title
@@ -412,6 +414,7 @@ window.translations = {
         titlePlaceholder: '自定义标题（可选）',
         namesLabel: '名单列表（每行一个）',
         namesPlaceholder: '张三\n李四\n王五',
+        defaultNames: '张三\n李四\n王五\n赵六\n孙七',
         allowRepeats: '允许重复抽取',
         rangeLabel: '数字范围'
     },
@@ -423,6 +426,7 @@ window.translations = {
         reset: '重置分数',
         confirmRemoveTeam: '确定要移除这个队伍吗？',
         teamDefault: '队伍',
+        removeTeam: '删除队伍',
         confirmReset: '确定要重置所有分数吗？'
     },
 

@@ -14,6 +14,8 @@ class BackgroundManager {
         this.backgroundImage = null;
         this.backgroundImageData = localStorage.getItem('backgroundImageData') || null;
         this.imageSize = parseFloat(localStorage.getItem('imageSize')) || 1.0;
+        this.isImagePaused = false; // State for GIF playback control
+        this.imageStaticData = null; // Store static frame for paused GIF
         
         // Coordinate system origin offset
         this.coordinateOriginX = parseFloat(localStorage.getItem('coordinateOriginX')) || 0;
@@ -36,20 +38,36 @@ class BackgroundManager {
         
         // Load saved image if exists
         if (this.backgroundImageData) {
-            const img = new Image();
-            img.onload = () => {
-                this.backgroundImage = img;
-                if (this.backgroundPattern === 'image') {
-                    this.drawBackground();
-                }
-            };
-            img.src = this.backgroundImageData;
+            this.backgroundImage = this.backgroundImageData;
+            // Also need to initialize the DOM element if it doesn't exist?
+            // The DOM element logic is handled in drawBackgroundPattern/updateBackgroundImageElement
+            if (this.backgroundPattern === 'image') {
+                // Defer drawing until next frame to ensure DOM is ready if called from constructor
+                setTimeout(() => this.drawBackground(), 0);
+            }
         }
     }
     
     drawBackground() {
         this.bgCtx.clearRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
         
+        // Handle background image visibility
+        this.updateBackgroundImageElement();
+
+        // If using image pattern, we might want to make canvas background transparent or specific color
+        // If the user wants opacity control over the background COLOR when image is behind:
+        // Current logic: Image replaces background color? Or sits on top?
+        // If image is an element behind canvas (or z-indexed), we need transparency.
+        // But we put image element behind background canvas?
+        // Let's assume we want: Background Color -> Image Element -> Background Pattern (Grid)
+        // But `drawBackground` fills color first.
+        // If pattern is 'image', we should NOT fill opaque color if we want to see the image element (if it's behind).
+        // However, we decided to put image element ON TOP of bgCanvas (or handled via DOM).
+
+        // If pattern is 'image', we handle it via DOM element.
+        // We still fill background color on bgCanvas as a base layer?
+        // If image is transparent (e.g. PNG), we see background color.
+
         this.bgCtx.globalAlpha = this.bgOpacity;
         this.bgCtx.fillStyle = this.backgroundColor;
         this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
@@ -66,8 +84,8 @@ class BackgroundManager {
     drawBackgroundPattern() {
         if (this.backgroundPattern === 'blank') return;
         
-        if (this.backgroundPattern === 'image' && this.backgroundImage) {
-            this.drawImagePattern();
+        if (this.backgroundPattern === 'image') {
+            // Handled by updateBackgroundImageElement
             return;
         }
         
@@ -101,45 +119,107 @@ class BackgroundManager {
         this.bgCtx.restore();
     }
     
-    drawImagePattern() {
-        if (!this.backgroundImage) return;
+    updateBackgroundImageElement() {
+        let imgElement = document.getElementById('background-image-element');
         
-        this.bgCtx.save();
-        this.bgCtx.globalAlpha = this.patternIntensity;
-        
-        const dpr = window.devicePixelRatio || 1;
-        const canvasWidth = this.bgCanvas.width / dpr;
-        const canvasHeight = this.bgCanvas.height / dpr;
-        
-        // Use transform if available, otherwise fall back to simple centering
-        if (this.imageTransform.width > 0 && this.imageTransform.height > 0) {
+        if (this.backgroundPattern === 'image' && this.backgroundImageData) {
+            if (!imgElement) {
+                imgElement = document.createElement('img');
+                imgElement.id = 'background-image-element';
+                imgElement.style.position = 'absolute';
+                imgElement.style.pointerEvents = 'none';
+                imgElement.style.zIndex = '0'; // Same as bgCanvas, but we'll control stacking context if needed
+                // But bgCanvas is z-index 0. If we append imgElement to body, it might be on top.
+                // We should insert it before bgCanvas?
+                // The structure is: div#history-controls, canvas#background-canvas, canvas#canvas...
+                // Ideally we want Background Color (on bgCanvas) -> Image -> Grid (on bgCanvas).
+                // But bgCanvas is one layer.
+                // If we use DOM img, it's either above or below bgCanvas.
+                // If below, background color on bgCanvas obscures it (unless transparent).
+                // If above, it obscures grid.
+                // Solution: When using Image mode, we typically don't show grid.
+                // So placing it on top of bgCanvas (which has background color) is fine.
+                // Background Color -> Image Element.
+
+                // We will place it right after background-canvas in DOM, but with z-index 0.
+                // canvas#background-canvas is z-index 0. canvas#canvas is z-index 1.
+                // We can set img z-index to 0.
+                // To ensure it's visible over background color, we can make bgCanvas transparent?
+                // OR: bgCanvas is at bottom.
+
+                document.body.insertBefore(imgElement, document.getElementById('canvas'));
+            }
+
+            imgElement.style.display = 'block';
+            if (imgElement.src !== this.backgroundImageData) {
+                imgElement.src = this.backgroundImageData;
+            }
+
             // Apply transformations
-            const centerX = this.imageTransform.x + this.imageTransform.width / 2;
-            const centerY = this.imageTransform.y + this.imageTransform.height / 2;
+            const dpr = window.devicePixelRatio || 1;
+            const canvasWidth = this.bgCanvas.width / dpr;
+            const canvasHeight = this.bgCanvas.height / dpr;
             
-            this.bgCtx.translate(centerX, centerY);
-            this.bgCtx.rotate(this.imageTransform.rotation * Math.PI / 180);
-            this.bgCtx.scale(this.imageTransform.scale, this.imageTransform.scale);
-            this.bgCtx.translate(-centerX, -centerY);
+            // Wait for image to load to get natural dimensions if needed
+            // But we might have stored transform.
             
-            this.bgCtx.drawImage(
-                this.backgroundImage,
-                this.imageTransform.x,
-                this.imageTransform.y,
-                this.imageTransform.width,
-                this.imageTransform.height
-            );
+            imgElement.style.opacity = this.patternIntensity;
+
+            // Handle paused state (freeze GIF)
+            if (this.isImagePaused && this.imageStaticData) {
+                if (imgElement.src !== this.imageStaticData) {
+                    imgElement.src = this.imageStaticData;
+                }
+            } else {
+                if (imgElement.src !== this.backgroundImageData) {
+                    imgElement.src = this.backgroundImageData;
+                }
+            }
+
+            if (this.imageTransform.width > 0 && this.imageTransform.height > 0) {
+                // Apply transformations using CSS
+                imgElement.style.left = `${this.imageTransform.x}px`;
+                imgElement.style.top = `${this.imageTransform.y}px`;
+                imgElement.style.width = `${this.imageTransform.width}px`;
+                imgElement.style.height = `${this.imageTransform.height}px`;
+
+                imgElement.style.transformOrigin = 'center center';
+                imgElement.style.transform = `rotate(${this.imageTransform.rotation}deg) scale(${this.imageTransform.scale})`;
+            } else {
+                // Fallback centering logic
+                if (imgElement.naturalWidth) {
+                    const scaledWidth = imgElement.naturalWidth * this.imageSize;
+                    const scaledHeight = imgElement.naturalHeight * this.imageSize;
+                    const x = (canvasWidth - scaledWidth) / 2;
+                    const y = (canvasHeight - scaledHeight) / 2;
+
+                    imgElement.style.left = `${x}px`;
+                    imgElement.style.top = `${y}px`;
+                    imgElement.style.width = `${scaledWidth}px`;
+                    imgElement.style.height = `${scaledHeight}px`;
+                    imgElement.style.transform = 'none';
+                } else {
+                    // If not loaded yet, wait
+                    imgElement.onload = () => this.drawBackground(); // Redraw (update styles) when loaded
+                }
+            }
+
+            // Sync with canvas zoom/pan
+            // The canvas uses CSS transform on #canvas and #background-canvas.
+            // We need to apply the same transform to #background-image-element container?
+            // Or just append #background-image-element to a common container?
+            // Currently #canvas and #background-canvas are direct children of body.
+            // And main.js applies transforms to them directly.
+            // We should modify main.js to apply transforms to background-image-element too.
+            // OR: We can rely on main.js to handle it if we add a class or id that main.js picks up?
+            // Actually, main.js explicitly selects #canvas and #background-canvas.
+            // I should update main.js to also transform #background-image-element.
+
         } else {
-            // Fall back to simple centered image
-            const scaledWidth = this.backgroundImage.width * this.imageSize;
-            const scaledHeight = this.backgroundImage.height * this.imageSize;
-            const x = (canvasWidth - scaledWidth) / 2;
-            const y = (canvasHeight - scaledHeight) / 2;
-            
-            this.bgCtx.drawImage(this.backgroundImage, x, y, scaledWidth, scaledHeight);
+            if (imgElement) {
+                imgElement.style.display = 'none';
+            }
         }
-        
-        this.bgCtx.restore();
     }
     
     drawDotsPattern(dpr, patternColor) {
@@ -378,15 +458,53 @@ class BackgroundManager {
     
     setBackgroundImage(imageData) {
         this.backgroundImageData = imageData;
+        this.isImagePaused = false;
+        this.imageStaticData = null;
         localStorage.setItem('backgroundImageData', imageData);
         
-        const img = new Image();
-        img.onload = () => {
-            this.backgroundImage = img;
-            this.backgroundPattern = 'image';
-            this.drawBackground();
-        };
-        img.src = imageData;
+        // We don't strictly need to create an Image object for canvas drawing anymore
+        // but might be useful for getting dimensions.
+        // We set pattern to image and trigger drawBackground which updates DOM element.
+        this.backgroundPattern = 'image';
+        this.drawBackground();
+    }
+
+    toggleImagePlayback() {
+        if (!this.backgroundPattern === 'image' || !this.backgroundImageData) return;
+
+        this.isImagePaused = !this.isImagePaused;
+
+        if (this.isImagePaused) {
+            // Capture current frame
+            this.captureStaticFrame();
+        } else {
+            // Resume playback (restore original src)
+            this.imageStaticData = null;
+            this.updateBackgroundImageElement();
+        }
+    }
+
+    captureStaticFrame() {
+        const imgElement = document.getElementById('background-image-element');
+        if (!imgElement) return;
+
+        // Create a temporary canvas to draw the current frame
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Set dimensions to match natural size of image
+        canvas.width = imgElement.naturalWidth || imgElement.width;
+        canvas.height = imgElement.naturalHeight || imgElement.height;
+
+        try {
+            // Draw the current state of the img element
+            ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+            this.imageStaticData = canvas.toDataURL('image/png');
+            this.updateBackgroundImageElement();
+        } catch (e) {
+            console.error('Failed to capture static frame:', e);
+            this.isImagePaused = false; // Revert if failed
+        }
     }
     
     setImageSize(size) {
