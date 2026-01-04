@@ -107,6 +107,9 @@ class InsertImageManager {
 
         // Mouse/Touch events on the control box for dragging
         const handleDragStart = (e) => {
+            // Stop propagation to prevent drawing on canvas
+            e.stopPropagation();
+
             if (e.target === this.controlBox || e.target.closest('.image-controls-box') === this.controlBox) {
                 if (!e.target.classList.contains('resize-handle') &&
                     !e.target.classList.contains('rotate-handle') &&
