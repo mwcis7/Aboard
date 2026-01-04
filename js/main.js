@@ -32,6 +32,7 @@ class DrawingBoard {
         this.teachingToolsManager = new TeachingToolsManager(this.canvas, this.ctx, this.historyManager);
         this.randomPickerManager = new RandomPickerManager();
         this.scoreboardManager = new ScoreboardManager();
+        this.insertImageManager = new InsertImageManager(this.canvas, this.ctx, this.historyManager, this.drawingEngine);
         
         // Set callback for teaching tools insertion to auto-switch to pen
         this.teachingToolsManager.onToolsInserted = () => {
@@ -868,6 +869,16 @@ class DrawingBoard {
                 this.switchToPen();
             });
         }
+
+        // Insert Image Feature Button
+        const insertImageBtn = document.getElementById('insert-image-feature-btn');
+        if (insertImageBtn) {
+            insertImageBtn.addEventListener('click', () => {
+                this.insertImageManager.triggerSelect();
+                this.closeFeaturePanel();
+                this.switchToPen();
+            });
+        }
         
         // Timer settings modal close button
         const timerSettingsCloseBtn = document.getElementById('timer-settings-close-btn');
@@ -1600,7 +1611,9 @@ class DrawingBoard {
             
             if (this.settingsManager.edgeSnapEnabled) {
                 // Use hysteresis: easier to snap than to unsnap (prevents flicker)
-                const effectiveSnapDistance = currentlyVertical ? edgeSnapHysteresis : edgeSnapDistance;
+                // When already vertical (snapped), use a much larger hysteresis to prevent
+                // flickering back to horizontal when the horizontal width is large
+                const effectiveSnapDistance = currentlyVertical ? 300 : edgeSnapDistance;
                 
                 // Check for left edge snap first
                 if (x < effectiveSnapDistance) {
@@ -2197,6 +2210,11 @@ class DrawingBoard {
         // Update teaching tools scale factor
         this.teachingToolsManager.canvasScaleFactor = finalScale;
         this.teachingToolsManager.redrawTools();
+
+        // Update insert image overlay position if active
+        if (this.insertImageManager && this.insertImageManager.isActive) {
+            this.insertImageManager.updateControlBox();
+        }
         
         // Update config-area scale proportionally only when requested (on resize, not on refresh)
         if (updateConfigScale) {
