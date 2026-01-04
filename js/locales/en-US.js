@@ -504,6 +504,8 @@ window.translations = {
         fontSettings: 'Font Settings',
         fontSize: 'Font Size',
         fontSizeLabel: 'Font Size: Current',
+        minimal: 'Minimal',
+        minimalMode: 'Minimal Mode (Double-click to restore)',
         adjustColor: 'Adjust Color',
         colorSettings: 'Color Settings',
         textColor: 'Text Color',
@@ -549,8 +551,6 @@ window.translations = {
         pause: 'Pause',
         reset: 'Reset',
         stop: 'Stop',
-        minimal: 'Minimal',
-        minimalMode: 'Minimal Mode (Double-click to restore)',
         alertSetTime: 'Please set the countdown time',
         alertTitle: 'Alert'
     },

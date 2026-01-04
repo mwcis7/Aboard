@@ -922,22 +922,7 @@ class I18n {
             selectModeLabel.textContent = this.t('timer.selectMode');
         }
         
-        // Timer mode buttons
-        document.querySelectorAll('.timer-mode-btn').forEach(btn => {
-            const mode = btn.getAttribute('data-mode');
-            if (mode === 'stopwatch') {
-                // Keep the SVG, only update the text node
-                const textNodes = Array.from(btn.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
-                if (textNodes.length > 0) {
-                    textNodes[textNodes.length - 1].textContent = '\n            ' + this.t('timer.stopwatch') + '\n        ';
-                }
-            } else if (mode === 'countdown') {
-                const textNodes = Array.from(btn.childNodes).filter(node => node.nodeType === Node.TEXT_NODE);
-                if (textNodes.length > 0) {
-                    textNodes[textNodes.length - 1].textContent = '\n            ' + this.t('timer.countdown') + '\n        ';
-                }
-            }
-        });
+        // Timer mode buttons - translations handled by data-i18n on span elements
         
         // Timer title input
         const timerTitleLabel = document.querySelector('label[for="timer-title-input"]');

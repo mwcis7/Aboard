@@ -504,6 +504,8 @@ window.translations = {
         fontSettings: '字体设置',
         fontSize: '字体大小',
         fontSizeLabel: '字体大小：当前',
+        minimal: '最简',
+        minimalMode: '最简显示 (双击恢复)',
         adjustColor: '调整颜色',
         colorSettings: '颜色设置',
         textColor: '字体颜色',

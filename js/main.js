@@ -1611,9 +1611,18 @@ class DrawingBoard {
             
             if (this.settingsManager.edgeSnapEnabled) {
                 // Use hysteresis: easier to snap than to unsnap (prevents flicker)
-                // When already vertical (snapped), use a much larger hysteresis to prevent
-                // flickering back to horizontal when the horizontal width is large
-                const effectiveSnapDistance = currentlyVertical ? 300 : edgeSnapDistance;
+                // When already vertical (snapped), use a dynamic hysteresis based on width difference
+                // to prevent flickering back to horizontal when the horizontal width is large
+                let effectiveSnapDistance = edgeSnapDistance;
+
+                if (currentlyVertical) {
+                    // If vertical, we need a larger hysteresis zone
+                    // Calculate based on the difference between horizontal and vertical widths
+                    // Formula ensures unsnap threshold is further than snap threshold
+                    // Width difference + buffer to avoid flicker loop
+                    const widthDiff = Math.max(0, this.draggedElementWidth - currentWidth);
+                    effectiveSnapDistance = Math.max(300, edgeSnapDistance + widthDiff + 50);
+                }
                 
                 // Check for left edge snap first
                 if (x < effectiveSnapDistance) {
