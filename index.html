@@ -287,12 +287,26 @@
                 <div class="compact-sliders">
                     <div class="compact-slider-item" id="pattern-density-group" style="display: none;">
                         <label>密度：当前 <span id="pattern-density-value">100</span>%</label>
-                        <input type="range" id="pattern-density-slider" min="20" max="300" value="100" class="slider slider-compact">
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="range" id="pattern-density-slider" min="20" max="300" value="100" class="slider slider-compact" style="flex: 1;">
+                            <button id="move-origin-btn" class="icon-btn" title="移动坐标原点">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2v20M2 12h20"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     <div class="compact-slider-item" id="image-size-group" style="display: none;">
                         <label>大小：当前 <span id="bg-image-size-value">100</span>%</label>
                         <div style="display: flex; gap: 8px; align-items: center;">
                             <input type="range" id="bg-image-size-slider" min="10" max="200" value="100" class="slider slider-compact" style="flex: 1;">
+                            <button id="bg-gif-settings-btn" class="icon-btn" title="GIF设置" style="display: none;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                </svg>
+                            </button>
                             <button id="bg-image-playback-btn" class="icon-btn" title="播放/暂停">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <rect x="6" y="4" width="4" height="16"></rect>
@@ -987,6 +1001,31 @@
                 <p class="confirm-message" id="timer-alert-message" data-i18n="timer.alertSetTime">请设置倒计时时间</p>
                 <div class="confirm-buttons">
                     <button id="timer-alert-ok-btn" class="confirm-btn ok-btn" data-i18n="common.confirm">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GIF Settings Modal -->
+    <div id="gif-settings-modal" class="modal">
+        <div class="modal-content confirm-modal-content">
+            <div class="modal-header">
+                <h2>GIF设置</h2>
+                <button id="gif-settings-close-btn" class="modal-close-btn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label for="gif-loop-count-input">播放次数 (0为无限循环)</label>
+                    <input type="number" id="gif-loop-count-input" min="0" max="999" value="0" style="width: 80px; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                <div class="confirm-buttons">
+                    <button id="gif-settings-cancel-btn" class="confirm-btn cancel-btn" data-i18n="common.cancel">取消</button>
+                    <button id="gif-settings-ok-btn" class="confirm-btn ok-btn" data-i18n="common.confirm">确定</button>
                 </div>
             </div>
         </div>
