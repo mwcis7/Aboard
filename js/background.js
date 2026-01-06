@@ -75,10 +75,8 @@ class BackgroundManager {
         
         this.drawBackgroundPattern();
         
-        localStorage.setItem('backgroundColor', this.backgroundColor);
-        localStorage.setItem('backgroundPattern', this.backgroundPattern);
-        localStorage.setItem('bgOpacity', this.bgOpacity);
-        localStorage.setItem('patternIntensity', this.patternIntensity);
+        // Performance optimization: Avoid synchronous localStorage writes in draw loop
+        // These are now handled in setters
     }
     
     drawBackgroundPattern() {
@@ -128,26 +126,16 @@ class BackgroundManager {
                 imgElement.id = 'background-image-element';
                 imgElement.style.position = 'absolute';
                 imgElement.style.pointerEvents = 'none';
-                imgElement.style.zIndex = '0'; // Same as bgCanvas, but we'll control stacking context if needed
-                // But bgCanvas is z-index 0. If we append imgElement to body, it might be on top.
-                // We should insert it before bgCanvas?
-                // The structure is: div#history-controls, canvas#background-canvas, canvas#canvas...
-                // Ideally we want Background Color (on bgCanvas) -> Image -> Grid (on bgCanvas).
-                // But bgCanvas is one layer.
-                // If we use DOM img, it's either above or below bgCanvas.
-                // If below, background color on bgCanvas obscures it (unless transparent).
-                // If above, it obscures grid.
-                // Solution: When using Image mode, we typically don't show grid.
-                // So placing it on top of bgCanvas (which has background color) is fine.
-                // Background Color -> Image Element.
+                imgElement.style.zIndex = '0'; // Same as bgCanvas
 
-                // We will place it right after background-canvas in DOM, but with z-index 0.
-                // canvas#background-canvas is z-index 0. canvas#canvas is z-index 1.
-                // We can set img z-index to 0.
-                // To ensure it's visible over background color, we can make bgCanvas transparent?
-                // OR: bgCanvas is at bottom.
-
-                document.body.insertBefore(imgElement, document.getElementById('canvas'));
+                // Append to transform-layer if it exists, otherwise fallback to body
+                const transformLayer = document.getElementById('transform-layer');
+                if (transformLayer) {
+                    // Insert before canvas so it's behind the drawing layer
+                    transformLayer.insertBefore(imgElement, document.getElementById('canvas'));
+                } else {
+                    document.body.insertBefore(imgElement, document.getElementById('canvas'));
+                }
             }
 
             imgElement.style.display = 'block';
@@ -432,21 +420,25 @@ class BackgroundManager {
     
     setBackgroundColor(color) {
         this.backgroundColor = color;
+        localStorage.setItem('backgroundColor', this.backgroundColor);
         this.drawBackground();
     }
     
     setBackgroundPattern(pattern) {
         this.backgroundPattern = pattern;
+        localStorage.setItem('backgroundPattern', this.backgroundPattern);
         this.drawBackground();
     }
     
     setOpacity(opacity) {
         this.bgOpacity = opacity;
+        localStorage.setItem('bgOpacity', this.bgOpacity);
         this.drawBackground();
     }
     
     setPatternIntensity(intensity) {
         this.patternIntensity = intensity;
+        localStorage.setItem('patternIntensity', this.patternIntensity);
         this.drawBackground();
     }
     
