@@ -52,6 +52,9 @@ class DrawingBoard {
         // Canvas fit scale - calculated once on init and window resize
         this.canvasFitScale = 1.0;
         
+        // Transform layer
+        this.transformLayer = document.getElementById('transform-layer');
+
         // Pagination
         this.currentPage = 1;
         this.pages = [];
@@ -1611,9 +1614,18 @@ class DrawingBoard {
             
             if (this.settingsManager.edgeSnapEnabled) {
                 // Use hysteresis: easier to snap than to unsnap (prevents flicker)
-                // When already vertical (snapped), use a much larger hysteresis to prevent
-                // flickering back to horizontal when the horizontal width is large
-                const effectiveSnapDistance = currentlyVertical ? 300 : edgeSnapDistance;
+                // When already vertical (snapped), use a dynamic hysteresis based on width difference
+                // to prevent flickering back to horizontal when the horizontal width is large
+                let effectiveSnapDistance = edgeSnapDistance;
+
+                if (currentlyVertical) {
+                    // If vertical, we need a larger hysteresis zone
+                    // Calculate based on the difference between horizontal and vertical widths
+                    // Formula ensures unsnap threshold is further than snap threshold
+                    // Width difference + buffer to avoid flicker loop
+                    const widthDiff = Math.max(0, this.draggedElementWidth - currentWidth);
+                    effectiveSnapDistance = Math.max(300, edgeSnapDistance + widthDiff + 50);
+                }
                 
                 // Check for left edge snap first
                 if (x < effectiveSnapDistance) {
@@ -2014,16 +2026,26 @@ class DrawingBoard {
         // Apply the current zoom level on top of the fit scale
         const finalScale = this.canvasFitScale * this.drawingEngine.canvasScale;
         
-        // Center the canvas on the screen with proper scaling
-        this.canvas.style.position = 'absolute';
-        this.canvas.style.left = '50%';
-        this.canvas.style.top = '50%';
-        this.canvas.style.transform = `translate(-50%, -50%) scale(${finalScale})`;
-        
-        this.bgCanvas.style.position = 'absolute';
-        this.bgCanvas.style.left = '50%';
-        this.bgCanvas.style.top = '50%';
-        this.bgCanvas.style.transform = `translate(-50%, -50%) scale(${finalScale})`;
+        // Center the canvas on the screen with proper scaling using transformLayer
+        if (this.transformLayer) {
+            this.transformLayer.style.position = 'absolute';
+            this.transformLayer.style.left = '50%';
+            this.transformLayer.style.top = '50%';
+            this.transformLayer.style.width = width + 'px';
+            this.transformLayer.style.height = height + 'px';
+            this.transformLayer.style.transform = `translate(-50%, -50%) scale(${finalScale})`;
+
+            // Children should not have individual transforms
+            this.canvas.style.position = 'absolute';
+            this.canvas.style.left = '0';
+            this.canvas.style.top = '0';
+            this.canvas.style.transform = 'none';
+
+            this.bgCanvas.style.position = 'absolute';
+            this.bgCanvas.style.left = '0';
+            this.bgCanvas.style.top = '0';
+            this.bgCanvas.style.transform = 'none';
+        }
         
         // Re-apply DPR scaling to context
         this.ctx.scale(dpr, dpr);
@@ -2080,132 +2102,15 @@ class DrawingBoard {
         
         // Keep canvas centered and apply pan offset
         const transform = `translate(-50%, -50%) translate(${panX}px, ${panY}px) scale(${finalScale})`;
-        this.canvas.style.transform = transform;
-        this.bgCanvas.style.transform = transform;
-        
-        // Also update background image element if it exists
-        const bgImage = document.getElementById('background-image-element');
-        if (bgImage) {
-            // Apply scale to parent or update its transform?
-            // BackgroundManager handles image-specific transforms.
-            // But we need to apply global canvas zoom/pan.
-            // Since bgImage is absolute positioned 0,0 like canvas (or relative to it?),
-            // we should apply same transform.
-            bgImage.style.transformOrigin = 'center center';
 
-            // Wait, BackgroundManager applies rotate/scale to the image itself for image manipulation.
-            // If we apply canvas zoom transform to the image element, it might conflict or compound?
-            // Current CSS for bgImage: absolute, left/top/width/height set. transform: rotate() scale().
-            // If we add translate(-50%, -50%)... to it, it will override image specific transform.
-            // We need a wrapper for bgImage that handles global zoom/pan.
+        if (this.transformLayer) {
+            this.transformLayer.style.transform = transform;
+            this.transformLayer.style.transformOrigin = 'center center';
 
-            // Let's create a wrapper if it doesn't exist?
-            // Or apply transform to a common parent?
-            // Currently structure: body > canvas, body > bgCanvas.
-            // And we inserted img before canvas.
-            // Ideally we should have:
-            // <div id="canvas-container">
-            //    <img id="background-image-element">
-            //    <canvas id="background-canvas">
-            //    <canvas id="canvas">
-            // </div>
-            // And apply transform to #canvas-container.
-
-            // However, rewriting DOM structure might be risky.
-            // We can apply the transform to the img element BUT we must preserve its own transform.
-            // Actually, `BackgroundManager.updateBackgroundImageElement` sets `transform`.
-            // If we overwrite it here, we lose rotation/scale of image.
-
-            // Better approach:
-            // BackgroundManager sets `transform` for image manipulation (rotate, local scale).
-            // We need global zoom/pan.
-            // If we don't have a container, we can't easily compose transforms without parsing.
-
-            // Let's check `BackgroundManager.updateBackgroundImageElement`.
-            // It sets `style.transform`.
-
-            // Maybe we should wrap the image in a div that gets the global transform?
-            // Yes. `BackgroundManager` should create a wrapper div, put image inside.
-            // The wrapper gets global transform (same as canvas).
-            // The image inside gets local transform.
-
-            // Let's check if we can modify `BackgroundManager` to create a wrapper.
-            // Or just do it here if we find the element.
-
-            // But `BackgroundManager` manages `imgElement`.
-            // If we create a wrapper `background-image-wrapper`, we apply `transform` to it.
-            // `BackgroundManager` appends `img` to `wrapper`?
-
-            // Let's stick to what we have:
-            // `BackgroundManager` creates `img#background-image-element`.
-            // We can create `div#background-layer` and put `img` and `bgCanvas` inside?
-            // `bgCanvas` is also transformed here.
-
-            // If we change DOM structure now, we might break other things (like event listeners on canvas?).
-            // Canvas listeners are on `document` mostly, or `canvas`.
-
-            // Let's try to find or create a wrapper for the image.
-            let imgWrapper = document.getElementById('background-image-wrapper');
-            if (!imgWrapper && bgImage) {
-                imgWrapper = document.createElement('div');
-                imgWrapper.id = 'background-image-wrapper';
-                imgWrapper.style.position = 'absolute';
-                imgWrapper.style.top = '0';
-                imgWrapper.style.left = '0';
-                imgWrapper.style.width = '100%';
-                imgWrapper.style.height = '100%';
-                imgWrapper.style.zIndex = '0';
-                imgWrapper.style.pointerEvents = 'none';
-
-                bgImage.parentNode.insertBefore(imgWrapper, bgImage);
-                imgWrapper.appendChild(bgImage);
-            }
-
-            if (imgWrapper) {
-                imgWrapper.style.transform = transform;
-                imgWrapper.style.transformOrigin = 'center center';
-
-                // Also ensure z-index is correct
-                // bgCanvas is z-0. canvas is z-1. wrapper should be z-0?
-                // If wrapper is z-0, and bgCanvas is z-0, stacking depends on DOM order.
-                // We want wrapper (image) to be visible.
-                // If bgCanvas has opaque color, it hides wrapper if wrapper is behind.
-                // We previously said: Background Color (bgCanvas) -> Image -> Grid (bgCanvas).
-                // But bgCanvas is one element.
-
-                // If we put wrapper BEFORE bgCanvas, it is behind.
-                // If bgCanvas has transparent background color, image shows.
-                // But user sets background color.
-                // So bgCanvas usually has color.
-
-                // If we put wrapper AFTER bgCanvas, image covers background color (good).
-                // But image covers grid (bad).
-
-                // Since we can't split bgCanvas easily (unless we make two canvases),
-                // we assume when Image is active, we probably don't use Grid or user accepts image covers grid.
-                // Or we make bgCanvas transparent in `BackgroundManager` when image is active?
-                // `BackgroundManager.drawBackground` clears canvas, fills color, draws pattern.
-                // If pattern is image, we handle DOM image.
-                // If we want image to be visible, we must NOT fill opaque color on bgCanvas if image is BEHIND.
-                // OR we put image IN FRONT of bgCanvas.
-
-                // Current impl in `BackgroundManager.drawBackground`:
-                // It fills color.
-                // So bgCanvas is opaque.
-                // So image must be in front of bgCanvas.
-                // `imgWrapper` should be after `bgCanvas`.
-                // `bgCanvas` is at z-0.
-                // `imgWrapper` at z-0 (after) -> covers bgCanvas.
-                // `canvas` at z-1 (after) -> covers image.
-
-                // This seems correct for "Image on top of Background Color".
-                // Grid/Patterns are drawn on bgCanvas. So Image covers Grid.
-                // This is acceptable behavior (Image mode usually replaces patterns).
-            }
+            // Remove individual transforms
+            this.canvas.style.transform = 'none';
+            this.bgCanvas.style.transform = 'none';
         }
-
-        this.canvas.style.transformOrigin = 'center center';
-        this.bgCanvas.style.transformOrigin = 'center center';
         
         // Update teaching tools scale factor
         this.teachingToolsManager.canvasScaleFactor = finalScale;
@@ -2702,24 +2607,25 @@ class DrawingBoard {
         // Use the combined fit scale and user zoom scale
         const finalScale = this.canvasFitScale * this.drawingEngine.canvasScale;
         
-        if (!this.settingsManager.infiniteCanvas) {
-            // In paginated mode, center canvas using position and translate
-            this.canvas.style.position = 'absolute';
-            this.canvas.style.left = '50%';
-            this.canvas.style.top = '50%';
-            this.bgCanvas.style.position = 'absolute';
-            this.bgCanvas.style.left = '50%';
-            this.bgCanvas.style.top = '50%';
+        if (this.transformLayer) {
+            if (!this.settingsManager.infiniteCanvas) {
+                // In paginated mode, center canvas using position and translate
+                this.transformLayer.style.position = 'absolute';
+                this.transformLayer.style.left = '50%';
+                this.transformLayer.style.top = '50%';
+
+                // Combine translate and scale
+                const transform = `translate(-50%, -50%) translate(${panX}px, ${panY}px) scale(${finalScale})`;
+                this.transformLayer.style.transform = transform;
+            } else {
+                // In infinite mode, combine translate and scale
+                const transform = `translate(${panX}px, ${panY}px) scale(${finalScale})`;
+                this.transformLayer.style.transform = transform;
+            }
             
-            // Combine translate and scale
-            const transform = `translate(-50%, -50%) translate(${panX}px, ${panY}px) scale(${finalScale})`;
-            this.canvas.style.transform = transform;
-            this.bgCanvas.style.transform = transform;
-        } else {
-            // In infinite mode, combine translate and scale
-            const transform = `translate(${panX}px, ${panY}px) scale(${finalScale})`;
-            this.canvas.style.transform = transform;
-            this.bgCanvas.style.transform = transform;
+            // Ensure children don't have conflicting transforms
+            this.canvas.style.transform = 'none';
+            this.bgCanvas.style.transform = 'none';
         }
     }
     
