@@ -583,13 +583,14 @@ class DrawingBoard {
         // Background pattern buttons
         document.querySelectorAll('.pattern-option-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const pattern = e.target.dataset.pattern;
+                // Use currentTarget to ensure we get the data from the button, not its children
+                const pattern = e.currentTarget.dataset.pattern;
                 if (pattern === 'image') {
                     document.getElementById('bg-image-upload').click();
                 } else {
                     this.backgroundManager.setBackgroundPattern(pattern);
                     document.querySelectorAll('.pattern-option-btn').forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
+                    e.currentTarget.classList.add('active');
                     document.getElementById('image-size-group').style.display = 'none';
                     
                     // Show/hide pattern density slider based on pattern
@@ -613,13 +614,13 @@ class DrawingBoard {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (event) => {
+                reader.onload = async (event) => {
                     const imageData = event.target.result;
                     
                     // Reset confirmation state for new image
                     this.imageControls.resetConfirmation();
                     
-                    this.backgroundManager.setBackgroundImage(imageData);
+                    await this.backgroundManager.setBackgroundImage(imageData);
                     document.querySelectorAll('.pattern-option-btn').forEach(b => b.classList.remove('active'));
                     document.querySelector('.pattern-option-btn[data-pattern="image"]').classList.add('active');
                     document.getElementById('image-size-group').style.display = 'flex';
@@ -659,12 +660,39 @@ class DrawingBoard {
             }
         });
 
+        // Background GIF settings button
+        const gifSettingsBtn = document.getElementById('bg-gif-settings-btn');
+        const gifSettingsModal = document.getElementById('gif-settings-modal');
+        if (gifSettingsBtn) {
+            gifSettingsBtn.addEventListener('click', () => {
+                const input = document.getElementById('gif-loop-count-input');
+                if (input) {
+                    input.value = this.backgroundManager.gifLoopCount;
+                }
+                gifSettingsModal.classList.add('show');
+            });
+        }
+
+        document.getElementById('gif-settings-cancel-btn').addEventListener('click', () => {
+            gifSettingsModal.classList.remove('show');
+        });
+
+        document.getElementById('gif-settings-ok-btn').addEventListener('click', () => {
+            const input = document.getElementById('gif-loop-count-input');
+            if (input) {
+                this.backgroundManager.setGifLoopCount(parseInt(input.value));
+            }
+            gifSettingsModal.classList.remove('show');
+        });
+
+        document.getElementById('gif-settings-close-btn').addEventListener('click', () => {
+            gifSettingsModal.classList.remove('show');
+        });
+
         // Background playback toggle (for GIFs)
         const playbackBtn = document.getElementById('bg-image-playback-btn');
         if (playbackBtn) {
-            playbackBtn.addEventListener('click', () => {
-                this.backgroundManager.toggleImagePlayback();
-                // Update icon
+            const updatePlaybackIcon = () => {
                 if (this.backgroundManager.isImagePaused) {
                     playbackBtn.classList.add('paused');
                     playbackBtn.innerHTML = `
@@ -681,7 +709,15 @@ class DrawingBoard {
                         </svg>
                     `;
                 }
+            };
+
+            playbackBtn.addEventListener('click', () => {
+                this.backgroundManager.toggleImagePlayback();
+                updatePlaybackIcon();
             });
+
+            // Listen for auto-pause event from background manager
+            window.addEventListener('backgroundGifPaused', updatePlaybackIcon);
         }
         
         // Pattern density slider
@@ -691,6 +727,25 @@ class DrawingBoard {
             this.backgroundManager.setPatternDensity(parseInt(e.target.value) / 100);
             patternDensityValue.textContent = e.target.value;
         });
+
+        // Move Coordinate Origin Button
+        const moveOriginBtn = document.getElementById('move-origin-btn');
+        if (moveOriginBtn) {
+            moveOriginBtn.addEventListener('click', (e) => {
+                // Switch to background tool
+                this.setTool('background');
+
+                // Set flag to allow dragging
+                this.isDraggingCoordinateOrigin = true;
+
+                // Initialize drag start position to current mouse position
+                // This enables "sticky drag" mode where the origin follows the mouse
+                this.coordinateOriginDragStart = { x: e.clientX, y: e.clientY };
+
+                // Change cursor to indicate dragging
+                this.canvas.style.cursor = 'move';
+            });
+        }
         
         // Sliders
         const penSizeSlider = document.getElementById('pen-size-slider');
