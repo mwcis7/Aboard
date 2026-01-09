@@ -376,23 +376,44 @@ class InsertImageManager {
         const screenWidth = this.imageSize.width * scaleX;
         const screenHeight = this.imageSize.height * scaleY;
 
-        // Build transform including flip
-        const flipScaleX = this.flipHorizontal ? -1 : 1;
-        const flipScaleY = this.flipVertical ? -1 : 1;
-
+        // Control box only rotates, no flip - flip is applied to the image preview inside
         this.controlBox.style.left = `${screenX}px`;
         this.controlBox.style.top = `${screenY}px`;
         this.controlBox.style.width = `${screenWidth}px`;
         this.controlBox.style.height = `${screenHeight}px`;
-        this.controlBox.style.transform = `rotate(${this.imageRotation}deg) scale(${flipScaleX}, ${flipScaleY})`;
+        this.controlBox.style.transform = `rotate(${this.imageRotation}deg)`;
 
         // Set background image of the box to show preview
+        // Apply flip transform to the background image via a pseudo-element or inner element approach
+        // Using scaleX/scaleY for background isn't directly possible, so we use a CSS transform on the box content
         this.controlBox.style.backgroundImage = `url(${this.currentImage.src})`;
         this.controlBox.style.backgroundSize = '100% 100%';
         this.controlBox.style.backgroundRepeat = 'no-repeat';
-
-        // Ensure buttons don't rotate with the box if we want them upright?
-        // No, usually controls rotate with the object.
+        
+        // Apply flip to the internal image preview using a separate inner element or via CSS
+        // Create or update an inner preview element for flip
+        let previewInner = this.controlBox.querySelector('.image-preview-inner');
+        if (!previewInner) {
+            previewInner = document.createElement('div');
+            previewInner.className = 'image-preview-inner';
+            previewInner.style.position = 'absolute';
+            previewInner.style.top = '0';
+            previewInner.style.left = '0';
+            previewInner.style.width = '100%';
+            previewInner.style.height = '100%';
+            previewInner.style.backgroundSize = '100% 100%';
+            previewInner.style.backgroundRepeat = 'no-repeat';
+            previewInner.style.pointerEvents = 'none';
+            this.controlBox.insertBefore(previewInner, this.controlBox.firstChild);
+            // Remove background from control box since we're using inner element
+            this.controlBox.style.backgroundImage = 'none';
+        }
+        
+        // Apply flip to the inner preview element
+        const flipScaleX = this.flipHorizontal ? -1 : 1;
+        const flipScaleY = this.flipVertical ? -1 : 1;
+        previewInner.style.backgroundImage = `url(${this.currentImage.src})`;
+        previewInner.style.transform = `scale(${flipScaleX}, ${flipScaleY})`;
     }
 
     toggleFlipHorizontal() {
@@ -466,6 +487,12 @@ class InsertImageManager {
         const flipVBtn = document.getElementById('insert-image-flip-vertical');
         if (flipHBtn) flipHBtn.classList.remove('active');
         if (flipVBtn) flipVBtn.classList.remove('active');
+        // Clean up inner preview element
+        const previewInner = this.controlBox.querySelector('.image-preview-inner');
+        if (previewInner) {
+            previewInner.remove();
+        }
+        this.controlBox.style.backgroundImage = 'none';
     }
 
     // Interaction Handlers

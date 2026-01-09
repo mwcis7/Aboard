@@ -171,8 +171,22 @@ class ImageControls {
         const rect = canvas.getBoundingClientRect();
         
         // Store original dimensions
-        const originalWidth = imageData.width || rect.width * 0.6;
-        const originalHeight = imageData.height || rect.height * 0.6;
+        let originalWidth = imageData.width || rect.width * 0.6;
+        let originalHeight = imageData.height || rect.height * 0.6;
+        
+        // Limit initial image size to no more than half the canvas size
+        const maxWidth = rect.width * 0.5;
+        const maxHeight = rect.height * 0.5;
+        const aspectRatio = originalWidth / originalHeight;
+        
+        if (originalWidth > maxWidth) {
+            originalWidth = maxWidth;
+            originalHeight = originalWidth / aspectRatio;
+        }
+        if (originalHeight > maxHeight) {
+            originalHeight = maxHeight;
+            originalWidth = originalHeight * aspectRatio;
+        }
         
         // Check if there's an existing transform from backgroundManager
         const existingTransform = this.backgroundManager.imageTransform;
@@ -246,16 +260,13 @@ class ImageControls {
         const actualWidth = this.imageSize.width * canvasScale;
         const actualHeight = this.imageSize.height * canvasScale;
         
-        // Build transform string including rotation, scale and flip
-        const scaleX = this.flipHorizontal ? -this.imageScale : this.imageScale;
-        const scaleY = this.flipVertical ? -this.imageScale : this.imageScale;
-        
-        // Apply transformations to control box to match image exactly
+        // Apply transformations to control box - only rotation, NOT flip
+        // The flip is only applied to the image inside, not the control box frame
         this.controlBox.style.left = `${actualX}px`;
         this.controlBox.style.top = `${actualY}px`;
         this.controlBox.style.width = `${actualWidth}px`;
         this.controlBox.style.height = `${actualHeight}px`;
-        this.controlBox.style.transform = `rotate(${this.imageRotation}deg) scale(${scaleX}, ${scaleY})`;
+        this.controlBox.style.transform = `rotate(${this.imageRotation}deg)`;
         
         // Update background image with current transformations
         this.applyImageTransform();

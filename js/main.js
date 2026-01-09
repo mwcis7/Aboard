@@ -629,10 +629,18 @@ class DrawingBoard {
                     
                     // Show/hide pattern density slider based on pattern
                     const patternDensityGroup = document.getElementById('pattern-density-group');
+                    const moveOriginBtn = document.getElementById('move-origin-btn');
                     if (pattern !== 'blank' && pattern !== 'image') {
                         patternDensityGroup.style.display = 'flex';
+                        // Only show move-origin-btn for coordinate pattern
+                        if (moveOriginBtn) {
+                            moveOriginBtn.style.display = pattern === 'coordinate' ? 'inline-flex' : 'none';
+                        }
                     } else {
                         patternDensityGroup.style.display = 'none';
+                        if (moveOriginBtn) {
+                            moveOriginBtn.style.display = 'none';
+                        }
                     }
                     
                     // Save page background in paginated mode
@@ -2567,6 +2575,12 @@ class DrawingBoard {
         
         // Update custom color picker
         document.getElementById('custom-bg-color-picker').value = this.backgroundManager.backgroundColor;
+        
+        // Update move-origin-btn visibility based on current pattern
+        const moveOriginBtn = document.getElementById('move-origin-btn');
+        if (moveOriginBtn) {
+            moveOriginBtn.style.display = this.backgroundManager.backgroundPattern === 'coordinate' ? 'inline-flex' : 'none';
+        }
     }
     
     updatePaginationUI() {
