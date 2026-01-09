@@ -159,7 +159,18 @@ window.translations = {
         contrastLabel: 'パターン透明度：現在',
         contrastHint: '背景パターン線の明暗を調整します',
         preference: '背景パターンの設定',
-        upload: 'アップロード'
+        upload: 'アップロード',
+        moveCoordinateOrigin: '原点を移動',
+        moveCoordinateOriginHint: 'ボタンをクリックしてキャンバス上でドラッグして座標原点を移動'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: '確定',
+        cancel: 'キャンセル',
+        flipHorizontal: '左右反転',
+        flipVertical: '上下反転',
+        rotate: '回転'
     },
 
     // Page Navigation

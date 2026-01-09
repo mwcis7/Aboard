@@ -159,7 +159,18 @@ window.translations = {
         contrastLabel: '패턴 투명도: 현재',
         contrastHint: '배경 패턴 선의 명암을 조정합니다',
         preference: '배경 패턴 기본 설정',
-        upload: '업로드'
+        upload: '업로드',
+        moveCoordinateOrigin: '원점 이동',
+        moveCoordinateOriginHint: '버튼을 클릭한 후 캔버스에서 드래그하여 좌표 원점 이동'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: '확인',
+        cancel: '취소',
+        flipHorizontal: '좌우 반전',
+        flipVertical: '상하 반전',
+        rotate: '회전'
     },
 
     // Page Navigation

@@ -147,7 +147,18 @@ window.translations = {
         opacityHint: 'Ajuster la transparence de l\'arrière-plan, 100% est complètement opaque',
         contrast: 'Contraste',
         contrastHint: 'Ajuster l\'obscurité des lignes du motif d\'arrière-plan',
-        preference: 'Préférence de motif d\'arrière-plan'
+        preference: 'Préférence de motif d\'arrière-plan',
+        moveCoordinateOrigin: 'Déplacer l\'origine',
+        moveCoordinateOriginHint: 'Cliquez puis faites glisser sur le canevas pour déplacer l\'origine des coordonnées'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: 'Confirmer',
+        cancel: 'Annuler',
+        flipHorizontal: 'Retourner horizontalement',
+        flipVertical: 'Retourner verticalement',
+        rotate: 'Rotation'
     },
 
     // Page Navigation

@@ -27,7 +27,9 @@ class BackgroundManager {
             width: 0,
             height: 0,
             rotation: 0,
-            scale: 1.0
+            scale: 1.0,
+            flipHorizontal: false,
+            flipVertical: false
         };
         
         // Load saved transform if exists
@@ -206,8 +208,12 @@ class BackgroundManager {
                 containerElement.style.width = `${this.imageTransform.width}px`;
                 containerElement.style.height = `${this.imageTransform.height}px`;
 
+                // Build transform string including flip
+                const scaleX = this.imageTransform.flipHorizontal ? -this.imageTransform.scale : this.imageTransform.scale;
+                const scaleY = this.imageTransform.flipVertical ? -this.imageTransform.scale : this.imageTransform.scale;
+
                 containerElement.style.transformOrigin = 'center center';
-                containerElement.style.transform = `rotate(${this.imageTransform.rotation}deg) scale(${this.imageTransform.scale})`;
+                containerElement.style.transform = `rotate(${this.imageTransform.rotation}deg) scale(${scaleX}, ${scaleY})`;
             } else {
                 // Fallback centering logic
                 if (imgElement.naturalWidth) {

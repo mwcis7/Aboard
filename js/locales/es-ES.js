@@ -147,7 +147,18 @@ window.translations = {
         opacityHint: 'Ajustar la transparencia del fondo, 100% es completamente opaco',
         contrast: 'Contraste',
         contrastHint: 'Ajustar la oscuridad de las líneas del patrón de fondo',
-        preference: 'Preferencia de patrón de fondo'
+        preference: 'Preferencia de patrón de fondo',
+        moveCoordinateOrigin: 'Mover origen',
+        moveCoordinateOriginHint: 'Haga clic y arrastre en el lienzo para mover el origen de coordenadas'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: 'Confirmar',
+        cancel: 'Cancelar',
+        flipHorizontal: 'Voltear horizontal',
+        flipVertical: 'Voltear vertical',
+        rotate: 'Rotar'
     },
 
     // Page Navigation

@@ -18,6 +18,8 @@ class ImageControls {
         this.imageSize = { width: 0, height: 0 };
         this.imageRotation = 0;
         this.imageScale = 1.0;
+        this.flipHorizontal = false;
+        this.flipVertical = false;
         
         // Drag state
         this.dragStartPos = { x: 0, y: 0 };
@@ -60,6 +62,20 @@ class ImageControls {
                         </svg>
                     </div>
                     
+                    <!-- Flip horizontal handle -->
+                    <div class="flip-handle flip-horizontal" id="flip-horizontal-handle" title="水平翻转">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M12 3v18M8 6l-5 6 5 6M16 6l5 6-5 6"/>
+                        </svg>
+                    </div>
+                    
+                    <!-- Flip vertical handle -->
+                    <div class="flip-handle flip-vertical" id="flip-vertical-handle" title="垂直翻转">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M3 12h18M6 8l6-5 6 5M6 16l6 5 6-5"/>
+                        </svg>
+                    </div>
+                    
                     <!-- Control toolbar with only confirm button -->
                     <div class="image-controls-toolbar">
                         <button id="image-done-btn" class="image-control-btn image-done-btn" title="确定">
@@ -84,8 +100,10 @@ class ImageControls {
             if (e.target === this.controlBox || e.target.closest('.image-controls-box') === this.controlBox) {
                 if (!e.target.classList.contains('resize-handle') && 
                     !e.target.classList.contains('rotate-handle') &&
+                    !e.target.classList.contains('flip-handle') &&
                     !e.target.closest('.resize-handle') &&
                     !e.target.closest('.rotate-handle') &&
+                    !e.target.closest('.flip-handle') &&
                     !e.target.closest('.image-controls-toolbar')) {
                     this.startDrag(e);
                 }
@@ -104,6 +122,18 @@ class ImageControls {
         document.getElementById('rotate-handle').addEventListener('mousedown', (e) => {
             e.stopPropagation();
             this.startRotate(e);
+        });
+        
+        // Flip horizontal handle
+        document.getElementById('flip-horizontal-handle').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleFlipHorizontal();
+        });
+        
+        // Flip vertical handle
+        document.getElementById('flip-vertical-handle').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleFlipVertical();
         });
         
         // Global mouse events
@@ -156,6 +186,8 @@ class ImageControls {
             this.imagePosition.y = existingTransform.y;
             this.imageRotation = existingTransform.rotation || 0;
             this.imageScale = existingTransform.scale || 1.0;
+            this.flipHorizontal = existingTransform.flipHorizontal || false;
+            this.flipVertical = existingTransform.flipVertical || false;
         } else {
             // Center the image initially (first time showing controls)
             this.imageSize.width = originalWidth;
@@ -164,7 +196,15 @@ class ImageControls {
             this.imagePosition.y = (rect.height - this.imageSize.height) / 2;
             this.imageRotation = 0;
             this.imageScale = 1.0;
+            this.flipHorizontal = false;
+            this.flipVertical = false;
         }
+        
+        // Update flip button visual states
+        const flipHBtn = document.getElementById('flip-horizontal-handle');
+        const flipVBtn = document.getElementById('flip-vertical-handle');
+        if (flipHBtn) flipHBtn.classList.toggle('active', this.flipHorizontal);
+        if (flipVBtn) flipVBtn.classList.toggle('active', this.flipVertical);
         
         this.originalWidth = originalWidth;
         this.originalHeight = originalHeight;
@@ -206,12 +246,16 @@ class ImageControls {
         const actualWidth = this.imageSize.width * canvasScale;
         const actualHeight = this.imageSize.height * canvasScale;
         
+        // Build transform string including rotation, scale and flip
+        const scaleX = this.flipHorizontal ? -this.imageScale : this.imageScale;
+        const scaleY = this.flipVertical ? -this.imageScale : this.imageScale;
+        
         // Apply transformations to control box to match image exactly
         this.controlBox.style.left = `${actualX}px`;
         this.controlBox.style.top = `${actualY}px`;
         this.controlBox.style.width = `${actualWidth}px`;
         this.controlBox.style.height = `${actualHeight}px`;
-        this.controlBox.style.transform = `rotate(${this.imageRotation}deg) scale(${this.imageScale})`;
+        this.controlBox.style.transform = `rotate(${this.imageRotation}deg) scale(${scaleX}, ${scaleY})`;
         
         // Update background image with current transformations
         this.applyImageTransform();
@@ -225,8 +269,30 @@ class ImageControls {
             width: this.imageSize.width,
             height: this.imageSize.height,
             rotation: this.imageRotation,
-            scale: this.imageScale
+            scale: this.imageScale,
+            flipHorizontal: this.flipHorizontal,
+            flipVertical: this.flipVertical
         });
+    }
+    
+    toggleFlipHorizontal() {
+        this.flipHorizontal = !this.flipHorizontal;
+        // Update button visual state
+        const btn = document.getElementById('flip-horizontal-handle');
+        if (btn) {
+            btn.classList.toggle('active', this.flipHorizontal);
+        }
+        this.updateControlBox();
+    }
+    
+    toggleFlipVertical() {
+        this.flipVertical = !this.flipVertical;
+        // Update button visual state
+        const btn = document.getElementById('flip-vertical-handle');
+        if (btn) {
+            btn.classList.toggle('active', this.flipVertical);
+        }
+        this.updateControlBox();
     }
     
     startDrag(e) {

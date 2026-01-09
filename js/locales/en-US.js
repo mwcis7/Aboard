@@ -161,7 +161,18 @@ window.translations = {
         contrastHint: 'Adjust pattern darkness/intensity',
         preference: 'Pattern Preference',
         preferenceHint: 'Choose patterns shown in properties bar',
-        upload: 'Upload'
+        upload: 'Upload',
+        moveCoordinateOrigin: 'Move Origin',
+        moveCoordinateOriginHint: 'Click and drag on canvas to move coordinate origin'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: 'Confirm',
+        cancel: 'Cancel',
+        flipHorizontal: 'Flip Horizontal',
+        flipVertical: 'Flip Vertical',
+        rotate: 'Rotate'
     },
 
     // Page Navigation
