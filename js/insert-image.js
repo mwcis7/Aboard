@@ -73,14 +73,14 @@ class InsertImageManager {
                     </div>
 
                     <!-- Flip horizontal handle -->
-                    <div class="flip-handle flip-horizontal" id="insert-image-flip-horizontal" title="水平翻转">
+                    <div class="flip-handle flip-horizontal" id="insert-image-flip-horizontal" data-i18n-title="imageControls.flipHorizontal">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                             <path d="M12 3v18M8 6l-5 6 5 6M16 6l5 6-5 6"/>
                         </svg>
                     </div>
 
                     <!-- Flip vertical handle -->
-                    <div class="flip-handle flip-vertical" id="insert-image-flip-vertical" title="垂直翻转">
+                    <div class="flip-handle flip-vertical" id="insert-image-flip-vertical" data-i18n-title="imageControls.flipVertical">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                             <path d="M3 12h18M6 8l6-5 6 5M6 16l6 5 6-5"/>
                         </svg>

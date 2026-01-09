@@ -63,14 +63,14 @@ class ImageControls {
                     </div>
                     
                     <!-- Flip horizontal handle -->
-                    <div class="flip-handle flip-horizontal" id="flip-horizontal-handle" title="水平翻转">
+                    <div class="flip-handle flip-horizontal" id="flip-horizontal-handle" data-i18n-title="imageControls.flipHorizontal">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                             <path d="M12 3v18M8 6l-5 6 5 6M16 6l5 6-5 6"/>
                         </svg>
                     </div>
                     
                     <!-- Flip vertical handle -->
-                    <div class="flip-handle flip-vertical" id="flip-vertical-handle" title="垂直翻转">
+                    <div class="flip-handle flip-vertical" id="flip-vertical-handle" data-i18n-title="imageControls.flipVertical">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                             <path d="M3 12h18M6 8l6-5 6 5M6 16l6 5 6-5"/>
                         </svg>
@@ -78,7 +78,7 @@ class ImageControls {
                     
                     <!-- Control toolbar with only confirm button -->
                     <div class="image-controls-toolbar">
-                        <button id="image-done-btn" class="image-control-btn image-done-btn" title="确定">
+                        <button id="image-done-btn" class="image-control-btn image-done-btn" data-i18n-title="imageControls.confirm">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
