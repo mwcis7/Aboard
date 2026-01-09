@@ -32,7 +32,6 @@ class DrawingBoard {
         this.teachingToolsManager = new TeachingToolsManager(this.canvas, this.ctx, this.historyManager);
         this.randomPickerManager = new RandomPickerManager();
         this.scoreboardManager = new ScoreboardManager();
-        this.insertImageManager = new InsertImageManager(this.canvas, this.ctx, this.historyManager, this.drawingEngine);
         
         // Set callback for teaching tools insertion to auto-switch to pen
         this.teachingToolsManager.onToolsInserted = () => {
@@ -970,16 +969,6 @@ class DrawingBoard {
         if (scoreboardBtn) {
             scoreboardBtn.addEventListener('click', () => {
                 this.scoreboardManager.create();
-                this.closeFeaturePanel();
-                this.switchToPen();
-            });
-        }
-
-        // Insert Image Feature Button
-        const insertImageBtn = document.getElementById('insert-image-feature-btn');
-        if (insertImageBtn) {
-            insertImageBtn.addEventListener('click', () => {
-                this.insertImageManager.triggerSelect();
                 this.closeFeaturePanel();
                 this.switchToPen();
             });
@@ -2218,11 +2207,6 @@ class DrawingBoard {
         this.teachingToolsManager.canvasScaleFactor = finalScale;
         this.teachingToolsManager.redrawTools();
 
-        // Update insert image overlay position if active
-        if (this.insertImageManager && this.insertImageManager.isActive) {
-            this.insertImageManager.updateControlBox();
-        }
-        
         // Update config-area scale proportionally only when requested (on resize, not on refresh)
         if (updateConfigScale) {
             this.updateConfigAreaScale();

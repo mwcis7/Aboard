@@ -169,15 +169,19 @@ class ImageControls {
         
         // Initialize with image data
         const canvas = this.backgroundManager.bgCanvas;
-        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
         
-        // Store original dimensions
-        let originalWidth = imageData.width || rect.width * 0.6;
-        let originalHeight = imageData.height || rect.height * 0.6;
+        // Get logical canvas dimensions (same coordinate system as background manager)
+        const logicalWidth = canvas.width / dpr;
+        const logicalHeight = canvas.height / dpr;
+        
+        // Store original dimensions - use natural image dimensions
+        let originalWidth = imageData.width || logicalWidth * 0.4;
+        let originalHeight = imageData.height || logicalHeight * 0.4;
         
         // Limit initial image size to no more than MAX_IMAGE_SIZE_RATIO of canvas size
-        const maxWidth = rect.width * this.MAX_IMAGE_SIZE_RATIO;
-        const maxHeight = rect.height * this.MAX_IMAGE_SIZE_RATIO;
+        const maxWidth = logicalWidth * this.MAX_IMAGE_SIZE_RATIO;
+        const maxHeight = logicalHeight * this.MAX_IMAGE_SIZE_RATIO;
         const aspectRatio = originalWidth / originalHeight;
         
         if (originalWidth > maxWidth) {
@@ -205,10 +209,11 @@ class ImageControls {
             this.flipVertical = existingTransform.flipVertical || false;
         } else {
             // Center the image initially (first time showing controls)
+            // Use logical canvas coordinates (same as background manager)
             this.imageSize.width = originalWidth;
             this.imageSize.height = originalHeight;
-            this.imagePosition.x = (rect.width - this.imageSize.width) / 2;
-            this.imagePosition.y = (rect.height - this.imageSize.height) / 2;
+            this.imagePosition.x = (logicalWidth - this.imageSize.width) / 2;
+            this.imagePosition.y = (logicalHeight - this.imageSize.height) / 2;
             this.imageRotation = 0;
             this.imageScale = 1.0;
             this.flipHorizontal = false;
@@ -252,14 +257,22 @@ class ImageControls {
     updateControlBox() {
         const canvas = this.backgroundManager.bgCanvas;
         const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
         
-        const canvasScale = this.getCanvasScale();
+        // Get logical canvas dimensions
+        const logicalWidth = canvas.width / dpr;
+        const logicalHeight = canvas.height / dpr;
         
-        // Calculate actual position and size accounting for canvas transform
-        const actualX = rect.left + (this.imagePosition.x * canvasScale);
-        const actualY = rect.top + (this.imagePosition.y * canvasScale);
-        const actualWidth = this.imageSize.width * canvasScale;
-        const actualHeight = this.imageSize.height * canvasScale;
+        // Calculate scale factor from logical canvas to screen coordinates
+        // This accounts for any CSS transforms on the canvas
+        const scaleX = rect.width / logicalWidth;
+        const scaleY = rect.height / logicalHeight;
+        
+        // Convert logical canvas coordinates to screen coordinates
+        const actualX = rect.left + (this.imagePosition.x * scaleX);
+        const actualY = rect.top + (this.imagePosition.y * scaleY);
+        const actualWidth = this.imageSize.width * scaleX;
+        const actualHeight = this.imageSize.height * scaleY;
         
         // Apply transformations to control box - only rotation, NOT flip
         // The flip is only applied to the image inside, not the control box frame
@@ -317,13 +330,15 @@ class ImageControls {
     drag(e) {
         if (!this.isDragging) return;
         
-        // Get canvas scale to convert screen delta to canvas delta
-        // Screen coordinates (mouse position) need to be divided by scale
-        // to get the equivalent movement in canvas logical coordinates
-        const canvasScale = this.getCanvasScale();
+        // Get scale factor to convert screen delta to logical canvas delta
+        const canvas = this.backgroundManager.bgCanvas;
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const logicalWidth = canvas.width / dpr;
+        const scaleX = rect.width / logicalWidth;
         
-        const deltaX = (e.clientX - this.dragStartPos.x) / canvasScale;
-        const deltaY = (e.clientY - this.dragStartPos.y) / canvasScale;
+        const deltaX = (e.clientX - this.dragStartPos.x) / scaleX;
+        const deltaY = (e.clientY - this.dragStartPos.y) / scaleX; // Use same scale for both axes
         
         this.imagePosition.x = this.dragStartImagePos.x + deltaX;
         this.imagePosition.y = this.dragStartImagePos.y + deltaY;
@@ -347,13 +362,15 @@ class ImageControls {
     resize(e) {
         if (!this.isResizing) return;
         
-        // Get canvas scale to convert screen delta to canvas delta
-        // Resize handles move in screen coordinates but we need to
-        // update image size in canvas logical coordinates
-        const canvasScale = this.getCanvasScale();
+        // Get scale factor to convert screen delta to logical canvas delta
+        const canvas = this.backgroundManager.bgCanvas;
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const logicalWidth = canvas.width / dpr;
+        const scaleX = rect.width / logicalWidth;
         
-        const deltaX = (e.clientX - this.resizeStartPos.x) / canvasScale;
-        const deltaY = (e.clientY - this.resizeStartPos.y) / canvasScale;
+        const deltaX = (e.clientX - this.resizeStartPos.x) / scaleX;
+        const deltaY = (e.clientY - this.resizeStartPos.y) / scaleX; // Use same scale for both axes
         
         const aspectRatio = this.resizeStartSize.width / this.resizeStartSize.height;
         
@@ -456,11 +473,13 @@ class ImageControls {
         this.imageSize.width = this.originalWidth || this.imageSize.width;
         this.imageSize.height = this.originalHeight || this.imageSize.height;
         
-        // Center the image
+        // Center the image in logical canvas coordinates
         const canvas = this.backgroundManager.bgCanvas;
-        const rect = canvas.getBoundingClientRect();
-        this.imagePosition.x = (rect.width - this.imageSize.width) / 2;
-        this.imagePosition.y = (rect.height - this.imageSize.height) / 2;
+        const dpr = window.devicePixelRatio || 1;
+        const logicalWidth = canvas.width / dpr;
+        const logicalHeight = canvas.height / dpr;
+        this.imagePosition.x = (logicalWidth - this.imageSize.width) / 2;
+        this.imagePosition.y = (logicalHeight - this.imageSize.height) / 2;
         
         this.updateControlBox();
     }
