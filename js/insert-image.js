@@ -382,15 +382,8 @@ class InsertImageManager {
         this.controlBox.style.width = `${screenWidth}px`;
         this.controlBox.style.height = `${screenHeight}px`;
         this.controlBox.style.transform = `rotate(${this.imageRotation}deg)`;
-
-        // Set background image of the box to show preview
-        // Apply flip transform to the background image via a pseudo-element or inner element approach
-        // Using scaleX/scaleY for background isn't directly possible, so we use a CSS transform on the box content
-        this.controlBox.style.backgroundImage = `url(${this.currentImage.src})`;
-        this.controlBox.style.backgroundSize = '100% 100%';
-        this.controlBox.style.backgroundRepeat = 'no-repeat';
         
-        // Apply flip to the internal image preview using a separate inner element or via CSS
+        // Apply flip to the internal image preview using a separate inner element
         // Create or update an inner preview element for flip
         let previewInner = this.controlBox.querySelector('.image-preview-inner');
         if (!previewInner) {
@@ -405,7 +398,7 @@ class InsertImageManager {
             previewInner.style.backgroundRepeat = 'no-repeat';
             previewInner.style.pointerEvents = 'none';
             this.controlBox.insertBefore(previewInner, this.controlBox.firstChild);
-            // Remove background from control box since we're using inner element
+            // Clear background from control box since we're using inner element
             this.controlBox.style.backgroundImage = 'none';
         }
         

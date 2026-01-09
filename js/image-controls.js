@@ -12,6 +12,7 @@ class ImageControls {
         
         // Constants
         this.MIN_IMAGE_SIZE = 50;
+        this.MAX_IMAGE_SIZE_RATIO = 0.5; // Image should not exceed 50% of canvas size
         
         // Image state
         this.imagePosition = { x: 0, y: 0 };
@@ -174,9 +175,9 @@ class ImageControls {
         let originalWidth = imageData.width || rect.width * 0.6;
         let originalHeight = imageData.height || rect.height * 0.6;
         
-        // Limit initial image size to no more than half the canvas size
-        const maxWidth = rect.width * 0.5;
-        const maxHeight = rect.height * 0.5;
+        // Limit initial image size to no more than MAX_IMAGE_SIZE_RATIO of canvas size
+        const maxWidth = rect.width * this.MAX_IMAGE_SIZE_RATIO;
+        const maxHeight = rect.height * this.MAX_IMAGE_SIZE_RATIO;
         const aspectRatio = originalWidth / originalHeight;
         
         if (originalWidth > maxWidth) {
