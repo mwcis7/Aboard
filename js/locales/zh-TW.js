@@ -407,7 +407,10 @@ window.translations = {
         title: '小功能',
         moreFeatures: '更多功能',
         time: '時間',
-        timer: '計時'
+        timer: '計時',
+        randomPicker: '點名器',
+        scoreboard: '計分板',
+        insertImage: '插入圖片'
     },
 
     // Teaching Tools
