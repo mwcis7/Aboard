@@ -98,6 +98,17 @@ class ShapeDrawingManager {
         this.saveSettings();
     }
     
+    /**
+     * Get the scale factor for preview drawing.
+     * This accounts for both the canvas CSS scale (zoom) and DPR to ensure
+     * the preview matches the final drawing appearance.
+     * @param {boolean} isPreview - Whether this is for preview (true) or final drawing (false)
+     * @returns {number} The scale factor to apply
+     */
+    getPreviewScaleFactor(isPreview) {
+        return isPreview ? (this.canvasCssScale / this.cachedDpr) : 1;
+    }
+    
     createPreviewCanvas() {
         // Create an overlay canvas for shape preview
         this.previewCanvas = document.createElement('canvas');
@@ -297,9 +308,8 @@ class ShapeDrawingManager {
         // The preview is drawn in screen coordinates, but the final shape is drawn in canvas
         // coordinates. When the canvas is zoomed, its CSS transform affects how the final
         // drawing appears. We multiply by canvasCssScale to make the preview match the final.
-        if (isPreview) {
-            lineWidth = (lineWidth * this.canvasCssScale) / this.cachedDpr;
-        }
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
+        lineWidth = lineWidth * scaleFactor;
         
         ctx.lineWidth = lineWidth;
         
@@ -486,7 +496,7 @@ class ShapeDrawingManager {
      */
     drawWavyCircle(ctx, center, radius, isPreview = false) {
         // For preview, scale the wave parameters to match the final drawing
-        const scaleFactor = isPreview ? (this.canvasCssScale / this.cachedDpr) : 1;
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
         const waveAmplitude = this.drawingEngine.penSize * 1.2 * scaleFactor;
         const waveDensity = this.waveDensity * scaleFactor;
         const numWaves = Math.max(12, Math.floor(radius * Math.PI * 2 / waveDensity));
@@ -527,7 +537,7 @@ class ShapeDrawingManager {
      */
     drawMultiCircle(ctx, center, radius, count, isPreview = false) {
         // For preview, scale the spacing to match the final drawing
-        const scaleFactor = isPreview ? (this.canvasCssScale / this.cachedDpr) : 1;
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
         const spacing = this.multiLineSpacing * scaleFactor;
         const totalSpacing = (count - 1) * spacing;
         const startOffset = -totalSpacing / 2;
@@ -573,13 +583,8 @@ class ShapeDrawingManager {
         const ny = dy / length;
         
         // Use independent arrow size setting
-        // For preview, scale the arrow size to match what will appear on the final canvas
-        // The preview canvas has a DPR transform, but we also need to account for the
-        // CSS scale of the main canvas to ensure the preview matches the final drawing
-        let arrowSize = this.arrowSize;
-        if (isPreview) {
-            arrowSize = (arrowSize * this.canvasCssScale) / this.cachedDpr;
-        }
+        // Apply preview scale factor to match what will appear on the final canvas
+        const arrowSize = this.arrowSize * this.getPreviewScaleFactor(isPreview);
         const arrowAngle = this.ARROW_ANGLE;
         const lineOffset = this.ARROW_LINE_OFFSET;
         
@@ -650,7 +655,7 @@ class ShapeDrawingManager {
         
         // Calculate wave parameters
         // For preview, scale the wave parameters to match the final drawing
-        const scaleFactor = isPreview ? (this.canvasCssScale / this.cachedDpr) : 1;
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
         const waveLength = this.waveDensity * scaleFactor;
         const waveAmplitude = this.drawingEngine.penSize * 1.5 * scaleFactor;
         const numSegments = Math.max(4, Math.floor(length / (waveLength / 2)));
@@ -698,7 +703,7 @@ class ShapeDrawingManager {
         const perpY = dx / length;
         
         // For preview, scale the spacing to match the final drawing
-        const scaleFactor = isPreview ? (this.canvasCssScale / this.cachedDpr) : 1;
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
         const spacing = this.multiLineSpacing * scaleFactor;
         const totalWidth = (count - 1) * spacing;
         const startOffset = -totalWidth / 2;
@@ -714,7 +719,7 @@ class ShapeDrawingManager {
     
     drawMultiRectangle(ctx, x, y, width, height, count, isPreview = false) {
         // For preview, scale the spacing to match the final drawing
-        const scaleFactor = isPreview ? (this.canvasCssScale / this.cachedDpr) : 1;
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
         const spacing = this.multiLineSpacing * scaleFactor;
         const totalOffset = (count - 1) * spacing;
         const startOffset = -totalOffset / 2;
@@ -772,7 +777,7 @@ class ShapeDrawingManager {
      */
     drawWavyEllipse(ctx, center, radiusX, radiusY, isPreview = false) {
         // For preview, scale the wave parameters to match the final drawing
-        const scaleFactor = isPreview ? (this.canvasCssScale / this.cachedDpr) : 1;
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
         const waveAmplitude = this.drawingEngine.penSize * 1.2 * scaleFactor;
         const waveDensity = this.waveDensity * scaleFactor;
         const avgRadius = (radiusX + radiusY) / 2;
@@ -815,7 +820,7 @@ class ShapeDrawingManager {
      */
     drawMultiEllipse(ctx, center, radiusX, radiusY, count, isPreview = false) {
         // For preview, scale the spacing to match the final drawing
-        const scaleFactor = isPreview ? (this.canvasCssScale / this.cachedDpr) : 1;
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
         const spacing = this.multiLineSpacing * scaleFactor;
         const totalSpacing = (count - 1) * spacing;
         const startOffset = -totalSpacing / 2;
