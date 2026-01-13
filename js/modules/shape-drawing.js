@@ -27,7 +27,7 @@ class ShapeDrawingManager {
         this.ARROW_LINE_OFFSET = 0.8; // Factor to shorten line at arrow ends
         this.ARROW_SIZE_DEFAULT = 15; // Default arrow size
         this.ARROW_SIZE_MIN_SETTING = 5; // Minimum configurable arrow size
-        this.ARROW_SIZE_MAX_SETTING = 50; // Maximum configurable arrow size
+        this.ARROW_SIZE_MAX_SETTING = 100; // Maximum configurable arrow size
         
         // Arrow size setting (independent from line thickness)
         this.arrowSize = this.ARROW_SIZE_DEFAULT;
@@ -106,7 +106,7 @@ class ShapeDrawingManager {
      * @returns {number} The scale factor to apply
      */
     getPreviewScaleFactor(isPreview) {
-        return isPreview ? (this.canvasCssScale / this.cachedDpr) : 1;
+        return isPreview ? this.canvasCssScale : 1;
     }
     
     createPreviewCanvas() {

@@ -59,7 +59,10 @@ window.translations = {
             brush: 'Pinceau',
             color: 'Couleur',
             colorAndSize: 'Couleur et taille',
-            colorPicker: 'Sélecteur de couleur'
+            colorPicker: 'Sélecteur de couleur',
+            size: 'Épaisseur de ligne',
+            sizeLabel: 'Épaisseur : Actuelle',
+            sizePx: 'px'
         },
         shape: {
             title: 'Forme',

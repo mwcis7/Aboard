@@ -60,8 +60,8 @@ window.translations = {
             color: '顏色',
             colorAndSize: '顏色与粗细',
             colorPicker: '取色器',
-            size: '粗细',
-            sizeLabel: '粗细：目前',
+            size: '線條粗細',
+            sizeLabel: '線條粗細：目前',
             sizePx: 'px'
         },
         shape: {

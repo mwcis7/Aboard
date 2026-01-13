@@ -62,8 +62,8 @@ window.translations = {
             color: '颜色',
             colorAndSize: '颜色与粗细',
             colorPicker: '取色器',
-            size: '粗细',
-            sizeLabel: '粗细：当前',
+            size: '线条粗细',
+            sizeLabel: '线条粗细：当前',
             sizePx: 'px'
         },
         shape: {
