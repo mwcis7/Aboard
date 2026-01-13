@@ -59,7 +59,10 @@ window.translations = {
             brush: 'Pincel',
             color: 'Color',
             colorAndSize: 'Color y tamaño',
-            colorPicker: 'Selector de color'
+            colorPicker: 'Selector de color',
+            size: 'Grosor de línea',
+            sizeLabel: 'Grosor: Actual',
+            sizePx: 'px'
         },
         shape: {
             title: 'Forma',

@@ -802,23 +802,43 @@ class DrawingBoard {
         
         // Pen size slider - syncs with shape slider
         penSizeSlider.addEventListener('input', (e) => {
-            this.drawingEngine.setPenSize(parseInt(e.target.value));
-            penSizeValue.textContent = e.target.value;
+            const size = parseInt(e.target.value);
+            this.drawingEngine.setPenSize(size);
+            penSizeValue.textContent = size;
             // Sync shape slider
             if (shapeSizeSlider) {
-                shapeSizeSlider.value = e.target.value;
-                shapeSizeValue.textContent = e.target.value;
+                shapeSizeSlider.value = size;
+                shapeSizeValue.textContent = size;
+            }
+
+            // Enforce arrow size constraint
+            if (arrowSizeSlider && arrowSizeValue) {
+                if (parseInt(arrowSizeSlider.value) < size) {
+                    arrowSizeSlider.value = size;
+                    arrowSizeValue.textContent = size;
+                    this.shapeDrawingManager.setArrowSize(size);
+                }
             }
         });
         
         // Shape size slider - syncs with pen slider
         if (shapeSizeSlider) {
             shapeSizeSlider.addEventListener('input', (e) => {
-                this.drawingEngine.setPenSize(parseInt(e.target.value));
-                shapeSizeValue.textContent = e.target.value;
+                const size = parseInt(e.target.value);
+                this.drawingEngine.setPenSize(size);
+                shapeSizeValue.textContent = size;
                 // Sync pen slider
-                penSizeSlider.value = e.target.value;
-                penSizeValue.textContent = e.target.value;
+                penSizeSlider.value = size;
+                penSizeValue.textContent = size;
+
+                // Enforce arrow size constraint
+                if (arrowSizeSlider && arrowSizeValue) {
+                    if (parseInt(arrowSizeSlider.value) < size) {
+                        arrowSizeSlider.value = size;
+                        arrowSizeValue.textContent = size;
+                        this.shapeDrawingManager.setArrowSize(size);
+                    }
+                }
             });
         }
         
@@ -827,8 +847,15 @@ class DrawingBoard {
         const arrowSizeValue = document.getElementById('arrow-size-value');
         if (arrowSizeSlider && arrowSizeValue) {
             arrowSizeSlider.addEventListener('input', (e) => {
-                this.shapeDrawingManager.setArrowSize(parseInt(e.target.value));
-                arrowSizeValue.textContent = e.target.value;
+                let val = parseInt(e.target.value);
+                // Enforce constraint: Arrow size cannot be smaller than line thickness
+                const minSize = this.drawingEngine.penSize;
+                if (val < minSize) {
+                    val = minSize;
+                    e.target.value = val;
+                }
+                this.shapeDrawingManager.setArrowSize(val);
+                arrowSizeValue.textContent = val;
             });
             // Initialize from saved value
             arrowSizeSlider.value = this.shapeDrawingManager.arrowSize;

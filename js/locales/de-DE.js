@@ -60,8 +60,8 @@ window.translations = {
             color: 'Farbe',
             colorAndSize: 'Farbe & Größe',
             colorPicker: 'Farbwähler',
-            size: 'Größe',
-            sizeLabel: 'Größe: Aktuell',
+            size: 'Linienstärke',
+            sizeLabel: 'Stärke: Aktuell',
             sizePx: 'px'
         },
         shape: {

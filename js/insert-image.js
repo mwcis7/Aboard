@@ -260,8 +260,8 @@ class InsertImageManager {
         // Let's place it at the center of the current *View*.
 
         // Viewport center in screen pixels
-        const cx = viewportWidth / 2;
-        const cy = viewportHeight / 2;
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
 
         // Convert to canvas coordinates
         const rect = this.canvas.getBoundingClientRect();
