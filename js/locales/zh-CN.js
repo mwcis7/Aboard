@@ -428,7 +428,14 @@ window.translations = {
         namesPlaceholder: '张三\n李四\n王五',
         defaultNames: '张三\n李四\n王五\n赵六\n孙七',
         allowRepeats: '允许重复抽取',
-        rangeLabel: '数字范围'
+        rangeLabel: '数字范围',
+        importLabel: '导入名单 (Excel/CSV)',
+        defaultColumnName: '姓名',
+        importBtn: '选择文件导入',
+        importHint: '提示：自动读取表格中对应列名的内容',
+        importSuccess: '成功导入 {count} 个名字',
+        importNoData: '未找到指定列的数据，请检查列名设置',
+        importError: '文件解析失败'
     },
 
     // Scoreboard

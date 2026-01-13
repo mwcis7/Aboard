@@ -48,6 +48,12 @@ class DrawingBoard {
         
         // Initialize edge drawing manager for teaching tools
         this.edgeDrawingManager = new EdgeDrawingManager(this.teachingToolsManager, this.drawingEngine);
+
+        // Initialize Help System
+        if (window.HelpSystem) {
+            this.helpSystem = new HelpSystem();
+            this.helpSystem.init();
+        }
         
         // Canvas fit scale - calculated once on init and window resize
         this.canvasFitScale = 1.0;
@@ -208,8 +214,11 @@ class DrawingBoard {
     }
     
     setupEventListeners() {
-        // Canvas drawing events - use document-level listeners for continuous drawing
-        document.addEventListener('mousedown', (e) => {
+        // Canvas drawing events - use Pointer Events for unified Mouse/Touch/Pen support
+        document.addEventListener('pointerdown', (e) => {
+            // Ignore multi-touch secondary pointers for drawing (allow pinch zoom to handle them)
+            if (!e.isPrimary) return;
+
             // Skip if clicking on UI elements (except canvas)
             if (e.target && e.target.closest) {
             // 如果正在编辑笔迹，点击工具栏或属性栏时自动保存
@@ -303,7 +312,10 @@ class DrawingBoard {
             }
         });
         
-        document.addEventListener('mousemove', (e) => {
+        document.addEventListener('pointermove', (e) => {
+            // Ignore multi-touch secondary pointers
+            if (!e.isPrimary) return;
+
             // Don't draw when dragging panels or teaching tools
             if (this.isDraggingPanel || (this.teachingToolsManager && this.teachingToolsManager.isInteracting)) {
                 return;
@@ -318,14 +330,23 @@ class DrawingBoard {
                 // Handle shape drawing
                 this.shapeDrawingManager.draw(e);
             } else if (this.drawingEngine.isDrawing) {
-                this.drawingEngine.draw(e);
+                // Pointer events provide coalesced events for higher precision (smoother curves)
+                if (e.getCoalescedEvents) {
+                    const events = e.getCoalescedEvents();
+                    for (let event of events) {
+                        this.drawingEngine.draw(event);
+                    }
+                } else {
+                    this.drawingEngine.draw(e);
+                }
                 this.updateEraserCursor(e);
             } else {
                 this.updateEraserCursor(e);
             }
         });
         
-        document.addEventListener('mouseup', () => {
+        document.addEventListener('pointerup', (e) => {
+            if (!e.isPrimary) return;
             this.stopDraggingCoordinateOrigin();
             this.handleDrawingComplete();
             this.drawingEngine.stopPanning();
@@ -362,69 +383,41 @@ class DrawingBoard {
             }
         });
         
-        // Touch events
+        // Touch events - Only for gestures (Pinch Zoom)
+        // Drawing is now handled by Pointer Events
         this.canvas.addEventListener('touchstart', (e) => {
             // Don't start drawing if interacting with teaching tools
             if (this.teachingToolsManager && this.teachingToolsManager.isInteracting) {
                 return;
             }
-            e.preventDefault();
             
-            // Handle coordinate origin drag mode with touch
-            if (this.isCoordinateOriginDragMode && this.backgroundManager.backgroundPattern === 'coordinate') {
-                if (e.touches.length === 1) {
-                    const touch = e.touches[0];
-                    this.isDraggingCoordinateOrigin = true;
-                    this.coordinateOriginDragStart = { x: touch.clientX, y: touch.clientY };
-                    return;
-                }
-            }
-            
+            // If two fingers, handle pinch
             if (e.touches.length === 2) {
-                // Two-finger gesture - prevent drawing
+                e.preventDefault(); // Prevent default zoom/scroll
                 this.hasTwoFingers = true;
+
+                // If we were drawing (via pointer events), stop it
                 if (this.drawingEngine.isDrawing) {
-                    // Discard any partial stroke from the first touch
                     this.discardCurrentStroke();
                 }
                 this.handlePinchStart(e);
-            } else if (e.touches.length === 1 && !this.hasTwoFingers) {
-                this.drawingEngine.startDrawing(e.touches[0]);
             }
         }, { passive: false });
         
         this.canvas.addEventListener('touchmove', (e) => {
-            // Don't draw if interacting with teaching tools
             if (this.teachingToolsManager && this.teachingToolsManager.isInteracting) {
-                return;
-            }
-            e.preventDefault();
-            
-            // Handle coordinate origin drag with touch
-            if (this.isDraggingCoordinateOrigin && e.touches.length === 1) {
-                const touch = e.touches[0];
-                this.dragCoordinateOrigin({ clientX: touch.clientX, clientY: touch.clientY });
                 return;
             }
             
             if (e.touches.length === 2) {
-                // Two-finger pinch to zoom and pan
+                e.preventDefault();
                 this.handlePinchMove(e);
-            } else if (e.touches.length === 1 && !this.hasTwoFingers) {
-                this.drawingEngine.draw(e.touches[0]);
             }
         }, { passive: false });
         
         this.canvas.addEventListener('touchend', (e) => {
-            // Don't handle if interacting with teaching tools
             if (this.teachingToolsManager && this.teachingToolsManager.isInteracting) {
                 return;
-            }
-            e.preventDefault();
-            
-            // Handle coordinate origin drag end with touch
-            if (this.isDraggingCoordinateOrigin) {
-                this.stopDraggingCoordinateOrigin();
             }
             
             if (e.touches.length < 2) {
@@ -432,10 +425,6 @@ class DrawingBoard {
             }
             if (e.touches.length === 0) {
                 this.hasTwoFingers = false;
-                // Only save drawing if we weren't doing two-finger gesture
-                if (this.drawingEngine.isDrawing) {
-                    this.handleDrawingComplete();
-                }
             }
         }, { passive: false });
         
@@ -2857,6 +2846,9 @@ class DrawingBoard {
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
         // Initialize i18n first
+        if (window.BrowserCheck) {
+            window.BrowserCheck.init();
+        }
         if (window.i18n) {
             await window.i18n.init();
         }
@@ -2865,6 +2857,9 @@ if (document.readyState === 'loading') {
 } else {
     // If DOM is already loaded, initialize immediately
     (async () => {
+        if (window.BrowserCheck) {
+            window.BrowserCheck.init();
+        }
         if (window.i18n) {
             await window.i18n.init();
         }

@@ -101,6 +101,28 @@ class I18n {
             
             // Translations are now in window.translations
             this.translations = window.translations || {};
+
+            // Load help translations
+            try {
+                const helpResponse = await fetch(`js/locales/help/${this.currentLocale}.js`);
+                if (helpResponse.ok) {
+                    const helpText = await helpResponse.text();
+                    eval(helpText);
+
+                    if (window.help_translations) {
+                        for (const key in window.help_translations) {
+                            if (this.translations[key] && typeof this.translations[key] === 'object') {
+                                Object.assign(this.translations[key], window.help_translations[key]);
+                            } else {
+                                this.translations[key] = window.help_translations[key];
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to load help translations', e);
+            }
+
         } catch (error) {
             console.error('Error loading translations:', error);
             this.translations = {};

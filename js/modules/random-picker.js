@@ -337,6 +337,17 @@ class RandomPickerManager {
                             <label>${window.i18n.t('randomPicker.namesLabel')}</label>
                             <textarea id="rp-names-input" class="random-picker-textarea" placeholder="${window.i18n.t('randomPicker.namesPlaceholder')}"></textarea>
                         </div>
+
+                        <div class="random-picker-import-group" style="margin-bottom: 12px; border-top: 1px solid #eee; padding-top: 10px;">
+                            <label style="display:block;margin-bottom:5px;font-size:12px;color:#666;">${window.i18n.t('randomPicker.importLabel')}</label>
+                            <div style="display:flex; gap:8px; margin-bottom:5px;">
+                                <input type="text" id="rp-import-col" value="${window.i18n.t('randomPicker.defaultColumnName')}" style="width:80px;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:12px;" placeholder="列名">
+                                <input type="file" id="rp-import-file" accept=".xlsx, .xls, .csv" style="display:none">
+                                <button id="rp-import-btn" class="button-secondary" style="flex:1;padding:6px;font-size:12px;">${window.i18n.t('randomPicker.importBtn')}</button>
+                            </div>
+                            <div class="settings-hint">${window.i18n.t('randomPicker.importHint')}</div>
+                        </div>
+
                         <label class="random-picker-checkbox">
                             <input type="checkbox" id="rp-allow-repeats" checked>
                             <span>${window.i18n.t('randomPicker.allowRepeats')}</span>
@@ -387,6 +398,69 @@ class RandomPickerManager {
         document.getElementById('rp-save-btn').addEventListener('click', () => {
             this.saveSettings();
         });
+
+        // Import functionality
+        const importBtn = document.getElementById('rp-import-btn');
+        const fileInput = document.getElementById('rp-import-file');
+
+        if (importBtn && fileInput) {
+            importBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                this.importFile(file);
+                e.target.value = ''; // Reset
+            });
+        }
+    }
+
+    importFile(file) {
+        if (!window.XLSX) {
+            alert('Excel import library not loaded. Please check your internet connection or try refreshing.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet);
+
+                const colName = document.getElementById('rp-import-col').value.trim();
+
+                const names = [];
+                json.forEach(row => {
+                    let val = row[colName];
+                    // Case-insensitive fallback
+                    if (val === undefined) {
+                        const key = Object.keys(row).find(k => k.toLowerCase() === colName.toLowerCase());
+                        if (key) val = row[key];
+                    }
+
+                    if (val !== undefined && val !== null && String(val).trim() !== '') {
+                        names.push(String(val).trim());
+                    }
+                });
+
+                if (names.length > 0) {
+                    const textarea = document.getElementById('rp-names-input');
+                    textarea.value = names.join('\n');
+                    alert(window.i18n.t('randomPicker.importSuccess').replace('{count}', names.length));
+                } else {
+                    alert(window.i18n.t('randomPicker.importNoData'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert(window.i18n.t('randomPicker.importError'));
+            }
+        };
+        reader.readAsArrayBuffer(file);
     }
 
     create() {
