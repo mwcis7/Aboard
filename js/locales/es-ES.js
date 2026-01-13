@@ -398,7 +398,10 @@ window.translations = {
         title: 'Características',
         moreFeatures: 'Más características',
         time: 'Hora',
-        timer: 'Temporizador'
+        timer: 'Temporizador',
+        randomPicker: 'Selector',
+        scoreboard: 'Marcador',
+        insertImage: 'Insertar imagen'
     },
 
     // Teaching Tools

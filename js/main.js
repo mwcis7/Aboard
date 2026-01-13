@@ -32,6 +32,7 @@ class DrawingBoard {
         this.teachingToolsManager = new TeachingToolsManager(this.canvas, this.ctx, this.historyManager);
         this.randomPickerManager = new RandomPickerManager();
         this.scoreboardManager = new ScoreboardManager();
+        this.insertImageManager = new InsertImageManager(this.canvas, this.ctx, this.historyManager, this.drawingEngine);
         
         // Set callback for teaching tools insertion to auto-switch to pen
         this.teachingToolsManager.onToolsInserted = () => {
@@ -971,6 +972,15 @@ class DrawingBoard {
                 this.scoreboardManager.create();
                 this.closeFeaturePanel();
                 this.switchToPen();
+            });
+        }
+
+        // Insert Image Feature Button
+        const insertImageBtn = document.getElementById('insert-image-feature-btn');
+        if (insertImageBtn) {
+            insertImageBtn.addEventListener('click', () => {
+                this.insertImageManager.triggerSelect();
+                this.closeFeaturePanel();
             });
         }
         

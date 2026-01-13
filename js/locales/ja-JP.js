@@ -392,7 +392,10 @@ window.translations = {
         title: '機能',
         moreFeatures: 'その他の機能',
         time: '時刻',
-        timer: 'タイマー'
+        timer: 'タイマー',
+        randomPicker: '抽選器',
+        scoreboard: 'スコアボード',
+        insertImage: '画像を挿入'
     },
 
     // Teaching Tools
