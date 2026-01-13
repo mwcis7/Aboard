@@ -15,6 +15,8 @@ class InsertImageManager {
         this.imageSize = { width: 0, height: 0 };
         this.imageRotation = 0;
         this.imageScale = 1.0;
+        this.flipHorizontal = false;
+        this.flipVertical = false;
 
         // Constants
         this.MIN_IMAGE_SIZE = 20;
@@ -70,6 +72,20 @@ class InsertImageManager {
                         </svg>
                     </div>
 
+                    <!-- Flip horizontal handle -->
+                    <div class="flip-handle flip-horizontal" id="insert-image-flip-horizontal" data-i18n-title="imageControls.flipHorizontal">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M12 3v18M8 6l-5 6 5 6M16 6l5 6-5 6"/>
+                        </svg>
+                    </div>
+
+                    <!-- Flip vertical handle -->
+                    <div class="flip-handle flip-vertical" id="insert-image-flip-vertical" data-i18n-title="imageControls.flipVertical">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M3 12h18M6 8l6-5 6 5M6 16l6 5 6-5"/>
+                        </svg>
+                    </div>
+
                     <!-- Control toolbar -->
                     <div class="image-controls-toolbar">
                         <button id="insert-image-cancel-btn" class="image-control-btn image-cancel-btn" title="Cancel">
@@ -113,8 +129,10 @@ class InsertImageManager {
             if (e.target === this.controlBox || e.target.closest('.image-controls-box') === this.controlBox) {
                 if (!e.target.classList.contains('resize-handle') &&
                     !e.target.classList.contains('rotate-handle') &&
+                    !e.target.classList.contains('flip-handle') &&
                     !e.target.closest('.resize-handle') &&
                     !e.target.closest('.rotate-handle') &&
+                    !e.target.closest('.flip-handle') &&
                     !e.target.closest('.image-controls-toolbar')) {
                     this.startDrag(e);
                 }
@@ -144,6 +162,20 @@ class InsertImageManager {
         };
         rotateHandle.addEventListener('mousedown', startRotate);
         rotateHandle.addEventListener('touchstart', startRotate, { passive: false });
+
+        // Flip horizontal handle
+        const flipHorizontalHandle = document.getElementById('insert-image-flip-horizontal');
+        flipHorizontalHandle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleFlipHorizontal();
+        });
+
+        // Flip vertical handle
+        const flipVerticalHandle = document.getElementById('insert-image-flip-vertical');
+        flipVerticalHandle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleFlipVertical();
+        });
 
         // Global move/up events
         const handleMove = (e) => {
@@ -190,17 +222,17 @@ class InsertImageManager {
         this.overlay.style.display = 'block';
 
         // Initial sizing and positioning
-        // Fit within visible area (e.g., 50% of viewport)
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
+        // Image should be smaller than canvas and not exceed half the canvas size
+        const canvasLogicalWidth = this.canvas.width / (window.devicePixelRatio || 1);
+        const canvasLogicalHeight = this.canvas.height / (window.devicePixelRatio || 1);
 
         let width = this.currentImage.width;
         let height = this.currentImage.height;
         const aspectRatio = width / height;
 
-        // Limit initial size
-        const maxWidth = viewportWidth * 0.5;
-        const maxHeight = viewportHeight * 0.5;
+        // Limit initial size to no more than half the canvas size
+        const maxWidth = canvasLogicalWidth * 0.5;
+        const maxHeight = canvasLogicalHeight * 0.5;
 
         if (width > maxWidth) {
             width = maxWidth;
@@ -344,19 +376,57 @@ class InsertImageManager {
         const screenWidth = this.imageSize.width * scaleX;
         const screenHeight = this.imageSize.height * scaleY;
 
+        // Control box only rotates, no flip - flip is applied to the image preview inside
         this.controlBox.style.left = `${screenX}px`;
         this.controlBox.style.top = `${screenY}px`;
         this.controlBox.style.width = `${screenWidth}px`;
         this.controlBox.style.height = `${screenHeight}px`;
         this.controlBox.style.transform = `rotate(${this.imageRotation}deg)`;
+        
+        // Apply flip to the internal image preview using a separate inner element
+        // Create or update an inner preview element for flip
+        let previewInner = this.controlBox.querySelector('.image-preview-inner');
+        if (!previewInner) {
+            previewInner = document.createElement('div');
+            previewInner.className = 'image-preview-inner';
+            previewInner.style.position = 'absolute';
+            previewInner.style.top = '0';
+            previewInner.style.left = '0';
+            previewInner.style.width = '100%';
+            previewInner.style.height = '100%';
+            previewInner.style.backgroundSize = '100% 100%';
+            previewInner.style.backgroundRepeat = 'no-repeat';
+            previewInner.style.pointerEvents = 'none';
+            this.controlBox.insertBefore(previewInner, this.controlBox.firstChild);
+            // Clear background from control box since we're using inner element
+            this.controlBox.style.backgroundImage = 'none';
+        }
+        
+        // Apply flip to the inner preview element
+        const flipScaleX = this.flipHorizontal ? -1 : 1;
+        const flipScaleY = this.flipVertical ? -1 : 1;
+        previewInner.style.backgroundImage = `url(${this.currentImage.src})`;
+        previewInner.style.transform = `scale(${flipScaleX}, ${flipScaleY})`;
+    }
 
-        // Set background image of the box to show preview
-        this.controlBox.style.backgroundImage = `url(${this.currentImage.src})`;
-        this.controlBox.style.backgroundSize = '100% 100%';
-        this.controlBox.style.backgroundRepeat = 'no-repeat';
+    toggleFlipHorizontal() {
+        this.flipHorizontal = !this.flipHorizontal;
+        // Update button visual state
+        const btn = document.getElementById('insert-image-flip-horizontal');
+        if (btn) {
+            btn.classList.toggle('active', this.flipHorizontal);
+        }
+        this.updateControlBox();
+    }
 
-        // Ensure buttons don't rotate with the box if we want them upright?
-        // No, usually controls rotate with the object.
+    toggleFlipVertical() {
+        this.flipVertical = !this.flipVertical;
+        // Update button visual state
+        const btn = document.getElementById('insert-image-flip-vertical');
+        if (btn) {
+            btn.classList.toggle('active', this.flipVertical);
+        }
+        this.updateControlBox();
     }
 
     confirmImage() {
@@ -370,6 +440,11 @@ class InsertImageManager {
 
         this.ctx.translate(centerX, centerY);
         this.ctx.rotate(this.imageRotation * Math.PI / 180);
+
+        // Apply flip
+        const flipScaleX = this.flipHorizontal ? -1 : 1;
+        const flipScaleY = this.flipVertical ? -1 : 1;
+        this.ctx.scale(flipScaleX, flipScaleY);
 
         // Draw image centered at (0,0)
         this.ctx.drawImage(
@@ -397,6 +472,20 @@ class InsertImageManager {
         this.overlay.style.display = 'none';
         this.currentImage = null;
         this.fileInput.value = '';
+        // Reset flip states
+        this.flipHorizontal = false;
+        this.flipVertical = false;
+        // Reset flip button visual states
+        const flipHBtn = document.getElementById('insert-image-flip-horizontal');
+        const flipVBtn = document.getElementById('insert-image-flip-vertical');
+        if (flipHBtn) flipHBtn.classList.remove('active');
+        if (flipVBtn) flipVBtn.classList.remove('active');
+        // Clean up inner preview element
+        const previewInner = this.controlBox.querySelector('.image-preview-inner');
+        if (previewInner) {
+            previewInner.remove();
+        }
+        this.controlBox.style.backgroundImage = 'none';
     }
 
     // Interaction Handlers

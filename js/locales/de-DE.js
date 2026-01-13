@@ -152,7 +152,18 @@ window.translations = {
         opacityHint: 'Hintergrundtransparenz anpassen, 100% ist vollständig undurchsichtig',
         contrast: 'Kontrast',
         contrastHint: 'Die Dunkelheit der Hintergrundmusterlinien anpassen',
-        preference: 'Hintergrundmuster-Präferenz'
+        preference: 'Hintergrundmuster-Präferenz',
+        moveCoordinateOrigin: 'Ursprung verschieben',
+        moveCoordinateOriginHint: 'Klicken und auf der Leinwand ziehen, um den Koordinatenursprung zu verschieben'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: 'Bestätigen',
+        cancel: 'Abbrechen',
+        flipHorizontal: 'Horizontal spiegeln',
+        flipVertical: 'Vertikal spiegeln',
+        rotate: 'Drehen'
     },
 
     // Page Navigation

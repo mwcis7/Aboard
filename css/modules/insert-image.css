@@ -189,3 +189,60 @@
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(255, 59, 48, 0.3);
 }
+
+/* Flip Handles for Insert Image */
+#insert-image-box .flip-handle {
+    position: absolute;
+    top: -40px;
+    width: 32px;
+    height: 32px;
+    background-color: var(--theme-color);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    pointer-events: all;
+    z-index: 10;
+}
+
+#insert-image-box .flip-handle.flip-horizontal {
+    left: calc(50% + 50px);
+    transform: translateX(-50%);
+}
+
+#insert-image-box .flip-handle.flip-vertical {
+    left: calc(50% + 90px);
+    transform: translateX(-50%);
+}
+
+#insert-image-box .flip-handle:hover {
+    transform: translateX(-50%) scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+#insert-image-box .flip-handle:active {
+    transform: translateX(-50%) scale(0.95);
+}
+
+#insert-image-box .flip-handle.active {
+    background-color: #34C759;
+}
+
+#insert-image-box .flip-handle::after {
+    content: '';
+    position: absolute;
+    top: 32px;
+    left: 50%;
+    width: 2px;
+    height: 12px;
+    background-color: var(--theme-color);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+#insert-image-box .flip-handle.active::after {
+    background-color: #34C759;
+}

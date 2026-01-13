@@ -160,7 +160,18 @@ window.translations = {
         contrastHint: '調整背景圖案線條的明暗程度',
         preference: '背景圖案偏好',
         preferenceHint: '選擇在属性栏中顯示的圖案',
-        upload: '上传'
+        upload: '上传',
+        moveCoordinateOrigin: '移動座標原點',
+        moveCoordinateOriginHint: '點擊按鈕後，可在畫布上拖動移動座標原點'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: '確定',
+        cancel: '取消',
+        flipHorizontal: '水平翻轉',
+        flipVertical: '垂直翻轉',
+        rotate: '旋轉'
     },
 
     // Page Navigation

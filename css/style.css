@@ -1434,6 +1434,62 @@ body {
     cursor: grabbing;
 }
 
+/* Flip handles */
+.flip-handle {
+    position: absolute;
+    top: -40px;
+    width: 32px;
+    height: 32px;
+    background-color: var(--theme-color);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    z-index: 10;
+}
+
+.flip-handle.flip-horizontal {
+    left: calc(50% + 50px);
+    transform: translateX(-50%);
+}
+
+.flip-handle.flip-vertical {
+    left: calc(50% + 90px);
+    transform: translateX(-50%);
+}
+
+.flip-handle:hover {
+    transform: translateX(-50%) scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.flip-handle:active {
+    transform: translateX(-50%) scale(0.95);
+}
+
+.flip-handle.active {
+    background-color: #34C759;
+}
+
+.flip-handle::after {
+    content: '';
+    position: absolute;
+    top: 32px;
+    left: 50%;
+    width: 2px;
+    height: 12px;
+    background-color: var(--theme-color);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.flip-handle.active::after {
+    background-color: #34C759;
+}
+
 /* Image controls toolbar */
 .image-controls-toolbar {
     position: absolute;
@@ -2099,6 +2155,17 @@ body {
 
 .icon-btn:active {
     transform: translateY(0);
+}
+
+.icon-btn.active {
+    background: var(--theme-color);
+    color: white;
+    border-color: var(--theme-color);
+}
+
+.icon-btn.active:hover {
+    background: var(--theme-color);
+    opacity: 0.9;
 }
 
 .icon-btn svg {
