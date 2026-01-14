@@ -16,7 +16,7 @@ class TimeDisplayManager {
         const storedEnabled = localStorage.getItem('timeDisplayEnabled');
         this.enabled = storedEnabled === null ? true : storedEnabled === 'true';
         this.timeFormat = localStorage.getItem('timeDisplayTimeFormat') || '24h';
-        this.dateFormat = localStorage.getItem('timeDisplayDateFormat') || 'yyyy-mm-dd';
+        this.dateFormat = localStorage.getItem('timeDisplayDateFormat') || 'auto'; // Default to auto
         this.color = localStorage.getItem('timeDisplayColor') || '#000000';
         this.bgColor = localStorage.getItem('timeDisplayBgColor') || '#FFFFFF';
         this.fontSize = parseInt(localStorage.getItem('timeDisplayFontSize')) || 16;
@@ -169,14 +169,33 @@ class TimeDisplayManager {
     }
     
     formatDate(date) {
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
-        
         // Use translated weekday names from i18n
         const weekdayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const weekday = window.i18n ? window.i18n.t(`days.${weekdayKeys[date.getDay()]}`) : ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][date.getDay()];
         
+        // Handle "auto" format using Intl.DateTimeFormat
+        if (this.dateFormat === 'auto') {
+            try {
+                const options = {
+                    timeZone: this.timezone,
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                };
+                // Use current locale if available
+                const locale = window.i18n ? window.i18n.getCurrentLocale() : 'zh-CN';
+                return new Intl.DateTimeFormat(locale, options).format(date);
+            } catch (e) {
+                console.error('Error auto-formatting date:', e);
+                // Fallback to yyyy-mm-dd
+            }
+        }
+
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+
         // Apply timezone conversion for date if needed
         try {
             if (this.timezone !== Intl.DateTimeFormat().resolvedOptions().timeZone) {

@@ -378,6 +378,7 @@ window.translations = {
             timeFormat24: '24-Hour',
             dateFormat: 'Date Format',
             dateFormatHint: 'Choose date display format',
+            dateFormatAuto: 'Auto (System)',
             dateFormatYMD: 'YYYY-MM-DD (2024-01-01)',
             dateFormatMDY: 'MM-DD-YYYY (01-01-2024)',
             dateFormatDMY: 'DD-MM-YYYY (01-01-2024)',

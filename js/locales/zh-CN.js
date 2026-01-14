@@ -378,6 +378,7 @@ window.translations = {
             timeFormat24: '24小时制',
             dateFormat: '日期格式',
             dateFormatHint: '选择日期的显示格式',
+            dateFormatAuto: '自动 (跟随系统)',
             dateFormatYMD: '年-月-日 (2024-01-01)',
             dateFormatMDY: '月-日-年 (01-01-2024)',
             dateFormatDMY: '日-月-年 (01-01-2024)',
