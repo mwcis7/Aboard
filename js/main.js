@@ -82,6 +82,12 @@ class DrawingBoard {
         this.lastPinchCenter = null;
         this.hasTwoFingers = false;
         
+        // Touch gesture state
+        this.lastTapTime = 0;
+        this.lastTapPos = null;
+        this.currentTapStart = null;
+        this.isPotentialTap = false;
+
         // Dragging state
         this.isDraggingPanel = false;
         this.draggedElement = null;
@@ -316,6 +322,9 @@ class DrawingBoard {
             // Ignore multi-touch secondary pointers
             if (!e.isPrimary) return;
 
+            // Ignore pointer move if we are pinching (avoids conflict with touchmove)
+            if (this.hasTwoFingers || this.isPinching) return;
+
             // Don't draw when dragging panels or teaching tools
             if (this.isDraggingPanel || (this.teachingToolsManager && this.teachingToolsManager.isInteracting)) {
                 return;
@@ -400,7 +409,34 @@ class DrawingBoard {
                 if (this.drawingEngine.isDrawing) {
                     this.discardCurrentStroke();
                 }
+
+                // If we were panning (via pointer events), stop it to let pinch handle it
+                if (this.drawingEngine.isPanning) {
+                    this.drawingEngine.stopPanning();
+                }
+
                 this.handlePinchStart(e);
+            }
+
+            // General gesture detection logic (for 1, 2, 3+ fingers)
+            if (e.touches.length === 1) {
+                // Start of a new gesture sequence
+                this.maxTouchesInGesture = 1;
+                this.gestureStartTime = Date.now();
+                this.isPotentialGesture = true;
+
+                // Single tap detection specific
+                this.isPotentialTap = true;
+                this.currentTapStart = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY,
+                    time: Date.now()
+                };
+            } else {
+                // Continuation of gesture (adding fingers)
+                this.maxTouchesInGesture = Math.max(this.maxTouchesInGesture, e.touches.length);
+                this.isPotentialGesture = true;
+                this.isPotentialTap = false; // Not a single tap if multiple fingers
             }
         }, { passive: false });
         
@@ -409,6 +445,15 @@ class DrawingBoard {
                 return;
             }
             
+            // Tap detection - invalidate if moved too much
+            if (this.isPotentialTap && e.touches.length === 1) {
+                const dx = e.touches[0].clientX - this.currentTapStart.x;
+                const dy = e.touches[0].clientY - this.currentTapStart.y;
+                if (dx * dx + dy * dy > 100) { // 10px threshold squared
+                    this.isPotentialTap = false;
+                }
+            }
+
             if (e.touches.length === 2) {
                 e.preventDefault();
                 this.handlePinchMove(e);
@@ -420,6 +465,59 @@ class DrawingBoard {
                 return;
             }
             
+            // Tap detection
+            if (e.changedTouches.length === 1 && e.touches.length === 0) { // All fingers lifted
+                // Double tap logic (single finger)
+                if (this.isPotentialTap) {
+                    const tapTime = Date.now();
+                    // Check if it's a double tap
+                    if (this.lastTapTime && (tapTime - this.lastTapTime < 300)) {
+                        // Check distance between taps
+                        const dx = this.currentTapStart.x - this.lastTapPos.x;
+                        const dy = this.currentTapStart.y - this.lastTapPos.y;
+                        if (dx * dx + dy * dy < 900) { // 30px threshold squared
+                            this.handleDoubleTap(e.changedTouches[0]);
+                            this.lastTapTime = 0; // Reset
+                            this.isPotentialTap = false;
+                            e.preventDefault();
+                        }
+                    } else {
+                        this.lastTapTime = tapTime;
+                        this.lastTapPos = { ...this.currentTapStart };
+                    }
+                }
+
+                // Multi-touch gesture (Undo/Redo)
+                // Only if not a valid double-tap candidate (to avoid conflict, although double tap is 1 finger)
+                if (this.isPotentialGesture && !this.isPotentialTap) {
+                    const gestureTime = Date.now();
+                    if (gestureTime - this.gestureStartTime < 400) { // 400ms for multi-touch tap
+                        if (this.maxTouchesInGesture === 2) {
+                            // 2-finger tap: Undo
+                            if (this.historyManager.undo()) {
+                                this.updateUI();
+                                // Clear stroke selection as strokes are no longer valid
+                                this.drawingEngine.clearStrokes();
+                            }
+                            e.preventDefault();
+                        } else if (this.maxTouchesInGesture === 3) {
+                            // 3-finger tap: Redo
+                            if (this.historyManager.redo()) {
+                                this.updateUI();
+                                this.drawingEngine.clearStrokes();
+                            }
+                            e.preventDefault();
+                        }
+                    }
+                }
+            }
+
+            if (e.touches.length === 0) {
+                this.isPotentialTap = false;
+                this.isPotentialGesture = false;
+                this.maxTouchesInGesture = 0;
+            }
+
             if (e.touches.length < 2) {
                 this.handlePinchEnd();
             }
@@ -2177,6 +2275,61 @@ class DrawingBoard {
     }
     
     // Zoom methods
+    handleDoubleTap(touch) {
+        // Zoom logic
+        const currentScale = this.drawingEngine.canvasScale;
+        let newScale;
+
+        // If zoomed out or very zoomed in, reset to 100%
+        // If close to 100%, zoom in to 200%
+        if (Math.abs(currentScale - 1.0) > 0.1) {
+            newScale = 1.0;
+        } else {
+            newScale = 2.0;
+        }
+
+        this.zoomToPoint(touch.clientX, touch.clientY, newScale);
+    }
+
+    zoomToPoint(clientX, clientY, newScale) {
+        // Get canvas position and dimensions
+        const rect = this.canvas.getBoundingClientRect();
+
+        // Calculate mouse position relative to canvas (in screen space)
+        const mouseCanvasX = clientX - rect.left;
+        const mouseCanvasY = clientY - rect.top;
+
+        // Get current scale and pan
+        const oldScale = this.drawingEngine.canvasScale;
+        const oldPanX = this.drawingEngine.panOffset.x;
+        const oldPanY = this.drawingEngine.panOffset.y;
+
+        // Calculate scale ratio
+        const scaleRatio = newScale / oldScale;
+
+        // Get canvas center in screen space
+        const canvasCenterX = rect.width / 2;
+        const canvasCenterY = rect.height / 2;
+
+        // Calculate offset from canvas center to mouse (in screen space)
+        const offsetX = mouseCanvasX - canvasCenterX;
+        const offsetY = mouseCanvasY - canvasCenterY;
+
+        // Adjust pan offset so that the point under the mouse stays in place
+        this.drawingEngine.panOffset.x = oldPanX + offsetX * (1 - scaleRatio);
+        this.drawingEngine.panOffset.y = oldPanY + offsetY * (1 - scaleRatio);
+
+        // Update scale
+        this.drawingEngine.canvasScale = newScale;
+        this.updateZoomUI();
+        this.applyZoom(false);
+
+        // Save to localStorage
+        localStorage.setItem('canvasScale', newScale);
+        localStorage.setItem('panOffsetX', this.drawingEngine.panOffset.x);
+        localStorage.setItem('panOffsetY', this.drawingEngine.panOffset.y);
+    }
+
     zoomIn() {
         const currentScale = this.drawingEngine.canvasScale;
         const newScale = Math.min(currentScale + 0.1, 5.0);
@@ -2673,6 +2826,13 @@ class DrawingBoard {
         const currentCenter = this.getPinchCenter(touch1, touch2);
         
         if (this.lastPinchDistance > 0 && this.lastPinchCenter) {
+            // Check if moved significantly to invalidate tap gesture
+            const moveThreshold = 5;
+            if (Math.abs(currentDistance - this.lastPinchDistance) > moveThreshold ||
+                Math.abs(currentCenter.x - this.lastPinchCenter.x) > moveThreshold ||
+                Math.abs(currentCenter.y - this.lastPinchCenter.y) > moveThreshold) {
+                this.isPotentialGesture = false;
+            }
             // Calculate zoom based on pinch distance
             const scale = currentDistance / this.lastPinchDistance;
             const newScale = Math.max(0.5, Math.min(5.0, this.drawingEngine.canvasScale * scale));
