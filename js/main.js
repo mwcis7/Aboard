@@ -2294,10 +2294,10 @@ class DrawingBoard {
             newScale = 2.0;
         }
 
-        this.zoomToPoint(touch.clientX, touch.clientY, newScale);
+        this.zoomToPoint(touch.clientX, touch.clientY, newScale, true);
     }
 
-    zoomToPoint(clientX, clientY, newScale) {
+    zoomToPoint(clientX, clientY, newScale, animate = false) {
         // Get canvas position and dimensions
         const rect = this.canvas.getBoundingClientRect();
 
@@ -2328,7 +2328,20 @@ class DrawingBoard {
         // Update scale
         this.drawingEngine.canvasScale = newScale;
         this.updateZoomUI();
-        this.applyZoom(false);
+
+        if (animate && this.transformLayer) {
+            this.transformLayer.classList.add('smooth-transform');
+            this.applyZoom(false);
+
+            // Remove class after transition
+            setTimeout(() => {
+                if (this.transformLayer) {
+                    this.transformLayer.classList.remove('smooth-transform');
+                }
+            }, 300);
+        } else {
+            this.applyZoom(false);
+        }
 
         // Save to localStorage
         localStorage.setItem('canvasScale', newScale);
@@ -2845,7 +2858,7 @@ class DrawingBoard {
             
             this.drawingEngine.canvasScale = newScale;
             this.updateZoomUI();
-            localStorage.setItem('canvasScale', newScale);
+            // Removed localStorage write for performance
             
             // Calculate pan based on center movement
             const deltaX = currentCenter.x - this.lastPinchCenter.x;
@@ -2854,8 +2867,7 @@ class DrawingBoard {
             // Apply panning to canvas offset
             this.drawingEngine.panOffset.x += deltaX;
             this.drawingEngine.panOffset.y += deltaY;
-            localStorage.setItem('panOffsetX', this.drawingEngine.panOffset.x);
-            localStorage.setItem('panOffsetY', this.drawingEngine.panOffset.y);
+            // Removed localStorage write for performance
             
             // Apply zoom using applyZoom for consistency
             this.applyZoom(false);
@@ -2869,6 +2881,11 @@ class DrawingBoard {
         this.isPinching = false;
         this.lastPinchDistance = 0;
         this.lastPinchCenter = null;
+
+        // Save state after pinch ends
+        localStorage.setItem('canvasScale', this.drawingEngine.canvasScale);
+        localStorage.setItem('panOffsetX', this.drawingEngine.panOffset.x);
+        localStorage.setItem('panOffsetY', this.drawingEngine.panOffset.y);
     }
     
     getPinchDistance(touch1, touch2) {
