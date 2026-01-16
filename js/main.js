@@ -1071,9 +1071,7 @@ class DrawingBoard {
         if (timerFeatureBtn) {
             timerFeatureBtn.addEventListener('click', () => {
                 this.timerManager.showSettingsModal();
-                // Auto-switch to pen tool after opening timer
                 this.closeFeaturePanel();
-                this.switchToPen();
             });
         }
 
