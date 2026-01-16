@@ -244,6 +244,9 @@ class DrawingBoard {
                     e.target.closest('#feature-area') ||
                     e.target.closest('.modal') ||
                     e.target.closest('.timer-display-widget') ||
+                    e.target.closest('.random-picker-widget') ||
+                    e.target.closest('.scoreboard-widget') ||
+                    e.target.closest('.feature-widget') ||
                     e.target.closest('.canvas-image-selection')) {
                     return;
                 }
@@ -327,6 +330,11 @@ class DrawingBoard {
 
             // Don't draw when dragging panels or teaching tools
             if (this.isDraggingPanel || (this.teachingToolsManager && this.teachingToolsManager.isInteracting)) {
+                return;
+            }
+
+            // Explicitly check if target is a feature widget part (double protection)
+            if (e.target.closest('.feature-widget') || e.target.closest('#feature-area')) {
                 return;
             }
             
