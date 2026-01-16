@@ -20,7 +20,11 @@ class RandomPickerInstance {
         // State
         this.isAnimating = false;
         this.remainingNames = [...(this.config.names || [])];
+        this.remainingNumbers = [];
         this.animationInterval = null;
+
+        // Initialize remaining numbers
+        this.resetRemainingNumbers();
 
         // UI
         this.element = null;
@@ -186,14 +190,16 @@ class RandomPickerInstance {
         startBtnSpan.textContent = window.i18n.t('common.stop');
         startBtnEl.classList.add('is-stop');
 
-        // Determine pool
+        // Determine pool for animation
         let pool = [];
         if (this.config.mode === 'name') {
             if (this.config.names.length === 0) {
                 this.resultElement.textContent = window.i18n.t('randomPicker.noNames');
                 this.isAnimating = false;
                 this.resultElement.classList.remove('animating');
-                startBtn.textContent = window.i18n.t('common.start');
+                // Fix: startBtn variable was undefined, should use startBtnSpan or re-query
+                startBtnSpan.textContent = window.i18n.t('common.start');
+                startBtnEl.classList.remove('is-stop');
                 return;
             }
 
@@ -210,9 +216,22 @@ class RandomPickerInstance {
             // Number mode
             const min = parseInt(this.config.min);
             const max = parseInt(this.config.max);
-            // Create a small pool for animation visual
-            for (let i = 0; i < 20; i++) {
-                pool.push(Math.floor(Math.random() * (max - min + 1)) + min);
+
+            if (!this.config.allowRepeats) {
+                if (this.remainingNumbers.length === 0) {
+                    this.resetRemainingNumbers();
+                }
+                // If pool is empty (e.g. range invalid), fallback
+                if (this.remainingNumbers.length === 0) {
+                    pool = [min];
+                } else {
+                    pool = this.remainingNumbers;
+                }
+            } else {
+                // Create a small pool for animation visual
+                for (let i = 0; i < 20; i++) {
+                    pool.push(Math.floor(Math.random() * (max - min + 1)) + min);
+                }
             }
         }
 
@@ -259,9 +278,26 @@ class RandomPickerInstance {
                 this.remainingNames.splice(index, 1);
             }
         } else {
-            const min = parseInt(this.config.min);
-            const max = parseInt(this.config.max);
-            result = Math.floor(Math.random() * (max - min + 1)) + min;
+            // Number mode
+            if (this.config.allowRepeats) {
+                const min = parseInt(this.config.min);
+                const max = parseInt(this.config.max);
+                result = Math.floor(Math.random() * (max - min + 1)) + min;
+            } else {
+                if (this.remainingNumbers.length === 0) {
+                    this.resetRemainingNumbers();
+                }
+
+                // Pick from remaining
+                if (this.remainingNumbers.length > 0) {
+                    const index = Math.floor(Math.random() * this.remainingNumbers.length);
+                    result = this.remainingNumbers[index];
+                    this.remainingNumbers.splice(index, 1);
+                } else {
+                    // Fallback should range cover empty?
+                    result = this.config.min;
+                }
+            }
         }
 
         this.resultElement.textContent = result;
@@ -280,7 +316,25 @@ class RandomPickerInstance {
             this.remainingNames = [...(newConfig.names || [])];
         }
 
+        // If number range changed, reset remaining numbers
+        if (newConfig.min !== this.config.min || newConfig.max !== this.config.max) {
+            // We need to defer this because this.config is not updated yet
+            // But we can check newConfig values
+        }
+
         this.config = { ...this.config, ...newConfig };
+
+        // Check if we need to reset numbers (after config update)
+        // If we are in number mode, or just switched to it, reset to be safe if range changed
+        // Optimization: only reset if needed, but for now simple is better
+        if (this.config.mode === 'number') {
+             // If array length doesn't match range, or if empty and we want to start fresh?
+             // Simplest: If the range implies a different set than what we might track, reset.
+             // For now, let's just ensure if we run out, we refill.
+             // Explicit reset is better done if the User changes settings.
+             // Since updateConfig is called from Settings Save, it is appropriate to reset here.
+             this.resetRemainingNumbers();
+        }
 
         // Update title
         const titleEl = this.element.querySelector('.random-picker-title');
@@ -290,6 +344,26 @@ class RandomPickerInstance {
 
         // Reset result
         this.resultElement.textContent = '?';
+    }
+
+    resetRemainingNumbers() {
+        const min = parseInt(this.config.min);
+        const max = parseInt(this.config.max);
+        if (isNaN(min) || isNaN(max) || min > max) {
+            this.remainingNumbers = [];
+            return;
+        }
+
+        // Prevent massive arrays
+        if (max - min > 10000) {
+            // Too large for no-repeats array logic, fallback to random
+            // If user really wants no-repeats on large range, we'd need a Set or other logic
+            // For now, treat as allowed-repeats or just clear to force random
+            this.remainingNumbers = [];
+            return;
+        }
+
+        this.remainingNumbers = Array.from({length: max - min + 1}, (_, i) => min + i);
     }
 
     destroy() {
@@ -347,11 +421,6 @@ class RandomPickerManager {
                             </div>
                             <div class="settings-hint">${window.i18n.t('randomPicker.importHint')}</div>
                         </div>
-
-                        <label class="random-picker-checkbox">
-                            <input type="checkbox" id="rp-allow-repeats" checked>
-                            <span>${window.i18n.t('randomPicker.allowRepeats')}</span>
-                        </label>
                     </div>
 
                     <div id="rp-number-settings" style="display: none;">
@@ -363,6 +432,13 @@ class RandomPickerManager {
                                 <input type="number" id="rp-max-input" class="random-picker-number-input" value="50">
                             </div>
                         </div>
+                    </div>
+
+                    <div class="random-picker-common-settings" style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                        <label class="random-picker-checkbox">
+                            <input type="checkbox" id="rp-allow-repeats" checked>
+                            <span>${window.i18n.t('randomPicker.allowRepeats')}</span>
+                        </label>
                     </div>
 
                     <div class="confirm-buttons">
@@ -522,10 +598,11 @@ class RandomPickerManager {
             title
         };
 
+        config.allowRepeats = document.getElementById('rp-allow-repeats').checked;
+
         if (mode === 'name') {
             const namesText = document.getElementById('rp-names-input').value;
             config.names = namesText.split('\n').map(s => s.trim()).filter(s => s);
-            config.allowRepeats = document.getElementById('rp-allow-repeats').checked;
         } else {
             config.min = parseInt(document.getElementById('rp-min-input').value) || 1;
             config.max = parseInt(document.getElementById('rp-max-input').value) || 50;
