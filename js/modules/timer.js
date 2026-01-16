@@ -891,6 +891,7 @@ class TimerManager {
         // Timer mode buttons
         document.querySelectorAll('.timer-mode-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const mode = e.currentTarget.dataset.mode;
                 document.querySelectorAll('.timer-mode-btn').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
@@ -976,6 +977,7 @@ class TimerManager {
         // Timer color picker buttons
         document.querySelectorAll('.color-btn[data-timer-text-color]').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 document.querySelectorAll('.color-btn[data-timer-text-color]').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
             });
@@ -983,6 +985,7 @@ class TimerManager {
         
         document.querySelectorAll('.color-btn[data-timer-bg-color]').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 document.querySelectorAll('.color-btn[data-timer-bg-color]').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
             });
@@ -1039,7 +1042,8 @@ class TimerManager {
         // Timer settings modal close button
         const timerSettingsCloseBtn = document.getElementById('timer-settings-close-btn');
         if (timerSettingsCloseBtn) {
-            timerSettingsCloseBtn.addEventListener('click', () => {
+            timerSettingsCloseBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 this.hideSettingsModal();
             });
         }
@@ -1047,7 +1051,8 @@ class TimerManager {
         // Timer alert modal OK button
         const timerAlertOkBtn = document.getElementById('timer-alert-ok-btn');
         if (timerAlertOkBtn) {
-            timerAlertOkBtn.addEventListener('click', () => {
+            timerAlertOkBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 this.hideAlertModal();
             });
         }
