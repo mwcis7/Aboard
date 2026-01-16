@@ -66,20 +66,29 @@ class I18n {
      * Detect browser language
      */
     detectBrowserLocale() {
-        const browserLang = navigator.language || navigator.userLanguage;
+        // Try navigator.languages first (ordered preference list)
+        const languages = navigator.languages || [navigator.language || navigator.userLanguage];
         
-        // Check if we support the exact locale
-        if (this.availableLocales[browserLang]) {
-            return browserLang;
+        for (const lang of languages) {
+            if (!lang) continue;
+
+            // Check exact match
+            if (this.availableLocales[lang]) {
+                return lang;
+            }
+
+            // Check language family match
+            const langFamily = lang.split('-')[0];
+            const matchingLocale = Object.keys(this.availableLocales).find(
+                locale => locale.startsWith(langFamily)
+            );
+
+            if (matchingLocale) {
+                return matchingLocale;
+            }
         }
         
-        // Check if we support the language family (e.g., 'en' for 'en-GB')
-        const langFamily = browserLang.split('-')[0];
-        const matchingLocale = Object.keys(this.availableLocales).find(
-            locale => locale.startsWith(langFamily)
-        );
-        
-        return matchingLocale || this.fallbackLocale;
+        return this.fallbackLocale;
     }
 
     /**
@@ -101,6 +110,28 @@ class I18n {
             
             // Translations are now in window.translations
             this.translations = window.translations || {};
+
+            // Load help translations
+            try {
+                const helpResponse = await fetch(`js/locales/help/${this.currentLocale}.js`);
+                if (helpResponse.ok) {
+                    const helpText = await helpResponse.text();
+                    eval(helpText);
+
+                    if (window.help_translations) {
+                        for (const key in window.help_translations) {
+                            if (this.translations[key] && typeof this.translations[key] === 'object') {
+                                Object.assign(this.translations[key], window.help_translations[key]);
+                            } else {
+                                this.translations[key] = window.help_translations[key];
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to load help translations', e);
+            }
+
         } catch (error) {
             console.error('Error loading translations:', error);
             this.translations = {};
@@ -762,19 +793,21 @@ class I18n {
         // Translate date format options for Time Display Settings modal
         const dateFormatSelect = document.getElementById('td-date-format-select');
         if (dateFormatSelect) {
-            dateFormatSelect.options[0].text = this.t('settings.time.dateFormatYMD');
-            dateFormatSelect.options[1].text = this.t('settings.time.dateFormatMDY');
-            dateFormatSelect.options[2].text = this.t('settings.time.dateFormatDMY');
-            dateFormatSelect.options[3].text = this.t('settings.time.dateFormatChinese');
+            dateFormatSelect.options[0].text = this.t('settings.time.dateFormatAuto');
+            dateFormatSelect.options[1].text = this.t('settings.time.dateFormatYMD');
+            dateFormatSelect.options[2].text = this.t('settings.time.dateFormatMDY');
+            dateFormatSelect.options[3].text = this.t('settings.time.dateFormatDMY');
+            dateFormatSelect.options[4].text = this.t('settings.time.dateFormatChinese');
         }
         
         // Also translate date format in More Settings section
         const dateFormatSelectMore = document.getElementById('date-format-select');
         if (dateFormatSelectMore) {
-            dateFormatSelectMore.options[0].text = this.t('settings.time.dateFormatYMD');
-            dateFormatSelectMore.options[1].text = this.t('settings.time.dateFormatMDY');
-            dateFormatSelectMore.options[2].text = this.t('settings.time.dateFormatDMY');
-            dateFormatSelectMore.options[3].text = this.t('settings.time.dateFormatChinese');
+            dateFormatSelectMore.options[0].text = this.t('settings.time.dateFormatAuto');
+            dateFormatSelectMore.options[1].text = this.t('settings.time.dateFormatYMD');
+            dateFormatSelectMore.options[2].text = this.t('settings.time.dateFormatMDY');
+            dateFormatSelectMore.options[3].text = this.t('settings.time.dateFormatDMY');
+            dateFormatSelectMore.options[4].text = this.t('settings.time.dateFormatChinese');
         }
         
         // Translate timezone options for Time Display Settings modal

@@ -291,12 +291,36 @@ class ScoreboardInstance {
             let x = clientX - this.dragOffset.x;
             let y = clientY - this.dragOffset.y;
 
+            // Apply edge snapping
+            const edgeSnapDistance = 30;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
             const rect = this.element.getBoundingClientRect();
-            x = Math.max(0, Math.min(window.innerWidth - rect.width, x));
-            y = Math.max(0, Math.min(window.innerHeight - rect.height, y));
 
-            this.element.style.left = `${x}px`;
-            this.element.style.top = `${y}px`;
+            let finalX = x;
+            let finalY = y;
+
+            // Snap to edges
+            if (x < edgeSnapDistance) {
+                finalX = 10;
+            } else if (x + rect.width > windowWidth - edgeSnapDistance) {
+                finalX = windowWidth - rect.width - 10;
+            }
+
+            if (y < edgeSnapDistance) {
+                finalY = 10;
+            } else if (y + rect.height > windowHeight - edgeSnapDistance) {
+                finalY = windowHeight - rect.height - 10;
+            }
+
+            // Keep within bounds
+            finalX = Math.max(0, Math.min(finalX, windowWidth - rect.width));
+            finalY = Math.max(0, Math.min(finalY, windowHeight - rect.height));
+
+            this.element.style.left = `${finalX}px`;
+            this.element.style.top = `${finalY}px`;
+            this.element.style.right = 'auto';
+            this.element.style.bottom = 'auto';
         };
 
         const stopDrag = () => {

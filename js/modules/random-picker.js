@@ -20,7 +20,11 @@ class RandomPickerInstance {
         // State
         this.isAnimating = false;
         this.remainingNames = [...(this.config.names || [])];
+        this.remainingNumbers = [];
         this.animationInterval = null;
+
+        // Initialize remaining numbers
+        this.resetRemainingNumbers();
 
         // UI
         this.element = null;
@@ -113,13 +117,36 @@ class RandomPickerInstance {
             let x = clientX - this.dragOffset.x;
             let y = clientY - this.dragOffset.y;
 
-            // Constrain to window
+            // Apply edge snapping
+            const edgeSnapDistance = 30;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
             const rect = this.element.getBoundingClientRect();
-            x = Math.max(0, Math.min(window.innerWidth - rect.width, x));
-            y = Math.max(0, Math.min(window.innerHeight - rect.height, y));
 
-            this.element.style.left = `${x}px`;
-            this.element.style.top = `${y}px`;
+            let finalX = x;
+            let finalY = y;
+
+            // Snap to edges
+            if (x < edgeSnapDistance) {
+                finalX = 10;
+            } else if (x + rect.width > windowWidth - edgeSnapDistance) {
+                finalX = windowWidth - rect.width - 10;
+            }
+
+            if (y < edgeSnapDistance) {
+                finalY = 10;
+            } else if (y + rect.height > windowHeight - edgeSnapDistance) {
+                finalY = windowHeight - rect.height - 10;
+            }
+
+            // Keep within bounds
+            finalX = Math.max(0, Math.min(finalX, windowWidth - rect.width));
+            finalY = Math.max(0, Math.min(finalY, windowHeight - rect.height));
+
+            this.element.style.left = `${finalX}px`;
+            this.element.style.top = `${finalY}px`;
+            this.element.style.right = 'auto';
+            this.element.style.bottom = 'auto';
         };
 
         const stopDrag = () => {
@@ -186,14 +213,16 @@ class RandomPickerInstance {
         startBtnSpan.textContent = window.i18n.t('common.stop');
         startBtnEl.classList.add('is-stop');
 
-        // Determine pool
+        // Determine pool for animation
         let pool = [];
         if (this.config.mode === 'name') {
             if (this.config.names.length === 0) {
                 this.resultElement.textContent = window.i18n.t('randomPicker.noNames');
                 this.isAnimating = false;
                 this.resultElement.classList.remove('animating');
-                startBtn.textContent = window.i18n.t('common.start');
+                // Fix: startBtn variable was undefined, should use startBtnSpan or re-query
+                startBtnSpan.textContent = window.i18n.t('common.start');
+                startBtnEl.classList.remove('is-stop');
                 return;
             }
 
@@ -210,9 +239,22 @@ class RandomPickerInstance {
             // Number mode
             const min = parseInt(this.config.min);
             const max = parseInt(this.config.max);
-            // Create a small pool for animation visual
-            for (let i = 0; i < 20; i++) {
-                pool.push(Math.floor(Math.random() * (max - min + 1)) + min);
+
+            if (!this.config.allowRepeats) {
+                if (this.remainingNumbers.length === 0) {
+                    this.resetRemainingNumbers();
+                }
+                // If pool is empty (e.g. range invalid), fallback
+                if (this.remainingNumbers.length === 0) {
+                    pool = [min];
+                } else {
+                    pool = this.remainingNumbers;
+                }
+            } else {
+                // Create a small pool for animation visual
+                for (let i = 0; i < 20; i++) {
+                    pool.push(Math.floor(Math.random() * (max - min + 1)) + min);
+                }
             }
         }
 
@@ -259,9 +301,26 @@ class RandomPickerInstance {
                 this.remainingNames.splice(index, 1);
             }
         } else {
-            const min = parseInt(this.config.min);
-            const max = parseInt(this.config.max);
-            result = Math.floor(Math.random() * (max - min + 1)) + min;
+            // Number mode
+            if (this.config.allowRepeats) {
+                const min = parseInt(this.config.min);
+                const max = parseInt(this.config.max);
+                result = Math.floor(Math.random() * (max - min + 1)) + min;
+            } else {
+                if (this.remainingNumbers.length === 0) {
+                    this.resetRemainingNumbers();
+                }
+
+                // Pick from remaining
+                if (this.remainingNumbers.length > 0) {
+                    const index = Math.floor(Math.random() * this.remainingNumbers.length);
+                    result = this.remainingNumbers[index];
+                    this.remainingNumbers.splice(index, 1);
+                } else {
+                    // Fallback should range cover empty?
+                    result = this.config.min;
+                }
+            }
         }
 
         this.resultElement.textContent = result;
@@ -280,7 +339,25 @@ class RandomPickerInstance {
             this.remainingNames = [...(newConfig.names || [])];
         }
 
+        // If number range changed, reset remaining numbers
+        if (newConfig.min !== this.config.min || newConfig.max !== this.config.max) {
+            // We need to defer this because this.config is not updated yet
+            // But we can check newConfig values
+        }
+
         this.config = { ...this.config, ...newConfig };
+
+        // Check if we need to reset numbers (after config update)
+        // If we are in number mode, or just switched to it, reset to be safe if range changed
+        // Optimization: only reset if needed, but for now simple is better
+        if (this.config.mode === 'number') {
+             // If array length doesn't match range, or if empty and we want to start fresh?
+             // Simplest: If the range implies a different set than what we might track, reset.
+             // For now, let's just ensure if we run out, we refill.
+             // Explicit reset is better done if the User changes settings.
+             // Since updateConfig is called from Settings Save, it is appropriate to reset here.
+             this.resetRemainingNumbers();
+        }
 
         // Update title
         const titleEl = this.element.querySelector('.random-picker-title');
@@ -290,6 +367,26 @@ class RandomPickerInstance {
 
         // Reset result
         this.resultElement.textContent = '?';
+    }
+
+    resetRemainingNumbers() {
+        const min = parseInt(this.config.min);
+        const max = parseInt(this.config.max);
+        if (isNaN(min) || isNaN(max) || min > max) {
+            this.remainingNumbers = [];
+            return;
+        }
+
+        // Prevent massive arrays
+        if (max - min > 10000) {
+            // Too large for no-repeats array logic, fallback to random
+            // If user really wants no-repeats on large range, we'd need a Set or other logic
+            // For now, treat as allowed-repeats or just clear to force random
+            this.remainingNumbers = [];
+            return;
+        }
+
+        this.remainingNumbers = Array.from({length: max - min + 1}, (_, i) => min + i);
     }
 
     destroy() {
@@ -337,10 +434,16 @@ class RandomPickerManager {
                             <label>${window.i18n.t('randomPicker.namesLabel')}</label>
                             <textarea id="rp-names-input" class="random-picker-textarea" placeholder="${window.i18n.t('randomPicker.namesPlaceholder')}"></textarea>
                         </div>
-                        <label class="random-picker-checkbox">
-                            <input type="checkbox" id="rp-allow-repeats" checked>
-                            <span>${window.i18n.t('randomPicker.allowRepeats')}</span>
-                        </label>
+
+                        <div class="random-picker-import-group" style="margin-bottom: 12px; border-top: 1px solid #eee; padding-top: 10px;">
+                            <label style="display:block;margin-bottom:5px;font-size:12px;color:#666;">${window.i18n.t('randomPicker.importLabel')}</label>
+                            <div style="display:flex; gap:8px; margin-bottom:5px;">
+                                <input type="text" id="rp-import-col" value="${window.i18n.t('randomPicker.defaultColumnName')}" style="width:80px;padding:6px;border:1px solid #ddd;border-radius:4px;font-size:12px;" placeholder="列名">
+                                <input type="file" id="rp-import-file" accept=".xlsx, .xls, .csv" style="display:none">
+                                <button id="rp-import-btn" class="button-secondary" style="flex:1;padding:6px;font-size:12px;">${window.i18n.t('randomPicker.importBtn')}</button>
+                            </div>
+                            <div class="settings-hint">${window.i18n.t('randomPicker.importHint')}</div>
+                        </div>
                     </div>
 
                     <div id="rp-number-settings" style="display: none;">
@@ -352,6 +455,13 @@ class RandomPickerManager {
                                 <input type="number" id="rp-max-input" class="random-picker-number-input" value="50">
                             </div>
                         </div>
+                    </div>
+
+                    <div class="random-picker-common-settings" style="margin-top: 10px; border-top: 1px solid #eee; padding-top: 10px;">
+                        <label class="random-picker-checkbox">
+                            <input type="checkbox" id="rp-allow-repeats" checked>
+                            <span>${window.i18n.t('randomPicker.allowRepeats')}</span>
+                        </label>
                     </div>
 
                     <div class="confirm-buttons">
@@ -387,6 +497,69 @@ class RandomPickerManager {
         document.getElementById('rp-save-btn').addEventListener('click', () => {
             this.saveSettings();
         });
+
+        // Import functionality
+        const importBtn = document.getElementById('rp-import-btn');
+        const fileInput = document.getElementById('rp-import-file');
+
+        if (importBtn && fileInput) {
+            importBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                this.importFile(file);
+                e.target.value = ''; // Reset
+            });
+        }
+    }
+
+    importFile(file) {
+        if (!window.XLSX) {
+            alert('Excel import library not loaded. Please check your internet connection or try refreshing.');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet);
+
+                const colName = document.getElementById('rp-import-col').value.trim();
+
+                const names = [];
+                json.forEach(row => {
+                    let val = row[colName];
+                    // Case-insensitive fallback
+                    if (val === undefined) {
+                        const key = Object.keys(row).find(k => k.toLowerCase() === colName.toLowerCase());
+                        if (key) val = row[key];
+                    }
+
+                    if (val !== undefined && val !== null && String(val).trim() !== '') {
+                        names.push(String(val).trim());
+                    }
+                });
+
+                if (names.length > 0) {
+                    const textarea = document.getElementById('rp-names-input');
+                    textarea.value = names.join('\n');
+                    alert(window.i18n.t('randomPicker.importSuccess').replace('{count}', names.length));
+                } else {
+                    alert(window.i18n.t('randomPicker.importNoData'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert(window.i18n.t('randomPicker.importError'));
+            }
+        };
+        reader.readAsArrayBuffer(file);
     }
 
     create() {
@@ -448,10 +621,11 @@ class RandomPickerManager {
             title
         };
 
+        config.allowRepeats = document.getElementById('rp-allow-repeats').checked;
+
         if (mode === 'name') {
             const namesText = document.getElementById('rp-names-input').value;
             config.names = namesText.split('\n').map(s => s.trim()).filter(s => s);
-            config.allowRepeats = document.getElementById('rp-allow-repeats').checked;
         } else {
             config.min = parseInt(document.getElementById('rp-min-input').value) || 1;
             config.max = parseInt(document.getElementById('rp-max-input').value) || 50;

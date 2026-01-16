@@ -279,44 +279,39 @@ class TimerInstance {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
-            // Use requestAnimationFrame for smooth dragging performance
-            requestAnimationFrame(() => {
-                if (!this.isDragging) return; // Double check inside RAF
-                
-                const x = clientX - this.dragOffset.x;
-                const y = clientY - this.dragOffset.y;
-                
-                // Apply edge snapping
-                const edgeSnapDistance = 30;
-                const windowWidth = window.innerWidth;
-                const windowHeight = window.innerHeight;
-                const rect = this.displayElement.getBoundingClientRect();
-                
-                let finalX = x;
-                let finalY = y;
-                
-                // Snap to edges
-                if (x < edgeSnapDistance) {
-                    finalX = 10;
-                } else if (x + rect.width > windowWidth - edgeSnapDistance) {
-                    finalX = windowWidth - rect.width - 10;
-                }
-                
-                if (y < edgeSnapDistance) {
-                    finalY = 10;
-                } else if (y + rect.height > windowHeight - edgeSnapDistance) {
-                    finalY = windowHeight - rect.height - 10;
-                }
-                
-                // Keep within bounds
-                finalX = Math.max(0, Math.min(finalX, windowWidth - rect.width));
-                finalY = Math.max(0, Math.min(finalY, windowHeight - rect.height));
-                
-                this.displayElement.style.left = `${finalX}px`;
-                this.displayElement.style.top = `${finalY}px`;
-                this.displayElement.style.right = 'auto';
-                this.displayElement.style.bottom = 'auto';
-            });
+            const x = clientX - this.dragOffset.x;
+            const y = clientY - this.dragOffset.y;
+
+            // Apply edge snapping
+            const edgeSnapDistance = 30;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const rect = this.displayElement.getBoundingClientRect();
+
+            let finalX = x;
+            let finalY = y;
+
+            // Snap to edges
+            if (x < edgeSnapDistance) {
+                finalX = 10;
+            } else if (x + rect.width > windowWidth - edgeSnapDistance) {
+                finalX = windowWidth - rect.width - 10;
+            }
+
+            if (y < edgeSnapDistance) {
+                finalY = 10;
+            } else if (y + rect.height > windowHeight - edgeSnapDistance) {
+                finalY = windowHeight - rect.height - 10;
+            }
+
+            // Keep within bounds
+            finalX = Math.max(0, Math.min(finalX, windowWidth - rect.width));
+            finalY = Math.max(0, Math.min(finalY, windowHeight - rect.height));
+
+            this.displayElement.style.left = `${finalX}px`;
+            this.displayElement.style.top = `${finalY}px`;
+            this.displayElement.style.right = 'auto';
+            this.displayElement.style.bottom = 'auto';
         };
         
         // Unified handler for mouse and touch end
@@ -891,6 +886,7 @@ class TimerManager {
         // Timer mode buttons
         document.querySelectorAll('.timer-mode-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const mode = e.currentTarget.dataset.mode;
                 document.querySelectorAll('.timer-mode-btn').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
@@ -976,6 +972,7 @@ class TimerManager {
         // Timer color picker buttons
         document.querySelectorAll('.color-btn[data-timer-text-color]').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 document.querySelectorAll('.color-btn[data-timer-text-color]').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
             });
@@ -983,6 +980,7 @@ class TimerManager {
         
         document.querySelectorAll('.color-btn[data-timer-bg-color]').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 document.querySelectorAll('.color-btn[data-timer-bg-color]').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
             });
@@ -1039,7 +1037,8 @@ class TimerManager {
         // Timer settings modal close button
         const timerSettingsCloseBtn = document.getElementById('timer-settings-close-btn');
         if (timerSettingsCloseBtn) {
-            timerSettingsCloseBtn.addEventListener('click', () => {
+            timerSettingsCloseBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 this.hideSettingsModal();
             });
         }
@@ -1047,7 +1046,8 @@ class TimerManager {
         // Timer alert modal OK button
         const timerAlertOkBtn = document.getElementById('timer-alert-ok-btn');
         if (timerAlertOkBtn) {
-            timerAlertOkBtn.addEventListener('click', () => {
+            timerAlertOkBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 this.hideAlertModal();
             });
         }

@@ -378,6 +378,7 @@ window.translations = {
             timeFormat24: '24-Hour',
             dateFormat: 'Date Format',
             dateFormatHint: 'Choose date display format',
+            dateFormatAuto: 'Auto (System)',
             dateFormatYMD: 'YYYY-MM-DD (2024-01-01)',
             dateFormatMDY: 'MM-DD-YYYY (01-01-2024)',
             dateFormatDMY: 'DD-MM-YYYY (01-01-2024)',
@@ -428,7 +429,14 @@ window.translations = {
         namesPlaceholder: 'Student A\nStudent B\nStudent C',
         defaultNames: 'Student A\nStudent B\nStudent C\nStudent D\nStudent E',
         allowRepeats: 'Allow Repeats',
-        rangeLabel: 'Number Range'
+        rangeLabel: 'Number Range',
+        importLabel: 'Import Names (Excel/CSV)',
+        defaultColumnName: 'Name',
+        importBtn: 'Select File',
+        importHint: 'Tip: Reads data from the specified column name',
+        importSuccess: 'Successfully imported {count} names',
+        importNoData: 'No data found in specified column. Check column name.',
+        importError: 'Failed to parse file'
     },
 
     // Scoreboard
