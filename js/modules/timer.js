@@ -111,10 +111,12 @@ class TimerInstance {
         
         const titleHTML = this.title ? `<div class="timer-display-title">${this.title}</div>` : '';
         
+        const modeText = this.mode === 'stopwatch' ? window.i18n.t('timer.stopwatch') : window.i18n.t('timer.countdown');
+
         display.innerHTML = `
             <div class="timer-display-header">
-                <div class="timer-display-mode">${this.mode === 'stopwatch' ? '正计时' : '倒计时'}</div>
-                <button class="timer-close-btn" title="关闭">
+                <div class="timer-display-mode">${modeText}</div>
+                <button class="timer-close-btn" title="${window.i18n.t('common.close')}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -129,7 +131,7 @@ class TimerInstance {
                         <rect x="6" y="4" width="4" height="16"></rect>
                         <rect x="14" y="4" width="4" height="16"></rect>
                     </svg>
-                    暂停
+                    ${window.i18n.t('timer.pause')}
                 </button>
                 <button class="timer-control-btn timer-reset-btn">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -138,34 +140,34 @@ class TimerInstance {
                         <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
                         <path d="M3 21v-5h5"></path>
                     </svg>
-                    重置
+                    ${window.i18n.t('timer.reset')}
                 </button>
             </div>
             <div class="timer-display-actions">
-                <button class="timer-action-btn timer-minimal-btn" title="最简显示 (双击恢复)">
+                <button class="timer-action-btn timer-minimal-btn" title="${window.i18n.t('timer.minimalMode') || '最简显示 (双击恢复)'}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="9" y1="9" x2="15" y2="15"></line>
                         <line x1="15" y1="9" x2="9" y2="15"></line>
                     </svg>
-                    最简
+                    ${window.i18n.t('timer.minimal') || '最简'}
                 </button>
-                <button class="timer-action-btn timer-adjust-btn" title="调整">
+                <button class="timer-action-btn timer-adjust-btn" title="${window.i18n.t('timer.adjust')}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="3"></circle>
                         <path d="M12 1v6m0 6v6M5.6 5.6l4.2 4.2m4.2 4.2l4.2 4.2M1 12h6m6 0h6M5.6 18.4l4.2-4.2m4.2-4.2l4.2-4.2"></path>
                     </svg>
-                    调整
+                    ${window.i18n.t('timer.adjust')}
                 </button>
-                <button class="timer-action-btn timer-fullscreen-btn" title="全屏">
+                <button class="timer-action-btn timer-fullscreen-btn" title="${window.i18n.t('timeDisplay.fullscreenDisplay')}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
                     </svg>
-                    全屏
+                    ${window.i18n.t('timeDisplay.fullscreenDisplay')}
                 </button>
             </div>
             <div class="timer-font-size-control">
-                <label>字体大小</label>
+                <label>${window.i18n.t('timer.fontSize')}</label>
                 <input type="range" class="timer-font-size-slider" min="16" max="60" value="32" step="2">
             </div>
         `;
@@ -242,13 +244,10 @@ class TimerInstance {
     }
     
     setupDragging() {
-        const header = this.displayElement.querySelector('.timer-display-header');
-        const timeDisplay = this.displayElement.querySelector('.timer-display-time');
-        
         // Unified handler for mouse and touch start
         const handleStart = (e) => {
-            // Don't start dragging if clicking on close button
-            if (e.target.closest('.timer-close-btn')) return;
+            // Don't start dragging if clicking on interactive elements
+            if (e.target.closest('button') || e.target.closest('input')) return;
             
             this.isDragging = true;
             this.displayElement.classList.add('dragging');
@@ -263,12 +262,10 @@ class TimerInstance {
             e.preventDefault();
         };
         
-        // Allow dragging from header or time display (when compact)
+        // Allow dragging from the entire widget
         // Add both mouse and touch event listeners for better touch device support
-        header.addEventListener('mousedown', handleStart);
-        header.addEventListener('touchstart', handleStart, { passive: false });
-        timeDisplay.addEventListener('mousedown', handleStart);
-        timeDisplay.addEventListener('touchstart', handleStart, { passive: false });
+        this.displayElement.addEventListener('mousedown', handleStart);
+        this.displayElement.addEventListener('touchstart', handleStart, { passive: false });
         
         // Unified handler for mouse and touch move
         const handleMove = (e) => {
@@ -277,44 +274,39 @@ class TimerInstance {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
-            // Use requestAnimationFrame for smooth dragging performance
-            requestAnimationFrame(() => {
-                if (!this.isDragging) return; // Double check inside RAF
-                
-                const x = clientX - this.dragOffset.x;
-                const y = clientY - this.dragOffset.y;
-                
-                // Apply edge snapping
-                const edgeSnapDistance = 30;
-                const windowWidth = window.innerWidth;
-                const windowHeight = window.innerHeight;
-                const rect = this.displayElement.getBoundingClientRect();
-                
-                let finalX = x;
-                let finalY = y;
-                
-                // Snap to edges
-                if (x < edgeSnapDistance) {
-                    finalX = 10;
-                } else if (x + rect.width > windowWidth - edgeSnapDistance) {
-                    finalX = windowWidth - rect.width - 10;
-                }
-                
-                if (y < edgeSnapDistance) {
-                    finalY = 10;
-                } else if (y + rect.height > windowHeight - edgeSnapDistance) {
-                    finalY = windowHeight - rect.height - 10;
-                }
-                
-                // Keep within bounds
-                finalX = Math.max(0, Math.min(finalX, windowWidth - rect.width));
-                finalY = Math.max(0, Math.min(finalY, windowHeight - rect.height));
-                
-                this.displayElement.style.left = `${finalX}px`;
-                this.displayElement.style.top = `${finalY}px`;
-                this.displayElement.style.right = 'auto';
-                this.displayElement.style.bottom = 'auto';
-            });
+            const x = clientX - this.dragOffset.x;
+            const y = clientY - this.dragOffset.y;
+
+            // Apply edge snapping
+            const edgeSnapDistance = 30;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const rect = this.displayElement.getBoundingClientRect();
+
+            let finalX = x;
+            let finalY = y;
+
+            // Snap to edges
+            if (x < edgeSnapDistance) {
+                finalX = 10;
+            } else if (x + rect.width > windowWidth - edgeSnapDistance) {
+                finalX = windowWidth - rect.width - 10;
+            }
+
+            if (y < edgeSnapDistance) {
+                finalY = 10;
+            } else if (y + rect.height > windowHeight - edgeSnapDistance) {
+                finalY = windowHeight - rect.height - 10;
+            }
+
+            // Keep within bounds
+            finalX = Math.max(0, Math.min(finalX, windowWidth - rect.width));
+            finalY = Math.max(0, Math.min(finalY, windowHeight - rect.height));
+
+            this.displayElement.style.left = `${finalX}px`;
+            this.displayElement.style.top = `${finalY}px`;
+            this.displayElement.style.right = 'auto';
+            this.displayElement.style.bottom = 'auto';
         };
         
         // Unified handler for mouse and touch end
@@ -419,7 +411,7 @@ class TimerInstance {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                     </svg>
-                    开始
+                    ${window.i18n.t('timer.continue') || '继续'}
                 `;
             } else {
                 btn.innerHTML = `
@@ -427,7 +419,7 @@ class TimerInstance {
                         <rect x="6" y="4" width="4" height="16"></rect>
                         <rect x="14" y="4" width="4" height="16"></rect>
                     </svg>
-                    暂停
+                    ${window.i18n.t('timer.pause')}
                 `;
             }
         }
@@ -619,7 +611,7 @@ class TimerInstance {
         // Title font size is fixed at 3vmin (defined in CSS), not affected by slider
         
         // Update content with title if available, applying custom colors
-        const modeText = this.mode === 'stopwatch' ? '正计时' : '倒计时';
+        const modeText = this.mode === 'stopwatch' ? window.i18n.t('timer.stopwatch') : window.i18n.t('timer.countdown');
         const titleHTML = this.title ? `<div class="timer-fullscreen-title" style="color: ${this.textColor};">${this.title}</div>` : '';
         
         this.fullscreenContent.innerHTML = `
@@ -889,6 +881,7 @@ class TimerManager {
         // Timer mode buttons
         document.querySelectorAll('.timer-mode-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const mode = e.currentTarget.dataset.mode;
                 document.querySelectorAll('.timer-mode-btn').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
@@ -974,6 +967,7 @@ class TimerManager {
         // Timer color picker buttons
         document.querySelectorAll('.color-btn[data-timer-text-color]').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 document.querySelectorAll('.color-btn[data-timer-text-color]').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
             });
@@ -981,6 +975,7 @@ class TimerManager {
         
         document.querySelectorAll('.color-btn[data-timer-bg-color]').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 document.querySelectorAll('.color-btn[data-timer-bg-color]').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
             });
@@ -1037,7 +1032,8 @@ class TimerManager {
         // Timer settings modal close button
         const timerSettingsCloseBtn = document.getElementById('timer-settings-close-btn');
         if (timerSettingsCloseBtn) {
-            timerSettingsCloseBtn.addEventListener('click', () => {
+            timerSettingsCloseBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 this.hideSettingsModal();
             });
         }
@@ -1045,7 +1041,8 @@ class TimerManager {
         // Timer alert modal OK button
         const timerAlertOkBtn = document.getElementById('timer-alert-ok-btn');
         if (timerAlertOkBtn) {
-            timerAlertOkBtn.addEventListener('click', () => {
+            timerAlertOkBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 this.hideAlertModal();
             });
         }
@@ -1096,9 +1093,9 @@ class TimerManager {
         const label = document.getElementById('timer-time-label');
         if (label) {
             if (mode === 'stopwatch') {
-                label.textContent = '设置开始时间';
+                label.textContent = window.i18n.t('timer.setStartTime');
             } else {
-                label.textContent = '设置总时间';
+                label.textContent = window.i18n.t('timer.duration');
             }
         }
     }
@@ -1270,7 +1267,7 @@ class TimerManager {
         
         // Use custom modal instead of browser alert
         if (mode === 'countdown' && duration === 0) {
-            this.showAlertModal('请设置倒计时时间');
+            this.showAlertModal(window.i18n.t('timer.alertSetTime') || '请设置倒计时时间');
             return;
         }
         

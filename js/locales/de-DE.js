@@ -60,8 +60,8 @@ window.translations = {
             color: 'Farbe',
             colorAndSize: 'Farbe & Größe',
             colorPicker: 'Farbwähler',
-            size: 'Größe',
-            sizeLabel: 'Größe: Aktuell',
+            size: 'Linienstärke',
+            sizeLabel: 'Stärke: Aktuell',
             sizePx: 'px'
         },
         shape: {
@@ -152,7 +152,18 @@ window.translations = {
         opacityHint: 'Hintergrundtransparenz anpassen, 100% ist vollständig undurchsichtig',
         contrast: 'Kontrast',
         contrastHint: 'Die Dunkelheit der Hintergrundmusterlinien anpassen',
-        preference: 'Hintergrundmuster-Präferenz'
+        preference: 'Hintergrundmuster-Präferenz',
+        moveCoordinateOrigin: 'Ursprung verschieben',
+        moveCoordinateOriginHint: 'Klicken und auf der Leinwand ziehen, um den Koordinatenursprung zu verschieben'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: 'Bestätigen',
+        cancel: 'Abbrechen',
+        flipHorizontal: 'Horizontal spiegeln',
+        flipVertical: 'Vertikal spiegeln',
+        rotate: 'Drehen'
     },
 
     // Page Navigation
@@ -349,51 +360,33 @@ window.translations = {
             showDate: 'Datum anzeigen',
             showTime: 'Uhrzeit anzeigen',
             timezone: 'Zeitzone',
-        timezoneHint: 'Wählen Sie die anzuzeigende Zeitzone',
+            timezoneHint: 'Wählen Sie die anzuzeigende Zeitzone',
             timeFormat: 'Zeitformat',
-        timeFormatHint: 'Wählen Sie das Zeitanzeigeformat',
+            timeFormatHint: 'Wählen Sie das Zeitanzeigeformat',
             timeFormat12: '12-Stunden (AM/PM)',
             timeFormat24: '24-Stunden',
             dateFormat: 'Datumsformat',
-        dateFormatHint: 'Wählen Sie das Datumsanzeigeformat',
+            dateFormatHint: 'Wählen Sie das Datumsanzeigeformat',
             dateFormatYMD: 'Jahr-Monat-Tag (2024-01-01)',
             dateFormatMDY: 'Monat-Tag-Jahr (01-01-2024)',
             dateFormatDMY: 'Tag-Monat-Jahr (01-01-2024)',
             dateFormatChinese: 'Chinesisch (2024年1月1日)',
             colorSettings: 'Farbeinstellungen',
-        colorSettingsHint: 'Schriftart und Hintergrundfarbe für Zeitanzeige festlegen',
+            colorSettingsHint: 'Schriftart und Hintergrundfarbe für Zeitanzeige festlegen',
             colorHint: 'Schrift- und Hintergrundfarben für die Zeitanzeige festlegen',
             textColor: 'Textfarbe',
             bgColor: 'Hintergrundfarbe',
-        opacity: 'Deckkraft',
-        opacityLabel: 'Deckkraft: Aktuell',
-        fullscreenFontSize: 'Vollbild-Schriftgröße',
-        fullscreenFontSizeLabel: 'Vollbild-Schriftgröße: Aktuell',
-        soundSettings: 'Toneinstellungen',
-        playSound: 'Alarmton abspielen, wenn Countdown endet',
-        loopPlayback: 'Schleifenwiedergabe',
-        loopCount: 'Schleifenzähler',
-        uploadCustomAudio: 'Benutzerdefiniertes Audio hochladen',
-        soundPresets: {
-            classBell: 'Schulglocke (10s)',
-            digitalBeep: 'Digitaler Piepton (3s)',
-            gentle: 'Sanft (5s)',
-            examEnd: 'Prüfungsende (8s)'
-        },
             fontSize: 'Schriftgröße',
-        fontSizeLabel: 'Schriftgröße: Aktuell',
-        fontSizeHint: 'Schriftgröße der Zeitanzeige anpassen',
-        fontSizeLabel: 'Schriftgröße: Aktuell',
+            fontSizeLabel: 'Schriftgröße: Aktuell',
             opacity: 'Deckkraft',
-        opacityLabel: 'Deckkraft: Aktuell',
+            opacityLabel: 'Deckkraft: Aktuell',
             fullscreenMode: 'Vollbildmodus',
-        fullscreenModeHint: 'Wählen Sie, wie die Vollbild-Zeitanzeige ausgelöst wird',
+            fullscreenModeHint: 'Wählen Sie, wie die Vollbild-Zeitanzeige ausgelöst wird',
             fullscreenDisabled: 'Deaktiviert',
             fullscreenSingle: 'Einzelklick',
             fullscreenDouble: 'Doppelklick',
             fullscreenFontSize: 'Vollbild-Schriftgröße',
-        fullscreenFontSizeLabel: 'Vollbild-Schriftgröße: Aktuell',
-        fullscreenSliderLabel: 'Schriftgrößenanpassung (10%-85%)',
+            fullscreenFontSizeLabel: 'Vollbild-Schriftgröße: Aktuell',
             fullscreenFontSizeHint: 'Schriftgröße der Vollbild-Zeitanzeige anpassen, Bereich 10%-85%',
             customColor: 'Benutzerdefinierte Farbe'
         },
@@ -422,7 +415,10 @@ window.translations = {
         title: 'Funktionen',
         moreFeatures: 'Weitere Funktionen',
         time: 'Zeit',
-        timer: 'Timer'
+        timer: 'Timer',
+        randomPicker: 'Auswahl',
+        scoreboard: 'Punktetafel',
+        insertImage: 'Bild einfügen'
     },
 
     // Teaching Tools
@@ -520,7 +516,9 @@ window.translations = {
         continue: 'Fortsetzen',
         pause: 'Pause',
         reset: 'Zurücksetzen',
-        stop: 'Stoppen'
+        stop: 'Stoppen',
+        alertSetTime: 'Bitte stellen Sie die Countdown-Zeit ein',
+        alertTitle: 'Hinweis'
     },
 
     // Timezone names

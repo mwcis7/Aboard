@@ -59,7 +59,10 @@ window.translations = {
             brush: 'Pincel',
             color: 'Color',
             colorAndSize: 'Color y tamaño',
-            colorPicker: 'Selector de color'
+            colorPicker: 'Selector de color',
+            size: 'Grosor de línea',
+            sizeLabel: 'Grosor: Actual',
+            sizePx: 'px'
         },
         shape: {
             title: 'Forma',
@@ -147,7 +150,18 @@ window.translations = {
         opacityHint: 'Ajustar la transparencia del fondo, 100% es completamente opaco',
         contrast: 'Contraste',
         contrastHint: 'Ajustar la oscuridad de las líneas del patrón de fondo',
-        preference: 'Preferencia de patrón de fondo'
+        preference: 'Preferencia de patrón de fondo',
+        moveCoordinateOrigin: 'Mover origen',
+        moveCoordinateOriginHint: 'Haga clic y arrastre en el lienzo para mover el origen de coordenadas'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: 'Confirmar',
+        cancel: 'Cancelar',
+        flipHorizontal: 'Voltear horizontal',
+        flipVertical: 'Voltear vertical',
+        rotate: 'Rotar'
     },
 
     // Page Navigation
@@ -353,12 +367,15 @@ window.translations = {
             textColor: 'Color de texto',
             bgColor: 'Color de fondo',
             fontSize: 'Tamaño de fuente',
+            fontSizeLabel: 'Tamaño de fuente: Actual',
             opacity: 'Opacidad',
+            opacityLabel: 'Opacidad: Actual',
             fullscreenMode: 'Modo de pantalla completa',
             fullscreenDisabled: 'Desactivado',
             fullscreenSingle: 'Clic simple',
             fullscreenDouble: 'Doble clic',
             fullscreenFontSize: 'Tamaño de fuente de pantalla completa',
+            fullscreenFontSizeLabel: 'Tamaño de fuente de pantalla completa: Actual',
             fullscreenFontSizeHint: 'Ajustar el tamaño de fuente de la visualización de hora en pantalla completa, rango 10%-85%',
             customColor: 'Color personalizado'
         },
@@ -387,7 +404,10 @@ window.translations = {
         title: 'Características',
         moreFeatures: 'Más características',
         time: 'Hora',
-        timer: 'Temporizador'
+        timer: 'Temporizador',
+        randomPicker: 'Selector',
+        scoreboard: 'Marcador',
+        insertImage: 'Insertar imagen'
     },
 
     // Teaching Tools
@@ -456,7 +476,9 @@ window.translations = {
         continue: 'Continuar',
         pause: 'Pausar',
         reset: 'Restablecer',
-        stop: 'Detener'
+        stop: 'Detener',
+        alertSetTime: 'Por favor, establezca el tiempo de cuenta regresiva',
+        alertTitle: 'Alerta'
     },
 
     // Timezone names

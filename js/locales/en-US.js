@@ -1,5 +1,5 @@
 /**
- * English (United States) - English
+ * English (US) - English
  * Language file for Aboard application
  */
 
@@ -18,12 +18,14 @@ window.translations = {
         no: 'No',
         ok: 'OK',
         apply: 'Apply',
-        reset: 'Reset'
+        reset: 'Reset',
+        start: 'Start',
+        stop: 'Stop'
     },
 
     // App Title
     app: {
-        title: 'Aboard - Minimalist Whiteboard',
+        title: 'Aboard - Simple Whiteboard',
         name: 'Aboard'
     },
 
@@ -36,7 +38,7 @@ window.translations = {
         move: 'Move',
         eraser: 'Eraser',
         clear: 'Clear',
-        background: 'Background',
+        background: 'Backgrnd',
         teachingTools: 'Tools',
         more: 'More',
         settings: 'Settings',
@@ -44,7 +46,7 @@ window.translations = {
         zoomOut: 'Zoom Out (-)',
         zoomIn: 'Zoom In (+)',
         fullscreen: 'Fullscreen (F11)',
-        zoomPlaceholder: 'Zoom Level (Enter Percentage)'
+        zoomPlaceholder: 'Zoom Level (Enter %)'
     },
 
     // Tools
@@ -52,16 +54,16 @@ window.translations = {
         pen: {
             title: 'Pen',
             type: 'Pen Type',
-            normal: 'Normal Pen',
+            normal: 'Normal',
             pencil: 'Pencil',
             ballpoint: 'Ballpoint',
-            fountain: 'Fountain Pen',
+            fountain: 'Fountain',
             brush: 'Brush',
             color: 'Color',
             colorAndSize: 'Color & Size',
             colorPicker: 'Color Picker',
-            size: 'Size',
-            sizeLabel: 'Size: Current',
+            size: 'Line Thickness',
+            sizeLabel: 'Thickness: Current',
             sizePx: 'px'
         },
         shape: {
@@ -86,7 +88,7 @@ window.translations = {
             sizeLabel: 'Eraser Size: Current',
             shape: 'Shape',
             shapeCircle: 'Circle',
-            shapeRectangle: 'Rectangle'
+            shapeRectangle: 'Square'
         },
         clear: {
             title: 'Clear Canvas',
@@ -107,7 +109,7 @@ window.translations = {
             multiLine: 'Multi-line',
             arrow: 'Arrow',
             doubleArrow: 'Double Arrow',
-            noArrow: 'None',
+            noArrow: 'No Arrow',
             arrowType: 'Arrow Type',
             dashDensity: 'Dash Density',
             waveDensity: 'Wave Density',
@@ -145,7 +147,7 @@ window.translations = {
         english4line: 'English 4-Line',
         musicStaff: 'Music Staff',
         coordinate: 'Coordinate',
-        coordinateOriginHint: 'Double-click to select the coordinate origin in Move mode, then drag to move it',
+        coordinateOriginHint: 'Double-click coordinate center in Move mode to drag origin',
         image: 'Upload Image',
         density: 'Density',
         densityLabel: 'Density: Current',
@@ -154,18 +156,29 @@ window.translations = {
         opacity: 'Background Opacity',
         opacityLabel: 'Background Opacity: Current',
         opacityHint: 'Adjust background transparency, 100% is fully opaque',
-        contrast: 'Contrast',
-        contrastLabel: 'Pattern Transparency: Current',
-        contrastHint: 'Adjust the darkness of background pattern lines',
-        preference: 'Background Pattern Preference',
-        preferenceHint: 'Select patterns to display in properties bar',
-        upload: 'Upload'
+        contrast: 'Pattern Contrast',
+        contrastLabel: 'Pattern Contrast: Current',
+        contrastHint: 'Adjust pattern darkness/intensity',
+        preference: 'Pattern Preference',
+        preferenceHint: 'Choose patterns shown in properties bar',
+        upload: 'Upload',
+        moveCoordinateOrigin: 'Move Origin',
+        moveCoordinateOriginHint: 'Click and drag on canvas to move coordinate origin'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: 'Confirm',
+        cancel: 'Cancel',
+        flipHorizontal: 'Flip Horizontal',
+        flipVertical: 'Flip Vertical',
+        rotate: 'Rotate'
     },
 
     // Page Navigation
     page: {
-        previous: 'Previous',
-        next: 'Next',
+        previous: 'Previous Page',
+        next: 'Next Page',
         jumpPlaceholder: 'Enter page number',
         of: ' / ',
         newPage: 'New Page'
@@ -182,7 +195,7 @@ window.translations = {
             canvas: 'Canvas',
             background: 'Background',
             about: 'About',
-            announcement: 'Announcement',
+            announcement: 'News',
             more: 'More'
         },
         display: {
@@ -191,16 +204,16 @@ window.translations = {
             themeHint: 'Choose application theme',
             themeColor: 'Theme Color',
             showZoomControls: 'Show Zoom Controls',
-            showZoomControlsHint: 'Show zoom controls above the canvas',
+            showZoomControlsHint: 'Show zoom controls above canvas',
             showFullscreenBtn: 'Show Fullscreen Button',
             showFullscreenBtnHint: 'Show fullscreen button next to zoom controls',
             toolbarSize: 'Toolbar Size',
             toolbarSizeLabel: 'Toolbar Size: Current',
-            toolbarSizeHint: 'Adjust the size of the bottom toolbar',
+            toolbarSizeHint: 'Adjust bottom toolbar size',
             configScale: 'Config Panel Size',
             configScaleLabel: 'Config Panel Size: Current',
-            configScaleHint: 'Adjust the size of popup config panels',
-            themeColorHint: 'Color for selected toolbar items',
+            configScaleHint: 'Adjust properties panel size',
+            themeColorHint: 'Color of toolbar when selected',
             colorOptions: {
                 blue: 'Blue',
                 purple: 'Purple',
@@ -218,20 +231,20 @@ window.translations = {
             language: 'Language',
             languageHint: 'Choose interface language',
             globalFont: 'Global Font',
-            globalFontHint: 'Choose the font used in the application',
+            globalFontHint: 'Choose application font',
             fonts: {
                 system: 'System Default',
                 serif: 'Serif',
-                sansSerif: 'Sans Serif',
+                sansSerif: 'Sans-Serif',
                 monospace: 'Monospace',
-                cursive: 'Cursive',
+                cursive: 'Handwritten',
                 // Chinese fonts
                 yahei: 'Microsoft YaHei',
                 simsun: 'SimSun',
                 simhei: 'SimHei',
                 kaiti: 'KaiTi',
                 fangsong: 'FangSong',
-                // Common English fonts
+                // Common fonts
                 arial: 'Arial',
                 helvetica: 'Helvetica',
                 timesNewRoman: 'Times New Roman',
@@ -241,27 +254,29 @@ window.translations = {
                 trebuchet: 'Trebuchet MS',
                 impact: 'Impact'
             },
-            edgeSnap: 'Enable Edge Snapping',
-            edgeSnapHint: 'Automatically snap control panels to screen edges when dragging',
-            controlPosition: 'Control Button Position',
-            controlPositionHint: 'Choose where to display zoom and pagination controls on the screen',
+            edgeSnap: 'Enable Edge Snap',
+            edgeSnapHint: 'Auto-snap panels to screen edges when dragging',
+            controlPosition: 'Control Position',
+            controlPositionHint: 'Position of zoom and pagination controls',
             positionTopLeft: 'Top Left',
             positionTopRight: 'Top Right',
             positionBottomLeft: 'Bottom Left',
             positionBottomRight: 'Bottom Right',
             canvasMode: 'Canvas Mode',
-            canvasModeHint: 'Choose between pagination or infinite canvas mode',
-            pagination: 'Pagination',
+            canvasModeHint: 'Choose canvas display mode',
+            pagination: 'Pagination Mode',
             infiniteCanvas: 'Infinite Canvas',
             autoSave: 'Auto Save',
-            autoSaveHint: 'Automatically save your drawings periodically'
+            autoSaveHint: 'Periodically save your drawing',
+            touchZoom: 'Touch Zoom',
+            touchZoomHint: 'Allow pinch gesture to zoom canvas'
         },
         canvas: {
             title: 'Canvas Settings',
             mode: 'Canvas Mode',
-            modeHint: 'Choose the canvas display mode',
+            modeHint: 'Choose canvas display mode',
             size: 'Canvas Size',
-            sizeHint: 'Choose preset sizes or customize canvas aspect ratio and size',
+            sizeHint: 'Choose preset size or custom size/ratio',
             infiniteCanvas: 'Infinite Canvas',
             pagination: 'Pagination Mode',
             presets: {
@@ -280,7 +295,7 @@ window.translations = {
                 landscape: 'Landscape',
                 width: 'Width',
                 height: 'Height',
-                ratio: 'Aspect Ratio',
+                ratio: 'Ratio',
                 ratios: {
                     custom: 'Custom',
                     '16:9': '16:9',
@@ -296,95 +311,99 @@ window.translations = {
             opacity: 'Background Opacity',
             opacityLabel: 'Background Opacity: Current',
             opacityHint: 'Adjust background transparency, 100% is fully opaque',
-            patternIntensity: 'Pattern Intensity',
-            patternIntensityLabel: 'Pattern Transparency: Current',
-            patternIntensityHint: 'Adjust the darkness of background pattern lines',
-            preference: 'Background Pattern Preference',
-            preferenceHint: 'Choose which patterns to display in the config panel'
+            patternIntensity: 'Pattern Contrast',
+            patternIntensityLabel: 'Pattern Contrast: Current',
+            patternIntensityHint: 'Adjust background pattern intensity',
+            preference: 'Pattern Preference',
+            preferenceHint: 'Choose patterns shown in properties bar'
         },
         announcement: {
-            title: 'Announcement',
+            title: 'Announcements',
             welcome: 'Welcome to Aboard!',
             content: [
-                'Welcome to the Aboard whiteboard application!',
+                'Welcome to Aboard Whiteboard Application!',
                 '',
-                'Usage Tips:',
-                '• Click the toolbar buttons at the bottom to select different drawing tools',
-                '• Use Ctrl+Z to undo, Ctrl+Y to redo',
-                '• Click the zoom buttons in the top right or use mouse scroll wheel to zoom',
-                '• Click the Background button to choose different background patterns',
-                '• Switch between infinite canvas or pagination mode in Settings',
-                '• Supports both touch and mouse operations',
+                'Tips:',
+                '• Click bottom toolbar to select different tools',
+                '• Use Ctrl+Z to Undo, Ctrl+Y to Redo',
+                '• Click top-right zoom buttons or use mouse wheel to zoom',
+                '• Click Background button to choose different patterns',
+                '• Switch between Infinite Canvas or Pagination Mode in Settings',
+                '• Supports both touch and mouse interactions',
                 '',
                 'Links:',
                 '• GitHub Project: https://github.com/lifeafter619/Aboard',
-                '• Author\'s Blog: https://66619.eu.org',
+                '• Author Blog: https://66619.eu.org',
                 '',
-                'Enjoy your creative journey!'
+                'Enjoy using Aboard!'
             ]
         },
         about: {
             title: 'About Aboard',
             projectIntro: 'Project Introduction',
-            description1: 'Aboard is a minimalist web whiteboard application designed for teaching and presentations.',
-            description2: 'It provides a smooth drawing experience and rich background options to let your creativity shine.',
+            description1: 'Aboard is a simple web whiteboard application designed for teaching and presentations.',
+            description2: 'It provides smooth drawing experience and rich background options to let your creativity flow.',
             mainFeatures: 'Main Features',
             features: {
-                penTypes: 'Multiple pen types (Normal Pen, Pencil, Ballpoint, Fountain Pen, Brush)',
-                smartEraser: 'Smart eraser (supports circle and rectangle)',
-                richPatterns: 'Rich background patterns (Dots, Grid, Tianzige, English 4-Line, etc.)',
+                penTypes: 'Multiple pen types (Normal, Pencil, Ballpoint, Fountain, Brush)',
+                smartEraser: 'Smart eraser (supports Circle and Square)',
+                richPatterns: 'Rich background patterns (Dots, Grid, Tianzige, English 4-line, etc.)',
                 adjustable: 'Adjustable pattern density and transparency',
-                canvasModes: 'Infinite canvas and pagination mode (supports A4, A3, B5 and other preset sizes)',
-                customSize: 'Custom canvas size and aspect ratio',
-                draggable: 'Draggable toolbar and property panels (supports vertical layout)',
-                undoRedo: 'Undo/Redo function (supports up to 50 steps)',
-                smartZoom: 'Smart zoom (Ctrl+Scroll wheel, zoom to mouse position)',
-                responsive: 'Responsive interface, adapts to different screen sizes'
+                canvasModes: 'Infinite Canvas and Pagination Mode (supports A4, A3, B5 presets)',
+                customSize: 'Custom canvas size and ratio',
+                draggable: 'Draggable toolbar and properties panel (supports vertical layout)',
+                undoRedo: 'Undo/Redo functionality (supports up to 50 steps)',
+                smartZoom: 'Smart zoom (Ctrl+Scroll to zoom at mouse position)',
+                responsive: 'Responsive interface for different screen sizes'
             },
-            techStack: 'Technology Stack',
+            techStack: 'Tech Stack',
             tech: 'HTML5 Canvas • Vanilla JavaScript • CSS3',
-            license: 'Open Source License',
+            license: 'License',
             licenseType: 'MIT License',
             github: 'GitHub',
             version: 'Version'
         },
         more: {
             title: 'More Settings',
-            showTimeDisplay: 'Show Time and Date',
-            showTimeDisplayHint: 'Display current time and date in the top right corner'
+            showTimeDisplay: 'Show Date & Time',
+            showTimeDisplayHint: 'Display current date and time in top-right corner'
         },
         time: {
             title: 'Time Display Settings',
             showDate: 'Show Date',
             showTime: 'Show Time',
             timezone: 'Timezone',
-            timezoneHint: 'Choose the timezone to display',
+            timezoneHint: 'Choose timezone to display',
             timeFormat: 'Time Format',
-            timeFormatHint: 'Choose the time display format',
-            timeFormat12: '12-hour (AM/PM)',
-            timeFormat24: '24-hour',
+            timeFormatHint: 'Choose time display format',
+            timeFormat12: '12-Hour (AM/PM)',
+            timeFormat24: '24-Hour',
             dateFormat: 'Date Format',
-            dateFormatHint: 'Choose the date display format',
-            dateFormatYMD: 'Year-Month-Day (2024-01-01)',
-            dateFormatMDY: 'Month-Day-Year (01-01-2024)',
-            dateFormatDMY: 'Day-Month-Year (01-01-2024)',
+            dateFormatHint: 'Choose date display format',
+            dateFormatAuto: 'Auto (System)',
+            dateFormatYMD: 'YYYY-MM-DD (2024-01-01)',
+            dateFormatMDY: 'MM-DD-YYYY (01-01-2024)',
+            dateFormatDMY: 'DD-MM-YYYY (01-01-2024)',
             dateFormatChinese: 'Chinese (2024年1月1日)',
             colorSettings: 'Color Settings',
-            colorSettingsHint: 'Set font and background colors for time display',
-            colorHint: 'Set font and background colors for time display',
+            colorSettingsHint: 'Set font and background color for time display',
+            colorHint: 'Set font and background color for time display',
             textColor: 'Text Color',
             bgColor: 'Background Color',
             fontSize: 'Font Size',
-            fontSizeHint: 'Adjust time display font size',
+            fontSizeLabel: 'Font Size: Current',
+            fontSizeHint: 'Adjust font size for time display',
             opacity: 'Opacity',
-            opacityHint: 'Adjust time display opacity',
+            opacityLabel: 'Opacity: Current',
+            opacityHint: 'Adjust opacity for time display',
             fullscreenMode: 'Fullscreen Mode',
             fullscreenModeHint: 'Choose how to trigger fullscreen time display',
             fullscreenDisabled: 'Disabled',
             fullscreenSingle: 'Single Click',
             fullscreenDouble: 'Double Click',
             fullscreenFontSize: 'Fullscreen Font Size',
-            fullscreenFontSizeHint: 'Adjust fullscreen time display font size, range 10%-85%',
+            fullscreenFontSizeLabel: 'Fullscreen Font Size: Current',
+            fullscreenFontSizeHint: 'Adjust fullscreen font size (10%-85%)',
             customColor: 'Custom Color',
             displayOptions: 'Display Options'
         }
@@ -395,7 +414,45 @@ window.translations = {
         title: 'Features',
         moreFeatures: 'More Features',
         time: 'Time',
-        timer: 'Timer'
+        timer: 'Timer',
+        randomPicker: 'Picker',
+        scoreboard: 'Score',
+        insertImage: 'Insert Image'
+    },
+
+    // Random Picker
+    randomPicker: {
+        namePicker: 'Name Picker',
+        numberPicker: 'Number Picker',
+        noNames: 'Please add names',
+        settingsTitle: 'Picker Settings',
+        modeName: 'Name Mode',
+        modeNumber: 'Number Mode',
+        titleLabel: 'Title',
+        titlePlaceholder: 'Custom Title (Optional)',
+        namesLabel: 'Names List (One per line)',
+        namesPlaceholder: 'Student A\nStudent B\nStudent C',
+        defaultNames: 'Student A\nStudent B\nStudent C\nStudent D\nStudent E',
+        allowRepeats: 'Allow Repeats',
+        rangeLabel: 'Number Range',
+        importLabel: 'Import Names (Excel/CSV)',
+        defaultColumnName: 'Name',
+        importBtn: 'Select File',
+        importHint: 'Tip: Reads data from the specified column name',
+        importSuccess: 'Successfully imported {count} names',
+        importNoData: 'No data found in specified column. Check column name.',
+        importError: 'Failed to parse file'
+    },
+
+    // Scoreboard
+    scoreboard: {
+        title: 'Scoreboard',
+        addTeam: 'Add Team',
+        reset: 'Reset Scores',
+        confirmRemoveTeam: 'Are you sure you want to remove this team?',
+        teamDefault: 'Team',
+        removeTeam: 'Remove Team',
+        confirmReset: 'Are you sure you want to reset all scores?'
     },
 
     // Teaching Tools
@@ -407,14 +464,14 @@ window.translations = {
         setSquare: 'Set Square',
         setSquare60: 'Set Square 60°',
         setSquare45: 'Set Square 45°',
-        hint: 'Hint: Single-click to move, double-click to resize, rotate, or delete',
-        insertHint: 'Select the number of tools to insert',
-        currentOnCanvas: 'Current on canvas',
+        hint: 'Tip: Click to move, double-click to resize/rotate/delete',
+        insertHint: 'Select quantity to insert',
+        currentOnCanvas: 'Currently on canvas',
         addNew: 'Add New',
         rotate: 'Rotate',
         resize: 'Resize',
         delete: 'Delete',
-        drawAlongEdge: 'Draw along edge'
+        drawAlongEdge: 'Draw Along Edge'
     },
 
     // Time Display
@@ -427,7 +484,7 @@ window.translations = {
         settings: 'Settings',
         fullscreenDisplay: 'Fullscreen',
         displayOptions: 'Display Options',
-        dateAndTime: 'Date and Time',
+        dateAndTime: 'Date & Time',
         dateOnly: 'Date Only',
         timeOnly: 'Time Only',
         timezone: 'Timezone',
@@ -443,29 +500,36 @@ window.translations = {
         fullscreenMode: 'Fullscreen Mode',
         fullscreenFontSize: 'Fullscreen Font Size',
         fullscreenFontSizeLabel: 'Fullscreen Font Size: Current',
-        fullscreenSliderLabel: 'Font Size Adjustment (10%-85%)',
+        fullscreenFontSizeHint: 'Adjust fullscreen font size (10%-85%)',
+        fullscreenSliderLabel: 'Font Size (10%-85%)',
         customColor: 'Custom Color',
-        transparent: 'Transparent'
+        transparent: 'Transparent',
+        fullscreenDisabled: 'Disabled',
+        fullscreenSingle: 'Single Click',
+        fullscreenDouble: 'Double Click'
     },
 
     // Timer
     timer: {
+        title: 'Timer',
         settingsTitle: 'Timer Settings',
         mode: 'Mode',
         selectMode: 'Select Mode',
         countdown: 'Countdown',
         stopwatch: 'Stopwatch',
-        duration: 'Duration (minutes)',
+        duration: 'Set Duration',
         hours: 'Hours',
         minutes: 'Minutes',
         seconds: 'Seconds',
-        title: 'Timer Title (Optional)',
-        titlePlaceholder: 'e.g.: Classroom Speech, Exam Time, etc.',
+        timerTitle: 'Timer Title (Optional)',
+        titlePlaceholder: 'e.g., Presentation, Exam, etc.',
         setTime: 'Set Time',
         setStartTime: 'Set Start Time',
         fontSettings: 'Font Settings',
         fontSize: 'Font Size',
         fontSizeLabel: 'Font Size: Current',
+        minimal: 'Minimal',
+        minimalMode: 'Minimal Mode (Double-click to restore)',
         adjustColor: 'Adjust Color',
         colorSettings: 'Color Settings',
         textColor: 'Text Color',
@@ -475,7 +539,7 @@ window.translations = {
         fullscreenFontSize: 'Fullscreen Font Size',
         fullscreenFontSizeLabel: 'Fullscreen Font Size: Current',
         soundSettings: 'Sound Settings',
-        playSound: 'Play alert sound when countdown ends',
+        playSound: 'Play sound when timer ends',
         loopPlayback: 'Loop Playback',
         loopCount: 'Loop Count',
         uploadCustomAudio: 'Upload Custom Audio',
@@ -483,7 +547,7 @@ window.translations = {
             classBell: 'Class Bell (10s)',
             examEnd: 'Exam End (4s)',
             gentle: 'Gentle (17s)',
-            digitalBeep: 'End Beep (4s)'
+            digitalBeep: 'Digital Beep (4s)'
         },
         colors: {
             black: 'Black',
@@ -510,7 +574,16 @@ window.translations = {
         continue: 'Continue',
         pause: 'Pause',
         reset: 'Reset',
-        stop: 'Stop'
+        stop: 'Stop',
+        alertSetTime: 'Please set the countdown time',
+        alertTitle: 'Alert'
+    },
+
+    // Export
+    export: {
+        selectAtLeastOnePage: 'Please select at least one page to export',
+        paginationRequired: 'Currently in Infinite Canvas mode. Please enable Pagination Mode in Settings to use this feature.',
+        noPages: 'No pages to export.'
     },
 
     // Timezone names
@@ -537,15 +610,15 @@ window.translations = {
         title: 'Welcome to Aboard',
         content: `Welcome to Aboard Whiteboard Application!
 
-Usage Tips:
-• Click the toolbar at the bottom to select different drawing tools
-• Use Ctrl+Z to undo, Ctrl+Y to redo
-• Click zoom buttons in the top right or use mouse wheel to zoom canvas
-• Click the background button to choose different background patterns
-• Switch between infinite canvas or pagination mode in settings
-• Supports both touch and mouse input
+Tips:
+• Click bottom toolbar to select different tools
+• Use Ctrl+Z to Undo, Ctrl+Y to Redo
+• Click top-right zoom buttons or use mouse wheel to zoom
+• Click Background button to choose different patterns
+• Switch between Infinite Canvas or Pagination Mode in Settings
+• Supports both touch and mouse interactions
 
-Enjoy your creative work!`,
+Enjoy using Aboard!`,
         confirm: 'OK',
         noShowAgain: 'Don\'t show again'
     },
@@ -553,7 +626,7 @@ Enjoy your creative work!`,
     // Confirm Clear Dialog
     confirmClear: {
         title: 'Confirm Clear',
-        message: 'Are you sure you want to clear the current canvas? This action cannot be undone. Other canvases will not be affected.',
+        message: 'Are you sure you want to clear the canvas? This action cannot be undone.',
         confirm: 'Confirm',
         cancel: 'Cancel'
     },

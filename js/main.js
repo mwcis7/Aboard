@@ -30,6 +30,9 @@ class DrawingBoard {
         this.announcementManager = new AnnouncementManager();
         this.exportManager = new ExportManager(this.canvas, this.bgCanvas, this);
         this.teachingToolsManager = new TeachingToolsManager(this.canvas, this.ctx, this.historyManager);
+        this.randomPickerManager = new RandomPickerManager();
+        this.scoreboardManager = new ScoreboardManager();
+        this.insertImageManager = new InsertImageManager(this.canvas, this.ctx, this.historyManager, this.drawingEngine);
         
         // Set callback for teaching tools insertion to auto-switch to pen
         this.teachingToolsManager.onToolsInserted = () => {
@@ -45,10 +48,19 @@ class DrawingBoard {
         
         // Initialize edge drawing manager for teaching tools
         this.edgeDrawingManager = new EdgeDrawingManager(this.teachingToolsManager, this.drawingEngine);
+
+        // Initialize Help System
+        if (window.HelpSystem) {
+            this.helpSystem = new HelpSystem();
+            this.helpSystem.init();
+        }
         
         // Canvas fit scale - calculated once on init and window resize
         this.canvasFitScale = 1.0;
         
+        // Transform layer
+        this.transformLayer = document.getElementById('transform-layer');
+
         // Pagination
         this.currentPage = 1;
         this.pages = [];
@@ -70,6 +82,21 @@ class DrawingBoard {
         this.lastPinchCenter = null;
         this.hasTwoFingers = false;
         
+        // Active pointers tracking for multi-touch gesture detection
+        // Maps pointerId to { x, y, pointerType } for tracking touch and pen inputs
+        // Used to detect pinch gestures when using stylus/pen + finger combinations
+        this.activePointers = new Map();
+        
+        // Canvas scale limits
+        this.MIN_CANVAS_SCALE = 0.5;
+        this.MAX_CANVAS_SCALE = 5.0;
+        
+        // Touch gesture state
+        this.lastTapTime = 0;
+        this.lastTapPos = null;
+        this.currentTapStart = null;
+        this.isPotentialTap = false;
+
         // Dragging state
         this.isDraggingPanel = false;
         this.draggedElement = null;
@@ -79,6 +106,7 @@ class DrawingBoard {
         
         // Coordinate origin dragging state
         this.isDraggingCoordinateOrigin = false;
+        this.isCoordinateOriginDragMode = false; // Mode activated by button click
         this.coordinateOriginDragStart = { x: 0, y: 0 };
         
         // Uploaded images storage
@@ -201,8 +229,29 @@ class DrawingBoard {
     }
     
     setupEventListeners() {
-        // Canvas drawing events - use document-level listeners for continuous drawing
-        document.addEventListener('mousedown', (e) => {
+        // Canvas drawing events - use Pointer Events for unified Mouse/Touch/Pen support
+        // Track all pointers for multi-touch gesture detection (pinch zoom)
+        document.addEventListener('pointerdown', (e) => {
+            // Track all touch and pen pointers for multi-touch gesture detection
+            if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+                this.activePointers.set(e.pointerId, {
+                    x: e.clientX,
+                    y: e.clientY,
+                    pointerType: e.pointerType
+                });
+                
+                // Check for multi-touch pinch gesture (2+ pointers)
+                if (this.activePointers.size >= 2) {
+                    this.handlePointerPinchStart();
+                }
+            }
+            
+            // Ignore multi-touch secondary pointers for drawing (allow pinch zoom to handle them)
+            if (!e.isPrimary) return;
+            
+            // If pinching, don't start drawing
+            if (this.isPinching) return;
+
             // Skip if clicking on UI elements (except canvas)
             if (e.target && e.target.closest) {
             // 如果正在编辑笔迹，点击工具栏或属性栏时自动保存
@@ -222,6 +271,9 @@ class DrawingBoard {
                     e.target.closest('#feature-area') ||
                     e.target.closest('.modal') ||
                     e.target.closest('.timer-display-widget') ||
+                    e.target.closest('.random-picker-widget') ||
+                    e.target.closest('.scoreboard-widget') ||
+                    e.target.closest('.feature-widget') ||
                     e.target.closest('.canvas-image-selection')) {
                     return;
                 }
@@ -247,12 +299,20 @@ class DrawingBoard {
                 }
             }
             
-            // Check if clicking on coordinate origin point (in background or pan mode)
-            // In pan mode, require double-click to select coordinate origin
+            // Check if clicking on coordinate origin point (in coordinate origin drag mode or background mode)
             if (this.backgroundManager.backgroundPattern === 'coordinate') {
                 const rect = this.bgCanvas.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
+                
+                // Check if in coordinate origin drag mode (button clicked)
+                if (this.isCoordinateOriginDragMode) {
+                    // In drag mode, anywhere on canvas starts dragging the origin
+                    this.isDraggingCoordinateOrigin = true;
+                    this.coordinateOriginDragStart = { x: e.clientX, y: e.clientY };
+                    this.canvas.style.cursor = 'grabbing';
+                    return;
+                }
                 
                 if (this.backgroundManager.isPointNearCoordinateOrigin(x, y)) {
                     if (this.drawingEngine.currentTool === 'background') {
@@ -288,9 +348,35 @@ class DrawingBoard {
             }
         });
         
-        document.addEventListener('mousemove', (e) => {
+        document.addEventListener('pointermove', (e) => {
+            // Update pointer position for multi-touch gesture tracking
+            if ((e.pointerType === 'touch' || e.pointerType === 'pen') && this.activePointers.has(e.pointerId)) {
+                this.activePointers.set(e.pointerId, {
+                    x: e.clientX,
+                    y: e.clientY,
+                    pointerType: e.pointerType
+                });
+                
+                // Handle pinch gesture if we have 2+ pointers
+                if (this.isPinching && this.activePointers.size >= 2) {
+                    this.handlePointerPinchMove();
+                    return; // Don't continue with normal drawing during pinch
+                }
+            }
+            
+            // Ignore multi-touch secondary pointers
+            if (!e.isPrimary) return;
+
+            // Ignore pointer move if we are pinching (avoids conflict with touchmove)
+            if (this.hasTwoFingers || this.isPinching) return;
+
             // Don't draw when dragging panels or teaching tools
             if (this.isDraggingPanel || (this.teachingToolsManager && this.teachingToolsManager.isInteracting)) {
+                return;
+            }
+
+            // Explicitly check if target is a feature widget part (double protection)
+            if (e.target.closest('.feature-widget') || e.target.closest('#feature-area')) {
                 return;
             }
             
@@ -303,17 +389,48 @@ class DrawingBoard {
                 // Handle shape drawing
                 this.shapeDrawingManager.draw(e);
             } else if (this.drawingEngine.isDrawing) {
-                this.drawingEngine.draw(e);
+                // Pointer events provide coalesced events for higher precision (smoother curves)
+                if (e.getCoalescedEvents) {
+                    const events = e.getCoalescedEvents();
+                    for (let event of events) {
+                        this.drawingEngine.draw(event);
+                    }
+                } else {
+                    this.drawingEngine.draw(e);
+                }
                 this.updateEraserCursor(e);
             } else {
                 this.updateEraserCursor(e);
             }
         });
         
-        document.addEventListener('mouseup', () => {
+        document.addEventListener('pointerup', (e) => {
+            // Remove pointer from tracking
+            if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+                this.activePointers.delete(e.pointerId);
+                
+                // End pinch if we no longer have 2+ pointers
+                if (this.isPinching && this.activePointers.size < 2) {
+                    this.handlePointerPinchEnd();
+                }
+            }
+            
+            if (!e.isPrimary) return;
             this.stopDraggingCoordinateOrigin();
             this.handleDrawingComplete();
             this.drawingEngine.stopPanning();
+        });
+        
+        document.addEventListener('pointercancel', (e) => {
+            // Remove pointer from tracking on cancel
+            if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+                this.activePointers.delete(e.pointerId);
+                
+                // End pinch if we no longer have 2+ pointers
+                if (this.isPinching && this.activePointers.size < 2) {
+                    this.handlePointerPinchEnd();
+                }
+            }
         });
         
         // Double-click handler for coordinate origin selection in pan mode
@@ -347,55 +464,140 @@ class DrawingBoard {
             }
         });
         
-        // Touch events
+        // Touch events - Only for gestures (Pinch Zoom)
+        // Drawing is now handled by Pointer Events
         this.canvas.addEventListener('touchstart', (e) => {
             // Don't start drawing if interacting with teaching tools
             if (this.teachingToolsManager && this.teachingToolsManager.isInteracting) {
                 return;
             }
-            e.preventDefault();
-            if (e.touches.length === 2) {
-                // Two-finger gesture - prevent drawing
+            
+            // If two or more fingers (or pen + finger), handle pinch
+            if (e.touches.length >= 2) {
+                e.preventDefault(); // Prevent default zoom/scroll
                 this.hasTwoFingers = true;
+
+                // If we were drawing (via pointer events), stop it
                 if (this.drawingEngine.isDrawing) {
-                    // Discard any partial stroke from the first touch
                     this.discardCurrentStroke();
                 }
+
+                // If we were panning (via pointer events), stop it to let pinch handle it
+                if (this.drawingEngine.isPanning) {
+                    this.drawingEngine.stopPanning();
+                }
+
                 this.handlePinchStart(e);
-            } else if (e.touches.length === 1 && !this.hasTwoFingers) {
-                this.drawingEngine.startDrawing(e.touches[0]);
+            }
+
+            // General gesture detection logic (for 1, 2, 3+ fingers)
+            if (e.touches.length === 1) {
+                // Start of a new gesture sequence
+                this.maxTouchesInGesture = 1;
+                this.gestureStartTime = Date.now();
+                this.isPotentialGesture = true;
+
+                // Single tap detection specific
+                this.isPotentialTap = true;
+                this.currentTapStart = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY,
+                    time: Date.now()
+                };
+            } else {
+                // Continuation of gesture (adding fingers)
+                this.maxTouchesInGesture = Math.max(this.maxTouchesInGesture, e.touches.length);
+                this.isPotentialGesture = true;
+                this.isPotentialTap = false; // Not a single tap if multiple fingers
             }
         }, { passive: false });
         
         this.canvas.addEventListener('touchmove', (e) => {
-            // Don't draw if interacting with teaching tools
             if (this.teachingToolsManager && this.teachingToolsManager.isInteracting) {
                 return;
             }
-            e.preventDefault();
-            if (e.touches.length === 2) {
-                // Two-finger pinch to zoom and pan
+            
+            // Tap detection - invalidate if moved too much
+            if (this.isPotentialTap && e.touches.length === 1) {
+                const dx = e.touches[0].clientX - this.currentTapStart.x;
+                const dy = e.touches[0].clientY - this.currentTapStart.y;
+                if (dx * dx + dy * dy > 100) { // 10px threshold squared
+                    this.isPotentialTap = false;
+                }
+            }
+
+            if (e.touches.length >= 2) {
+                e.preventDefault();
                 this.handlePinchMove(e);
-            } else if (e.touches.length === 1 && !this.hasTwoFingers) {
-                this.drawingEngine.draw(e.touches[0]);
             }
         }, { passive: false });
         
         this.canvas.addEventListener('touchend', (e) => {
-            // Don't handle if interacting with teaching tools
             if (this.teachingToolsManager && this.teachingToolsManager.isInteracting) {
                 return;
             }
-            e.preventDefault();
+            
+            // Tap detection
+            if (e.changedTouches.length === 1 && e.touches.length === 0) { // All fingers lifted
+                // Double tap logic (single finger)
+                if (this.isPotentialTap) {
+                    const tapTime = Date.now();
+                    // Check if it's a double tap
+                    if (this.lastTapTime && (tapTime - this.lastTapTime < 300)) {
+                        // Check distance between taps
+                        const dx = this.currentTapStart.x - this.lastTapPos.x;
+                        const dy = this.currentTapStart.y - this.lastTapPos.y;
+                        if (dx * dx + dy * dy < 900) { // 30px threshold squared
+                            this.handleDoubleTap(e.changedTouches[0]);
+                            this.lastTapTime = 0; // Reset
+                            this.isPotentialTap = false;
+                            e.preventDefault();
+                        }
+                    } else {
+                        this.lastTapTime = tapTime;
+                        this.lastTapPos = { ...this.currentTapStart };
+                    }
+                }
+
+                // Multi-touch gesture (Undo/Redo)
+                // Only if not a valid double-tap candidate (to avoid conflict, although double tap is 1 finger)
+                if (this.isPotentialGesture && !this.isPotentialTap) {
+                    const gestureTime = Date.now();
+                    if (gestureTime - this.gestureStartTime < 400) { // 400ms for multi-touch tap
+                        if (this.maxTouchesInGesture === 2) {
+                            // 2-finger tap: Undo
+                            if (this.historyManager.undo()) {
+                                this.updateUI();
+                                // Clear stroke selection as strokes are no longer valid
+                                this.drawingEngine.clearStrokes();
+                            }
+                            e.preventDefault();
+                        } else if (this.maxTouchesInGesture === 3) {
+                            // 3-finger tap: Redo
+                            if (this.historyManager.redo()) {
+                                this.updateUI();
+                                this.drawingEngine.clearStrokes();
+                            }
+                            e.preventDefault();
+                        }
+                    }
+                }
+            }
+
+            if (e.touches.length === 0) {
+                this.isPotentialTap = false;
+                this.isPotentialGesture = false;
+                this.maxTouchesInGesture = 0;
+            }
+
+            // If we still have enough fingers to pinch, re-anchor to prevent jumps
+            if (e.touches.length >= 2 && this.isPinching) {
+                this.handlePinchStart(e);
+            }
+
             if (e.touches.length < 2) {
                 this.handlePinchEnd();
-            }
-            if (e.touches.length === 0) {
                 this.hasTwoFingers = false;
-                // Only save drawing if we weren't doing two-finger gesture
-                if (this.drawingEngine.isDrawing) {
-                    this.handleDrawingComplete();
-                }
             }
         }, { passive: false });
         
@@ -577,21 +779,30 @@ class DrawingBoard {
         // Background pattern buttons
         document.querySelectorAll('.pattern-option-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const pattern = e.target.dataset.pattern;
+                // Use currentTarget to ensure we get the data from the button, not its children
+                const pattern = e.currentTarget.dataset.pattern;
                 if (pattern === 'image') {
                     document.getElementById('bg-image-upload').click();
                 } else {
                     this.backgroundManager.setBackgroundPattern(pattern);
                     document.querySelectorAll('.pattern-option-btn').forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
+                    e.currentTarget.classList.add('active');
                     document.getElementById('image-size-group').style.display = 'none';
                     
                     // Show/hide pattern density slider based on pattern
                     const patternDensityGroup = document.getElementById('pattern-density-group');
+                    const moveOriginBtn = document.getElementById('move-origin-btn');
                     if (pattern !== 'blank' && pattern !== 'image') {
                         patternDensityGroup.style.display = 'flex';
+                        // Only show move-origin-btn for coordinate pattern
+                        if (moveOriginBtn) {
+                            moveOriginBtn.style.display = pattern === 'coordinate' ? 'inline-flex' : 'none';
+                        }
                     } else {
                         patternDensityGroup.style.display = 'none';
+                        if (moveOriginBtn) {
+                            moveOriginBtn.style.display = 'none';
+                        }
                     }
                     
                     // Save page background in paginated mode
@@ -607,13 +818,13 @@ class DrawingBoard {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (event) => {
+                reader.onload = async (event) => {
                     const imageData = event.target.result;
                     
                     // Reset confirmation state for new image
                     this.imageControls.resetConfirmation();
                     
-                    this.backgroundManager.setBackgroundImage(imageData);
+                    await this.backgroundManager.setBackgroundImage(imageData);
                     document.querySelectorAll('.pattern-option-btn').forEach(b => b.classList.remove('active'));
                     document.querySelector('.pattern-option-btn[data-pattern="image"]').classList.add('active');
                     document.getElementById('image-size-group').style.display = 'flex';
@@ -652,6 +863,66 @@ class DrawingBoard {
                 this.imageControls.showControls(imgData);
             }
         });
+
+        // Background GIF settings button
+        const gifSettingsBtn = document.getElementById('bg-gif-settings-btn');
+        const gifSettingsModal = document.getElementById('gif-settings-modal');
+        if (gifSettingsBtn) {
+            gifSettingsBtn.addEventListener('click', () => {
+                const input = document.getElementById('gif-loop-count-input');
+                if (input) {
+                    input.value = this.backgroundManager.gifLoopCount;
+                }
+                gifSettingsModal.classList.add('show');
+            });
+        }
+
+        document.getElementById('gif-settings-cancel-btn').addEventListener('click', () => {
+            gifSettingsModal.classList.remove('show');
+        });
+
+        document.getElementById('gif-settings-ok-btn').addEventListener('click', () => {
+            const input = document.getElementById('gif-loop-count-input');
+            if (input) {
+                this.backgroundManager.setGifLoopCount(parseInt(input.value));
+            }
+            gifSettingsModal.classList.remove('show');
+        });
+
+        document.getElementById('gif-settings-close-btn').addEventListener('click', () => {
+            gifSettingsModal.classList.remove('show');
+        });
+
+        // Background playback toggle (for GIFs)
+        const playbackBtn = document.getElementById('bg-image-playback-btn');
+        if (playbackBtn) {
+            const updatePlaybackIcon = () => {
+                if (this.backgroundManager.isImagePaused) {
+                    playbackBtn.classList.add('paused');
+                    playbackBtn.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                    `;
+                } else {
+                    playbackBtn.classList.remove('paused');
+                    playbackBtn.innerHTML = `
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="6" y="4" width="4" height="16"></rect>
+                            <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                    `;
+                }
+            };
+
+            playbackBtn.addEventListener('click', () => {
+                this.backgroundManager.toggleImagePlayback();
+                updatePlaybackIcon();
+            });
+
+            // Listen for auto-pause event from background manager
+            window.addEventListener('backgroundGifPaused', updatePlaybackIcon);
+        }
         
         // Pattern density slider
         const patternDensitySlider = document.getElementById('pattern-density-slider');
@@ -660,6 +931,30 @@ class DrawingBoard {
             this.backgroundManager.setPatternDensity(parseInt(e.target.value) / 100);
             patternDensityValue.textContent = e.target.value;
         });
+
+        // Move Coordinate Origin Button
+        const moveOriginBtn = document.getElementById('move-origin-btn');
+        if (moveOriginBtn) {
+            moveOriginBtn.addEventListener('click', (e) => {
+                // Toggle the button active state
+                const isActive = moveOriginBtn.classList.contains('active');
+                
+                if (isActive) {
+                    // Turn off the mode
+                    moveOriginBtn.classList.remove('active');
+                    this.isCoordinateOriginDragMode = false;
+                    this.isDraggingCoordinateOrigin = false;
+                    this.canvas.style.cursor = 'crosshair';
+                } else {
+                    // Enable coordinate origin drag mode
+                    moveOriginBtn.classList.add('active');
+                    this.isCoordinateOriginDragMode = true;
+                    
+                    // Change cursor to indicate dragging is available
+                    this.canvas.style.cursor = 'move';
+                }
+            });
+        }
         
         // Sliders
         const penSizeSlider = document.getElementById('pen-size-slider');
@@ -669,23 +964,43 @@ class DrawingBoard {
         
         // Pen size slider - syncs with shape slider
         penSizeSlider.addEventListener('input', (e) => {
-            this.drawingEngine.setPenSize(parseInt(e.target.value));
-            penSizeValue.textContent = e.target.value;
+            const size = parseInt(e.target.value);
+            this.drawingEngine.setPenSize(size);
+            penSizeValue.textContent = size;
             // Sync shape slider
             if (shapeSizeSlider) {
-                shapeSizeSlider.value = e.target.value;
-                shapeSizeValue.textContent = e.target.value;
+                shapeSizeSlider.value = size;
+                shapeSizeValue.textContent = size;
+            }
+
+            // Enforce arrow size constraint
+            if (arrowSizeSlider && arrowSizeValue) {
+                if (parseInt(arrowSizeSlider.value) < size) {
+                    arrowSizeSlider.value = size;
+                    arrowSizeValue.textContent = size;
+                    this.shapeDrawingManager.setArrowSize(size);
+                }
             }
         });
         
         // Shape size slider - syncs with pen slider
         if (shapeSizeSlider) {
             shapeSizeSlider.addEventListener('input', (e) => {
-                this.drawingEngine.setPenSize(parseInt(e.target.value));
-                shapeSizeValue.textContent = e.target.value;
+                const size = parseInt(e.target.value);
+                this.drawingEngine.setPenSize(size);
+                shapeSizeValue.textContent = size;
                 // Sync pen slider
-                penSizeSlider.value = e.target.value;
-                penSizeValue.textContent = e.target.value;
+                penSizeSlider.value = size;
+                penSizeValue.textContent = size;
+
+                // Enforce arrow size constraint
+                if (arrowSizeSlider && arrowSizeValue) {
+                    if (parseInt(arrowSizeSlider.value) < size) {
+                        arrowSizeSlider.value = size;
+                        arrowSizeValue.textContent = size;
+                        this.shapeDrawingManager.setArrowSize(size);
+                    }
+                }
             });
         }
         
@@ -694,8 +1009,15 @@ class DrawingBoard {
         const arrowSizeValue = document.getElementById('arrow-size-value');
         if (arrowSizeSlider && arrowSizeValue) {
             arrowSizeSlider.addEventListener('input', (e) => {
-                this.shapeDrawingManager.setArrowSize(parseInt(e.target.value));
-                arrowSizeValue.textContent = e.target.value;
+                let val = parseInt(e.target.value);
+                // Enforce constraint: Arrow size cannot be smaller than line thickness
+                const minSize = this.drawingEngine.penSize;
+                if (val < minSize) {
+                    val = minSize;
+                    e.target.value = val;
+                }
+                this.shapeDrawingManager.setArrowSize(val);
+                arrowSizeValue.textContent = val;
             });
             // Initialize from saved value
             arrowSizeSlider.value = this.shapeDrawingManager.arrowSize;
@@ -816,9 +1138,36 @@ class DrawingBoard {
         if (timerFeatureBtn) {
             timerFeatureBtn.addEventListener('click', () => {
                 this.timerManager.showSettingsModal();
-                // Auto-switch to pen tool after opening timer
+                this.closeFeaturePanel();
+            });
+        }
+
+        // Random Picker Feature Button
+        const randomPickerBtn = document.getElementById('random-picker-feature-btn');
+        if (randomPickerBtn) {
+            randomPickerBtn.addEventListener('click', () => {
+                this.randomPickerManager.create();
                 this.closeFeaturePanel();
                 this.switchToPen();
+            });
+        }
+
+        // Scoreboard Feature Button
+        const scoreboardBtn = document.getElementById('scoreboard-feature-btn');
+        if (scoreboardBtn) {
+            scoreboardBtn.addEventListener('click', () => {
+                this.scoreboardManager.create();
+                this.closeFeaturePanel();
+                this.switchToPen();
+            });
+        }
+
+        // Insert Image Feature Button
+        const insertImageBtn = document.getElementById('insert-image-feature-btn');
+        if (insertImageBtn) {
+            insertImageBtn.addEventListener('click', () => {
+                this.insertImageManager.triggerSelect();
+                this.closeFeaturePanel();
             });
         }
         
@@ -962,6 +1311,11 @@ class DrawingBoard {
             localStorage.setItem('edgeSnapEnabled', e.target.checked);
         });
         
+        document.getElementById('touch-zoom-checkbox').addEventListener('change', (e) => {
+            this.settingsManager.touchZoomEnabled = e.target.checked;
+            localStorage.setItem('touchZoomEnabled', e.target.checked);
+        });
+
         // Global font selector
         document.getElementById('global-font-select').addEventListener('change', (e) => {
             this.settingsManager.setGlobalFont(e.target.value);
@@ -1553,7 +1907,18 @@ class DrawingBoard {
             
             if (this.settingsManager.edgeSnapEnabled) {
                 // Use hysteresis: easier to snap than to unsnap (prevents flicker)
-                const effectiveSnapDistance = currentlyVertical ? edgeSnapHysteresis : edgeSnapDistance;
+                // When already vertical (snapped), use a dynamic hysteresis based on width difference
+                // to prevent flickering back to horizontal when the horizontal width is large
+                let effectiveSnapDistance = edgeSnapDistance;
+
+                if (currentlyVertical) {
+                    // If vertical, we need a larger hysteresis zone
+                    // Calculate based on the difference between horizontal and vertical widths
+                    // Formula ensures unsnap threshold is further than snap threshold
+                    // Width difference + buffer to avoid flicker loop
+                    const widthDiff = Math.max(0, this.draggedElementWidth - currentWidth);
+                    effectiveSnapDistance = Math.max(300, edgeSnapDistance + widthDiff + 50);
+                }
                 
                 // Check for left edge snap first
                 if (x < effectiveSnapDistance) {
@@ -1954,16 +2319,26 @@ class DrawingBoard {
         // Apply the current zoom level on top of the fit scale
         const finalScale = this.canvasFitScale * this.drawingEngine.canvasScale;
         
-        // Center the canvas on the screen with proper scaling
-        this.canvas.style.position = 'absolute';
-        this.canvas.style.left = '50%';
-        this.canvas.style.top = '50%';
-        this.canvas.style.transform = `translate(-50%, -50%) scale(${finalScale})`;
-        
-        this.bgCanvas.style.position = 'absolute';
-        this.bgCanvas.style.left = '50%';
-        this.bgCanvas.style.top = '50%';
-        this.bgCanvas.style.transform = `translate(-50%, -50%) scale(${finalScale})`;
+        // Center the canvas on the screen with proper scaling using transformLayer
+        if (this.transformLayer) {
+            this.transformLayer.style.position = 'absolute';
+            this.transformLayer.style.left = '50%';
+            this.transformLayer.style.top = '50%';
+            this.transformLayer.style.width = width + 'px';
+            this.transformLayer.style.height = height + 'px';
+            this.transformLayer.style.transform = `translate(-50%, -50%) scale(${finalScale})`;
+
+            // Children should not have individual transforms
+            this.canvas.style.position = 'absolute';
+            this.canvas.style.left = '0';
+            this.canvas.style.top = '0';
+            this.canvas.style.transform = 'none';
+
+            this.bgCanvas.style.position = 'absolute';
+            this.bgCanvas.style.left = '0';
+            this.bgCanvas.style.top = '0';
+            this.bgCanvas.style.transform = 'none';
+        }
         
         // Re-apply DPR scaling to context
         this.ctx.scale(dpr, dpr);
@@ -1978,6 +2353,74 @@ class DrawingBoard {
     }
     
     // Zoom methods
+    handleDoubleTap(touch) {
+        // Zoom logic
+        const currentScale = this.drawingEngine.canvasScale;
+        let newScale;
+
+        // If zoomed out or very zoomed in, reset to 100%
+        // If close to 100%, zoom in to 200%
+        if (Math.abs(currentScale - 1.0) > 0.1) {
+            newScale = 1.0;
+        } else {
+            newScale = 2.0;
+        }
+
+        this.zoomToPoint(touch.clientX, touch.clientY, newScale, true);
+    }
+
+    zoomToPoint(clientX, clientY, newScale, animate = false) {
+        // Get canvas position and dimensions
+        const rect = this.canvas.getBoundingClientRect();
+
+        // Calculate mouse position relative to canvas (in screen space)
+        const mouseCanvasX = clientX - rect.left;
+        const mouseCanvasY = clientY - rect.top;
+
+        // Get current scale and pan
+        const oldScale = this.drawingEngine.canvasScale;
+        const oldPanX = this.drawingEngine.panOffset.x;
+        const oldPanY = this.drawingEngine.panOffset.y;
+
+        // Calculate scale ratio
+        const scaleRatio = newScale / oldScale;
+
+        // Get canvas center in screen space
+        const canvasCenterX = rect.width / 2;
+        const canvasCenterY = rect.height / 2;
+
+        // Calculate offset from canvas center to mouse (in screen space)
+        const offsetX = mouseCanvasX - canvasCenterX;
+        const offsetY = mouseCanvasY - canvasCenterY;
+
+        // Adjust pan offset so that the point under the mouse stays in place
+        this.drawingEngine.panOffset.x = oldPanX + offsetX * (1 - scaleRatio);
+        this.drawingEngine.panOffset.y = oldPanY + offsetY * (1 - scaleRatio);
+
+        // Update scale
+        this.drawingEngine.canvasScale = newScale;
+        this.updateZoomUI();
+
+        if (animate && this.transformLayer) {
+            this.transformLayer.classList.add('smooth-transform');
+            this.applyZoom(false);
+
+            // Remove class after transition
+            setTimeout(() => {
+                if (this.transformLayer) {
+                    this.transformLayer.classList.remove('smooth-transform');
+                }
+            }, 300);
+        } else {
+            this.applyZoom(false);
+        }
+
+        // Save to localStorage
+        localStorage.setItem('canvasScale', newScale);
+        localStorage.setItem('panOffsetX', this.drawingEngine.panOffset.x);
+        localStorage.setItem('panOffsetY', this.drawingEngine.panOffset.y);
+    }
+
     zoomIn() {
         const currentScale = this.drawingEngine.canvasScale;
         const newScale = Math.min(currentScale + 0.1, 5.0);
@@ -2020,16 +2463,20 @@ class DrawingBoard {
         
         // Keep canvas centered and apply pan offset
         const transform = `translate(-50%, -50%) translate(${panX}px, ${panY}px) scale(${finalScale})`;
-        this.canvas.style.transform = transform;
-        this.bgCanvas.style.transform = transform;
-        
-        this.canvas.style.transformOrigin = 'center center';
-        this.bgCanvas.style.transformOrigin = 'center center';
+
+        if (this.transformLayer) {
+            this.transformLayer.style.transform = transform;
+            this.transformLayer.style.transformOrigin = 'center center';
+
+            // Remove individual transforms
+            this.canvas.style.transform = 'none';
+            this.bgCanvas.style.transform = 'none';
+        }
         
         // Update teaching tools scale factor
         this.teachingToolsManager.canvasScaleFactor = finalScale;
         this.teachingToolsManager.redrawTools();
-        
+
         // Update config-area scale proportionally only when requested (on resize, not on refresh)
         if (updateConfigScale) {
             this.updateConfigAreaScale();
@@ -2382,6 +2829,12 @@ class DrawingBoard {
         
         // Update custom color picker
         document.getElementById('custom-bg-color-picker').value = this.backgroundManager.backgroundColor;
+        
+        // Update move-origin-btn visibility based on current pattern
+        const moveOriginBtn = document.getElementById('move-origin-btn');
+        if (moveOriginBtn) {
+            moveOriginBtn.style.display = this.backgroundManager.backgroundPattern === 'coordinate' ? 'inline-flex' : 'none';
+        }
     }
     
     updatePaginationUI() {
@@ -2446,7 +2899,8 @@ class DrawingBoard {
     
     // Pinch zoom and pan gesture handlers
     handlePinchStart(e) {
-        if (e.touches.length !== 2) return;
+        if (e.touches.length < 2) return;
+        if (!this.settingsManager.touchZoomEnabled) return;
         
         this.isPinching = true;
         const touch1 = e.touches[0];
@@ -2456,7 +2910,7 @@ class DrawingBoard {
     }
     
     handlePinchMove(e) {
-        if (!this.isPinching || e.touches.length !== 2) return;
+        if (!this.isPinching || e.touches.length < 2) return;
         
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
@@ -2464,23 +2918,56 @@ class DrawingBoard {
         const currentCenter = this.getPinchCenter(touch1, touch2);
         
         if (this.lastPinchDistance > 0 && this.lastPinchCenter) {
-            // Calculate zoom based on pinch distance
-            const scale = currentDistance / this.lastPinchDistance;
-            const newScale = Math.max(0.5, Math.min(5.0, this.drawingEngine.canvasScale * scale));
+            // Check if moved significantly to invalidate tap gesture
+            const moveThreshold = 5;
+            if (Math.abs(currentDistance - this.lastPinchDistance) > moveThreshold ||
+                Math.abs(currentCenter.x - this.lastPinchCenter.x) > moveThreshold ||
+                Math.abs(currentCenter.y - this.lastPinchCenter.y) > moveThreshold) {
+                this.isPotentialGesture = false;
+            }
+
+            // Calculate zoom ratio
+            const scaleRatio = currentDistance / this.lastPinchDistance;
+
+            // Calculate new scale with limits
+            const currentScale = this.drawingEngine.canvasScale;
+            let newScale = currentScale * scaleRatio;
+            newScale = Math.max(0.5, Math.min(5.0, newScale));
+
+            // Recalculate effective scale ratio after clamping
+            const effectiveScaleRatio = newScale / currentScale;
             
             this.drawingEngine.canvasScale = newScale;
             this.updateZoomUI();
-            localStorage.setItem('canvasScale', newScale);
             
-            // Calculate pan based on center movement
-            const deltaX = currentCenter.x - this.lastPinchCenter.x;
-            const deltaY = currentCenter.y - this.lastPinchCenter.y;
+            // Adjust pan offset to zoom towards the pinch center
+            // Visual center of the canvas (relative to screen)
+            // Since transform origin is center center, visual center is at screen center + pan offset
+            const screenCenterX = window.innerWidth / 2;
+            const screenCenterY = window.innerHeight / 2;
+
+            // The point on canvas under the last pinch center
+            // We want to keep this point under the new pinch center (conceptually)
+            // Formula: Pan_new = Pan_old + (PinchCenter_old - VisualCenter_old) * (1 - ScaleRatio) + (PinchCenter_new - PinchCenter_old)
+
+            // Vector from visual center to last pinch center
+            // visualCenter = screenCenter + panOffset
+            const visualCenterX = screenCenterX + this.drawingEngine.panOffset.x;
+            const visualCenterY = screenCenterY + this.drawingEngine.panOffset.y;
             
-            // Apply panning to canvas offset
-            this.drawingEngine.panOffset.x += deltaX;
-            this.drawingEngine.panOffset.y += deltaY;
-            localStorage.setItem('panOffsetX', this.drawingEngine.panOffset.x);
-            localStorage.setItem('panOffsetY', this.drawingEngine.panOffset.y);
+            const offsetX = this.lastPinchCenter.x - visualCenterX;
+            const offsetY = this.lastPinchCenter.y - visualCenterY;
+
+            // 1. Zoom effect (keeping lastPinchCenter fixed relative to canvas content)
+            let newPanX = this.drawingEngine.panOffset.x + offsetX * (1 - effectiveScaleRatio);
+            let newPanY = this.drawingEngine.panOffset.y + offsetY * (1 - effectiveScaleRatio);
+
+            // 2. Pan effect (moving content with fingers)
+            newPanX += (currentCenter.x - this.lastPinchCenter.x);
+            newPanY += (currentCenter.y - this.lastPinchCenter.y);
+
+            this.drawingEngine.panOffset.x = newPanX;
+            this.drawingEngine.panOffset.y = newPanY;
             
             // Apply zoom using applyZoom for consistency
             this.applyZoom(false);
@@ -2494,6 +2981,11 @@ class DrawingBoard {
         this.isPinching = false;
         this.lastPinchDistance = 0;
         this.lastPinchCenter = null;
+
+        // Save state after pinch ends
+        localStorage.setItem('canvasScale', this.drawingEngine.canvasScale);
+        localStorage.setItem('panOffsetX', this.drawingEngine.panOffset.x);
+        localStorage.setItem('panOffsetY', this.drawingEngine.panOffset.y);
     }
     
     getPinchDistance(touch1, touch2) {
@@ -2509,6 +3001,114 @@ class DrawingBoard {
         };
     }
     
+    // Pointer Events-based pinch gesture handlers
+    // These work with stylus/pen + finger combinations and pure touch inputs
+    handlePointerPinchStart() {
+        if (!this.settingsManager.touchZoomEnabled) return;
+        
+        // Get the first two pointers
+        const pointers = Array.from(this.activePointers.values());
+        if (pointers.length < 2) return;
+        
+        this.isPinching = true;
+        this.hasTwoFingers = true;
+        
+        // If we were drawing, stop and discard the current stroke
+        if (this.drawingEngine.isDrawing) {
+            this.discardCurrentStroke();
+        }
+        
+        // If we were panning, stop it
+        if (this.drawingEngine.isPanning) {
+            this.drawingEngine.stopPanning();
+        }
+        
+        // Calculate initial pinch distance and center
+        const p1 = pointers[0];
+        const p2 = pointers[1];
+        this.lastPinchDistance = this.getPointerDistance(p1, p2);
+        this.lastPinchCenter = this.getPointerCenter(p1, p2);
+    }
+    
+    handlePointerPinchMove() {
+        if (!this.isPinching) return;
+        
+        const pointers = Array.from(this.activePointers.values());
+        if (pointers.length < 2) return;
+        
+        const p1 = pointers[0];
+        const p2 = pointers[1];
+        const currentDistance = this.getPointerDistance(p1, p2);
+        const currentCenter = this.getPointerCenter(p1, p2);
+        
+        if (this.lastPinchDistance > 0 && this.lastPinchCenter) {
+            // Calculate zoom ratio
+            const scaleRatio = currentDistance / this.lastPinchDistance;
+            
+            // Calculate new scale with limits
+            const currentScale = this.drawingEngine.canvasScale;
+            let newScale = currentScale * scaleRatio;
+            newScale = Math.max(this.MIN_CANVAS_SCALE, Math.min(this.MAX_CANVAS_SCALE, newScale));
+            
+            // Recalculate effective scale ratio after clamping
+            const effectiveScaleRatio = newScale / currentScale;
+            
+            this.drawingEngine.canvasScale = newScale;
+            this.updateZoomUI();
+            
+            // Adjust pan offset to zoom towards the pinch center
+            const screenCenterX = window.innerWidth / 2;
+            const screenCenterY = window.innerHeight / 2;
+            const visualCenterX = screenCenterX + this.drawingEngine.panOffset.x;
+            const visualCenterY = screenCenterY + this.drawingEngine.panOffset.y;
+            
+            const offsetX = this.lastPinchCenter.x - visualCenterX;
+            const offsetY = this.lastPinchCenter.y - visualCenterY;
+            
+            // 1. Zoom effect (keeping lastPinchCenter fixed relative to canvas content)
+            let newPanX = this.drawingEngine.panOffset.x + offsetX * (1 - effectiveScaleRatio);
+            let newPanY = this.drawingEngine.panOffset.y + offsetY * (1 - effectiveScaleRatio);
+            
+            // 2. Pan effect (moving content with fingers)
+            newPanX += (currentCenter.x - this.lastPinchCenter.x);
+            newPanY += (currentCenter.y - this.lastPinchCenter.y);
+            
+            this.drawingEngine.panOffset.x = newPanX;
+            this.drawingEngine.panOffset.y = newPanY;
+            
+            // Apply zoom (false = don't update config-area scale)
+            this.applyZoom(false);
+        }
+        
+        this.lastPinchDistance = currentDistance;
+        this.lastPinchCenter = currentCenter;
+    }
+    
+    handlePointerPinchEnd() {
+        this.isPinching = false;
+        this.hasTwoFingers = false;
+        this.lastPinchDistance = 0;
+        this.lastPinchCenter = null;
+        
+        // Save state after pinch ends
+        localStorage.setItem('canvasScale', this.drawingEngine.canvasScale);
+        localStorage.setItem('panOffsetX', this.drawingEngine.panOffset.x);
+        localStorage.setItem('panOffsetY', this.drawingEngine.panOffset.y);
+    }
+    
+    getPointerDistance(p1, p2) {
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    getPointerCenter(p1, p2) {
+        return {
+            x: (p1.x + p2.x) / 2,
+            y: (p1.y + p2.y) / 2
+        };
+    }
+    
     applyPanTransform() {
         // Apply pan offset using CSS transform for better performance
         const panX = this.drawingEngine.panOffset.x;
@@ -2516,24 +3116,25 @@ class DrawingBoard {
         // Use the combined fit scale and user zoom scale
         const finalScale = this.canvasFitScale * this.drawingEngine.canvasScale;
         
-        if (!this.settingsManager.infiniteCanvas) {
-            // In paginated mode, center canvas using position and translate
-            this.canvas.style.position = 'absolute';
-            this.canvas.style.left = '50%';
-            this.canvas.style.top = '50%';
-            this.bgCanvas.style.position = 'absolute';
-            this.bgCanvas.style.left = '50%';
-            this.bgCanvas.style.top = '50%';
+        if (this.transformLayer) {
+            if (!this.settingsManager.infiniteCanvas) {
+                // In paginated mode, center canvas using position and translate
+                this.transformLayer.style.position = 'absolute';
+                this.transformLayer.style.left = '50%';
+                this.transformLayer.style.top = '50%';
+
+                // Combine translate and scale
+                const transform = `translate(-50%, -50%) translate(${panX}px, ${panY}px) scale(${finalScale})`;
+                this.transformLayer.style.transform = transform;
+            } else {
+                // In infinite mode, combine translate and scale
+                const transform = `translate(${panX}px, ${panY}px) scale(${finalScale})`;
+                this.transformLayer.style.transform = transform;
+            }
             
-            // Combine translate and scale
-            const transform = `translate(-50%, -50%) translate(${panX}px, ${panY}px) scale(${finalScale})`;
-            this.canvas.style.transform = transform;
-            this.bgCanvas.style.transform = transform;
-        } else {
-            // In infinite mode, combine translate and scale
-            const transform = `translate(${panX}px, ${panY}px) scale(${finalScale})`;
-            this.canvas.style.transform = transform;
-            this.bgCanvas.style.transform = transform;
+            // Ensure children don't have conflicting transforms
+            this.canvas.style.transform = 'none';
+            this.bgCanvas.style.transform = 'none';
         }
     }
     
@@ -2620,9 +3221,13 @@ class DrawingBoard {
     stopDraggingCoordinateOrigin() {
         if (this.isDraggingCoordinateOrigin) {
             this.isDraggingCoordinateOrigin = false;
-            // Restore cursor based on current tool
-            if (this.drawingEngine.currentTool === 'pan') {
+            // Restore cursor based on current tool or mode
+            if (this.isCoordinateOriginDragMode) {
+                this.canvas.style.cursor = 'move';
+            } else if (this.drawingEngine.currentTool === 'pan') {
                 this.canvas.style.cursor = 'grab';
+            } else {
+                this.canvas.style.cursor = 'crosshair';
             }
         }
     }
@@ -2632,6 +3237,9 @@ class DrawingBoard {
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', async () => {
         // Initialize i18n first
+        if (window.BrowserCheck) {
+            window.BrowserCheck.init();
+        }
         if (window.i18n) {
             await window.i18n.init();
         }
@@ -2640,6 +3248,9 @@ if (document.readyState === 'loading') {
 } else {
     // If DOM is already loaded, initialize immediately
     (async () => {
+        if (window.BrowserCheck) {
+            window.BrowserCheck.init();
+        }
         if (window.i18n) {
             await window.i18n.init();
         }

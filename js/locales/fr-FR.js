@@ -59,7 +59,10 @@ window.translations = {
             brush: 'Pinceau',
             color: 'Couleur',
             colorAndSize: 'Couleur et taille',
-            colorPicker: 'Sélecteur de couleur'
+            colorPicker: 'Sélecteur de couleur',
+            size: 'Épaisseur de ligne',
+            sizeLabel: 'Épaisseur : Actuelle',
+            sizePx: 'px'
         },
         shape: {
             title: 'Forme',
@@ -147,7 +150,18 @@ window.translations = {
         opacityHint: 'Ajuster la transparence de l\'arrière-plan, 100% est complètement opaque',
         contrast: 'Contraste',
         contrastHint: 'Ajuster l\'obscurité des lignes du motif d\'arrière-plan',
-        preference: 'Préférence de motif d\'arrière-plan'
+        preference: 'Préférence de motif d\'arrière-plan',
+        moveCoordinateOrigin: 'Déplacer l\'origine',
+        moveCoordinateOriginHint: 'Cliquez puis faites glisser sur le canevas pour déplacer l\'origine des coordonnées'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: 'Confirmer',
+        cancel: 'Annuler',
+        flipHorizontal: 'Retourner horizontalement',
+        flipVertical: 'Retourner verticalement',
+        rotate: 'Rotation'
     },
 
     // Page Navigation
@@ -353,12 +367,15 @@ window.translations = {
             textColor: 'Couleur du texte',
             bgColor: 'Couleur d\'arrière-plan',
             fontSize: 'Taille de police',
+            fontSizeLabel: 'Taille de police : Actuelle',
             opacity: 'Opacité',
+            opacityLabel: 'Opacité : Actuelle',
             fullscreenMode: 'Mode plein écran',
             fullscreenDisabled: 'Désactivé',
             fullscreenSingle: 'Simple clic',
             fullscreenDouble: 'Double clic',
             fullscreenFontSize: 'Taille de police plein écran',
+            fullscreenFontSizeLabel: 'Taille de police plein écran : Actuelle',
             fullscreenFontSizeHint: 'Ajuster la taille de police de l\'affichage de l\'heure en plein écran, plage 10%-85%',
             customColor: 'Couleur personnalisée'
         },
@@ -387,7 +404,10 @@ window.translations = {
         title: 'Fonctionnalités',
         moreFeatures: 'Plus de fonctionnalités',
         time: 'Heure',
-        timer: 'Minuteur'
+        timer: 'Minuteur',
+        randomPicker: 'Sélecteur',
+        scoreboard: 'Tableau',
+        insertImage: 'Image'
     },
 
     // Teaching Tools
@@ -456,7 +476,9 @@ window.translations = {
         continue: 'Continuer',
         pause: 'Pause',
         reset: 'Réinitialiser',
-        stop: 'Arrêter'
+        stop: 'Arrêter',
+        alertSetTime: 'Veuillez régler le compte à rebours',
+        alertTitle: 'Alerte'
     },
 
     // Timezone names

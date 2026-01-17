@@ -60,8 +60,8 @@ window.translations = {
             color: '색상',
             colorAndSize: '색상 및 크기',
             colorPicker: '색상 선택기',
-            size: '크기',
-            sizeLabel: '크기: 현재',
+            size: '선 굵기',
+            sizeLabel: '굵기: 현재',
             sizePx: 'px'
         },
         shape: {
@@ -159,7 +159,18 @@ window.translations = {
         contrastLabel: '패턴 투명도: 현재',
         contrastHint: '배경 패턴 선의 명암을 조정합니다',
         preference: '배경 패턴 기본 설정',
-        upload: '업로드'
+        upload: '업로드',
+        moveCoordinateOrigin: '원점 이동',
+        moveCoordinateOriginHint: '버튼을 클릭한 후 캔버스에서 드래그하여 좌표 원점 이동'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: '확인',
+        cancel: '취소',
+        flipHorizontal: '좌우 반전',
+        flipVertical: '상하 반전',
+        rotate: '회전'
     },
 
     // Page Navigation
@@ -365,12 +376,15 @@ window.translations = {
             textColor: '텍스트 색상',
             bgColor: '배경색',
             fontSize: '글꼴 크기',
+            fontSizeLabel: '글꼴 크기: 현재',
             opacity: '불투명도',
+            opacityLabel: '불투명도: 현재',
             fullscreenMode: '전체 화면 모드',
             fullscreenDisabled: '비활성화',
             fullscreenSingle: '한 번 클릭',
             fullscreenDouble: '두 번 클릭',
             fullscreenFontSize: '전체 화면 글꼴 크기',
+            fullscreenFontSizeLabel: '전체화면 글꼴 크기: 현재',
             fullscreenFontSizeHint: '전체 화면 시간 표시 글꼴 크기 조정, 범위 10%-85%',
             customColor: '사용자 정의 색상'
         }
@@ -381,7 +395,10 @@ window.translations = {
         title: '기능',
         moreFeatures: '더 많은 기능',
         time: '시간',
-        timer: '타이머'
+        timer: '타이머',
+        randomPicker: '추첨기',
+        scoreboard: '점수판',
+        insertImage: '이미지 삽입'
     },
 
     // Teaching Tools
@@ -493,7 +510,9 @@ window.translations = {
         continue: '계속',
         pause: '일시 정지',
         reset: '재설정',
-        stop: '정지'
+        stop: '정지',
+        alertSetTime: '카운트다운 시간을 설정해주세요',
+        alertTitle: '알림'
     },
 
     // Timezone names

@@ -60,8 +60,8 @@ window.translations = {
             color: '顏色',
             colorAndSize: '顏色与粗细',
             colorPicker: '取色器',
-            size: '粗细',
-            sizeLabel: '粗细：目前',
+            size: '線條粗細',
+            sizeLabel: '線條粗細：目前',
             sizePx: 'px'
         },
         shape: {
@@ -160,7 +160,18 @@ window.translations = {
         contrastHint: '調整背景圖案線條的明暗程度',
         preference: '背景圖案偏好',
         preferenceHint: '選擇在属性栏中顯示的圖案',
-        upload: '上传'
+        upload: '上传',
+        moveCoordinateOrigin: '移動座標原點',
+        moveCoordinateOriginHint: '點擊按鈕後，可在畫布上拖動移動座標原點'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: '確定',
+        cancel: '取消',
+        flipHorizontal: '水平翻轉',
+        flipVertical: '垂直翻轉',
+        rotate: '旋轉'
     },
 
     // Page Navigation
@@ -244,6 +255,8 @@ window.translations = {
             },
             edgeSnap: '啟用边缘吸附',
             edgeSnapHint: '拖动控制面板时自动吸附到屏幕边缘',
+            touchZoom: '觸控縮放',
+            touchZoomHint: '允許雙指捏合縮放畫布',
             controlPosition: '控制按钮位置',
             controlPositionHint: '選擇縮放和分頁控件在屏幕上的顯示位置',
             positionTopLeft: '左上角',
@@ -376,8 +389,10 @@ window.translations = {
             textColor: '字体顏色',
             bgColor: '背景顏色',
             fontSize: '字体大小',
+            fontSizeLabel: '字體大小：當前',
             fontSizeHint: '調整時間顯示的字体大小',
             opacity: '透明度',
+            opacityLabel: '透明度：當前',
             opacityHint: '調整時間顯示的透明度',
             fullscreenMode: '全螢幕模式',
             fullscreenModeHint: '選擇如何触发時間全螢幕顯示',
@@ -385,6 +400,7 @@ window.translations = {
             fullscreenSingle: '單擊',
             fullscreenDouble: '雙擊',
             fullscreenFontSize: '全螢幕字体大小',
+            fullscreenFontSizeLabel: '全屏字體大小：當前',
             fullscreenFontSizeHint: '調整全螢幕時間顯示的字体大小，范围10%-85%',
             customColor: '自定义顏色',
             displayOptions: '顯示選項'
@@ -396,7 +412,10 @@ window.translations = {
         title: '小功能',
         moreFeatures: '更多功能',
         time: '時間',
-        timer: '計時'
+        timer: '計時',
+        randomPicker: '點名器',
+        scoreboard: '計分板',
+        insertImage: '插入圖片'
     },
 
     // Teaching Tools
@@ -510,7 +529,9 @@ window.translations = {
         continue: '繼續',
         pause: '暂停',
         reset: '重置',
-        stop: '停止'
+        stop: '停止',
+        alertSetTime: '請設置倒計時時間',
+        alertTitle: '提示'
     },
 
     // Timezone names

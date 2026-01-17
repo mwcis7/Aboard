@@ -18,7 +18,9 @@ window.translations = {
         no: '否',
         ok: '好的',
         apply: '应用',
-        reset: '重置'
+        reset: '重置',
+        start: '开始',
+        stop: '停止'
     },
 
     // App Title
@@ -60,8 +62,8 @@ window.translations = {
             color: '颜色',
             colorAndSize: '颜色与粗细',
             colorPicker: '取色器',
-            size: '粗细',
-            sizeLabel: '粗细：当前',
+            size: '线条粗细',
+            sizeLabel: '线条粗细：当前',
             sizePx: 'px'
         },
         shape: {
@@ -159,7 +161,18 @@ window.translations = {
         contrastHint: '调整背景图案线条的明暗程度',
         preference: '背景图案偏好',
         preferenceHint: '选择在属性栏中显示的图案',
-        upload: '上传'
+        upload: '上传',
+        moveCoordinateOrigin: '移动坐标原点',
+        moveCoordinateOriginHint: '点击按钮后，可在画布上拖动移动坐标原点'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: '确定',
+        cancel: '取消',
+        flipHorizontal: '水平翻转',
+        flipVertical: '垂直翻转',
+        rotate: '旋转'
     },
 
     // Page Navigation
@@ -243,6 +256,8 @@ window.translations = {
             },
             edgeSnap: '启用边缘吸附',
             edgeSnapHint: '拖动控制面板时自动吸附到屏幕边缘',
+            touchZoom: '触控缩放',
+            touchZoomHint: '允许双指捏合缩放画布',
             controlPosition: '控制按钮位置',
             controlPositionHint: '选择缩放和分页控件在屏幕上的显示位置',
             positionTopLeft: '左上角',
@@ -365,6 +380,7 @@ window.translations = {
             timeFormat24: '24小时制',
             dateFormat: '日期格式',
             dateFormatHint: '选择日期的显示格式',
+            dateFormatAuto: '自动 (跟随系统)',
             dateFormatYMD: '年-月-日 (2024-01-01)',
             dateFormatMDY: '月-日-年 (01-01-2024)',
             dateFormatDMY: '日-月-年 (01-01-2024)',
@@ -375,8 +391,10 @@ window.translations = {
             textColor: '字体颜色',
             bgColor: '背景颜色',
             fontSize: '字体大小',
+            fontSizeLabel: '字体大小：当前',
             fontSizeHint: '调整时间显示的字体大小',
             opacity: '透明度',
+            opacityLabel: '透明度：当前',
             opacityHint: '调整时间显示的透明度',
             fullscreenMode: '全屏模式',
             fullscreenModeHint: '选择如何触发时间全屏显示',
@@ -384,6 +402,7 @@ window.translations = {
             fullscreenSingle: '单击',
             fullscreenDouble: '双击',
             fullscreenFontSize: '全屏字体大小',
+            fullscreenFontSizeLabel: '全屏字体大小：当前',
             fullscreenFontSizeHint: '调整全屏时间显示的字体大小，范围10%-85%',
             customColor: '自定义颜色',
             displayOptions: '显示选项'
@@ -395,7 +414,45 @@ window.translations = {
         title: '小功能',
         moreFeatures: '更多功能',
         time: '时间',
-        timer: '计时'
+        timer: '计时',
+        randomPicker: '点名器',
+        scoreboard: '计分板',
+        insertImage: '插入图片'
+    },
+
+    // Random Picker
+    randomPicker: {
+        namePicker: '姓名点名器',
+        numberPicker: '数字点名器',
+        noNames: '请添加名单',
+        settingsTitle: '点名器设置',
+        modeName: '姓名模式',
+        modeNumber: '数字模式',
+        titleLabel: '标题',
+        titlePlaceholder: '自定义标题（可选）',
+        namesLabel: '名单列表（每行一个）',
+        namesPlaceholder: '张三\n李四\n王五',
+        defaultNames: '张三\n李四\n王五\n赵六\n孙七',
+        allowRepeats: '允许重复抽取',
+        rangeLabel: '数字范围',
+        importLabel: '导入名单 (Excel/CSV)',
+        defaultColumnName: '姓名',
+        importBtn: '选择文件导入',
+        importHint: '提示：自动读取表格中对应列名的内容',
+        importSuccess: '成功导入 {count} 个名字',
+        importNoData: '未找到指定列的数据，请检查列名设置',
+        importError: '文件解析失败'
+    },
+
+    // Scoreboard
+    scoreboard: {
+        title: '计分板',
+        addTeam: '添加队伍',
+        reset: '重置分数',
+        confirmRemoveTeam: '确定要移除这个队伍吗？',
+        teamDefault: '队伍',
+        removeTeam: '删除队伍',
+        confirmReset: '确定要重置所有分数吗？'
     },
 
     // Teaching Tools
@@ -443,29 +500,36 @@ window.translations = {
         fullscreenMode: '全屏模式',
         fullscreenFontSize: '全屏字体大小',
         fullscreenFontSizeLabel: '全屏字体大小：当前',
+        fullscreenFontSizeHint: '调整全屏时间显示的字体大小，范围10%-85%',
         fullscreenSliderLabel: '字体大小调节 (10%-85%)',
         customColor: '自定义颜色',
-        transparent: '透明'
+        transparent: '透明',
+        fullscreenDisabled: '关闭',
+        fullscreenSingle: '单击',
+        fullscreenDouble: '双击'
     },
 
     // Timer
     timer: {
+        title: '计时器',
         settingsTitle: '计时器设置',
         mode: '模式',
         selectMode: '选择模式',
         countdown: '倒计时',
         stopwatch: '正计时',
-        duration: '计时时长（分钟）',
+        duration: '设置总时间',
         hours: '小时',
         minutes: '分钟',
         seconds: '秒',
-        title: '计时器标题（可选）',
+        timerTitle: '计时器标题（可选）',
         titlePlaceholder: '例如：课堂演讲、考试时间等',
         setTime: '设置时间',
         setStartTime: '设置开始时间',
         fontSettings: '字体设置',
         fontSize: '字体大小',
         fontSizeLabel: '字体大小：当前',
+        minimal: '最简',
+        minimalMode: '最简显示 (双击恢复)',
         adjustColor: '调整颜色',
         colorSettings: '颜色设置',
         textColor: '字体颜色',
@@ -510,7 +574,9 @@ window.translations = {
         continue: '继续',
         pause: '暂停',
         reset: '重置',
-        stop: '停止'
+        stop: '停止',
+        alertSetTime: '请设置倒计时时间',
+        alertTitle: '提示'
     },
 
     // Timezone names

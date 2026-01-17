@@ -1,6 +1,6 @@
 ![Aboard](https://socialify.git.ci/lifeafter619/Aboard/image?custom_description=%E4%B8%80%E4%B8%AA%E7%AE%80%E7%BA%A6%E7%9A%84web%E7%99%BD%E6%9D%BF%EF%BC%8C%E6%9B%B4%E9%80%82%E5%90%88%E8%80%81%E5%B8%88%E4%BD%93%E8%B4%A8+%0A%F0%9D%93%99%F0%9D%93%BE%F0%9D%93%BC%F0%9D%93%BD+%F0%9D%93%AA+%F0%9D%93%AB%F0%9D%93%B8%F0%9D%93%AA%F0%9D%93%BB%F0%9D%93%AD+%F0%9D%93%AF%F0%9D%93%B8%F0%9D%93%BB+%F0%9D%93%BD%F0%9D%93%AE%F0%9D%93%AA%F0%9D%93%AC%F0%9D%93%B1%F0%9D%93%AE%F0%9D%93%BB%F0%9D%93%BC.&description=1&font=Bitter&forks=1&issues=1&language=1&name=1&owner=1&pattern=Brick+Wall&pulls=1&stargazers=1&theme=Auto)
 
-# Aboard or.... 一个白板
+# Aboard. or.... 一个白板
 
 <div align="center">
 
@@ -49,6 +49,25 @@ graph LR
     click H "https://dev.aboard.pp.ua" "最新测试"
 ```
 
+## 最近更新 (Recent Updates)
+- **触控手势增强**：使用 Pointer Events API 实现更可靠的双指捏合缩放，支持触控笔+手指组合手势，兼容各种触控设备。
+- **项目清理**：移除了开发过程中的临时文件和备份文件，更新了 .gitignore 配置。
+- **形状预览优化**：修复了形状绘制时预览线条比实际线条细的问题，实现了所见即所得。
+- **插入图片修复**：修复了插入图片功能无法正常显示编辑框的严重Bug。
+- **箭头设置增强**：将粗细标签统一为线条粗细，增加了箭头大小的上限（100px），并实现了箭头大小不小于线条粗细的动态约束。
+- **点名器升级**：新增 Excel/CSV 表格导入功能，支持自定义姓名列读取。
+- **帮助系统**：在各个设置面板中增加了帮助按钮，支持丰富的文本格式（加粗、下划线、颜色、字号）。
+- **兼容性优化**：全面升级为 Pointer Events，提升 Windows 触控设备和安卓大屏的兼容性与流畅度。
+- **触控优化**：新增双指捏合缩放画布功能（可在设置中开启/关闭），双击画布智能缩放，优化了触控操作的响应速度。
+
+
+### 📖 帮助文档格式说明
+在帮助内容文件中（`js/locales/help/*.js`），您可以使用以下类似 Markdown 的语法来丰富显示效果：
+- **加粗**：`**加粗文本**` -> **加粗文本**
+- **下划线**：`__下划线文本__` -> <u>下划线文本</u>
+- **颜色**：`[color=red]红色文本[/color]` -> <span style="color:red">红色文本</span>
+- **字号**：`[size=20px]大号文本[/size]` -> <span style="font-size:20px">大号文本</span>
+
 <details>
   <summary>这里面是AI写的功能介绍，挺详细的，可以打开看看啦</summary>
   
@@ -64,8 +83,9 @@ graph LR
 
 ### 📐 专业背景图案
 - **多种教学背景**：空白、点阵、方格、田字格、英语四线格、五线谱、坐标系
-- **可移动坐标系原点**：坐标系原点默认在画布中心，在移动模式下双击选中坐标系中心可拖动移动位置
+- **可移动坐标系原点**：坐标系原点默认在画布中心，点击"移动坐标原点"按钮后可在画布上拖动移动位置（支持触控屏）
 - **自定义背景**：支持上传图片作为背景，可调节大小和位置
+- **背景图片编辑**：背景图片支持拖动、旋转、缩放以及水平/垂直翻转
 - **背景样式**：8种预设背景颜色 + 自定义颜色，可调节透明度和图案深浅
 
 ### 📏 教具功能
@@ -100,7 +120,10 @@ graph LR
 ### 🎯 智能交互体验
 - **选择工具**：可选择和操作画布上的笔迹和图片，支持复制和删除
 - **移动画布**：拖动工具或按住Shift键拖动画布
-- **智能缩放**：Ctrl+滚轮缩放画布，缩放中心跟随鼠标位置，支持50%-500%缩放范围
+- **智能缩放**：
+  - 鼠标：Ctrl+滚轮缩放画布，缩放中心跟随鼠标位置
+  - 触控：双指捏合缩放（支持在设置中开启/关闭），双击自动缩放/还原
+  - 支持50%-500%缩放范围
 - **初始画布大小**：首次打开或刷新后，画布自动调整为浏览器窗口的80%大小
 - **撤销/重做**：支持最多50步历史记录（Ctrl+Z / Ctrl+Y）
 - **全屏模式**：专注创作，沉浸体验（F11）
@@ -151,6 +174,7 @@ graph LR
   - 切换语言后立即生效
 
 ### 💾 数据管理
+- **点名器导入**：支持从 .xlsx, .xls, .csv 文件导入名单，自动识别列名。
 - **导出功能**：支持导出为PNG/JPEG图片
   - 导出当前页、全部页面或指定页面
   - 文件名自动包含用户当前时区的时间戳
@@ -182,9 +206,11 @@ graph LR
 
 **背景**~~~~可选择背景颜色，支持取色器取色（可在设置--背景中调整背景的透明度啥的），支持设置背景图案，我设置了贴合中国课堂的常见背景需求，且背景是支持分页独立配置的！！！
 
-选择后可调整密度，便于调整点/线间宽度，也可以自己上传图片作为背景，~~可拖动调节大小~~（该功能有bug，未来会移除，请点击右边的铅笔图标，拖动蓝色框和相关控件来更改位置、大小、方向）
+选择后可调整密度，便于调整点/线间宽度，也可以自己上传图片作为背景，可通过蓝色边框控件来调整位置、大小、旋转角度，还支持水平/垂直翻转
 
-**更多**~~~~我打算做小功能，目前放了“时间”和“计时”两个小功能，都能独立设置调整，您可以自己探索：）
+**更多**~~~~小功能区，包含"时间"、"计时"、"点名器"、"计分板"和"插入图片"功能
+
+**插入图片**~~~~可将图片插入到画布上，支持拖动调整位置、缩放大小、旋转以及水平/垂直翻转。插入的图片大小会自动限制在画布的一半以内
 
 **小功能**这块，我觉得我做的挺好的🤣，也花费了很多时间来调试和补充设置相关功能，力求满足所有需求
 
@@ -204,14 +230,13 @@ graph LR
 
 **时间显示组件**~~~~对应更多中的“时间”选项，默认开启来提醒老师时间，更多功能可在“时间显示选项”里的设置按钮里调节（这一块做的很用心哒）
 
+**赛博教具**
+
 功能目前实现的就这些，虽然看着不多，但**每一块我都花了很多心思**，写起来简单，使用起来也简单，唯独实现起来不简单，希望您能多多体验下啦！！！
 
 **具体的Bug统计和To-Do List请参见我的博客文章**
 
 ## 🚀 快速开始
-
-### 在线使用
-直接打开 `index.html` 文件即可开始使用，无需安装任何依赖。
 
 ### 一键部署
 
@@ -311,6 +336,7 @@ php -S localhost:8080
 Aboard/
 ├── index.html              # 主HTML文件
 ├── LICENSE                 # MIT许可证文件
+├── package.json            # 项目配置文件
 ├── announcements.json      # 公告内容配置
 ├── css/
 │   ├── style.css          # 主样式表
@@ -321,12 +347,17 @@ Aboard/
 │       ├── feature-area.css # 功能区样式
 │       ├── teaching-tools.css # 教具功能样式
 │       ├── shape.css      # 形状工具样式
-│       └── line-style-modal.css # 线条样式设置弹窗样式
+│       ├── line-style-modal.css # 线条样式设置弹窗样式
+│       ├── random-picker.css # 点名器样式
+│       ├── scoreboard.css # 计分板样式
+│       └── insert-image.css # 插入图片样式
 ├── js/
+│   ├── main.js            # 主应用入口
 │   ├── drawing.js         # 绘图引擎模块
 │   ├── history.js         # 历史记录管理模块
 │   ├── background.js      # 背景管理模块
-│   ├── image-controls.js  # 图片控制模块
+│   ├── image-controls.js  # 图片控制模块（背景图片编辑，支持翻转）
+│   ├── insert-image.js    # 插入图片模块（画布贴图功能，支持翻转）
 │   ├── stroke-controls.js # 笔迹控制模块
 │   ├── selection.js       # 选择工具模块
 │   ├── settings.js        # 设置管理模块
@@ -336,6 +367,8 @@ Aboard/
 │   ├── collapsible.js     # 可折叠面板模块
 │   ├── shape-insertion.js # 形状插入模块
 │   ├── text-insertion.js  # 文本插入模块
+│   ├── libs/              # 第三方库
+│   │   └── xlsx.full.min.js # Excel文件处理库
 │   ├── locales/           # 国际化语言文件
 │   │   ├── zh-CN.js       # 简体中文
 │   │   ├── zh-TW.js       # 繁体中文
@@ -344,17 +377,25 @@ Aboard/
 │   │   ├── ko-KR.js       # 韩语
 │   │   ├── fr-FR.js       # 法语
 │   │   ├── de-DE.js       # 德语
-│   │   └── es-ES.js       # 西班牙语
-│   ├── modules/
-│   │   ├── timer.js       # 计时器模块
-│   │   ├── time-display-controls.js # 时间显示控制
-│   │   ├── time-display-settings.js # 时间显示设置
-│   │   ├── edge-drawing.js # 边缘绘制模块（沿教具边缘画线）
-│   │   ├── teaching-tools.js # 教具功能模块
-│   │   ├── shape-drawing.js # 形状绘制模块（支持直线、矩形、圆形）
-│   │   ├── line-style-modal.js # 线条样式设置弹窗模块
-│   │   └── i18n.js        # 国际化核心模块
-│   └── main.js            # 主应用入口
+│   │   ├── es-ES.js       # 西班牙语
+│   │   └── help/          # 帮助内容翻译
+│   │       ├── zh-CN.js   # 简体中文帮助
+│   │       └── en-US.js   # 英文帮助
+│   └── modules/           # 功能模块
+│       ├── timer.js       # 计时器模块
+│       ├── time-display-controls.js # 时间显示控制
+│       ├── time-display-settings.js # 时间显示设置
+│       ├── edge-drawing.js # 边缘绘制模块（沿教具边缘画线）
+│       ├── teaching-tools.js # 教具功能模块
+│       ├── shape-drawing.js # 形状绘制模块（支持直线、矩形、圆形）
+│       ├── random-picker.js # 点名器模块
+│       ├── scoreboard.js  # 计分板模块
+│       ├── line-style-modal.js # 线条样式设置弹窗模块
+│       ├── i18n.js        # 国际化核心模块
+│       ├── help-system.js # 帮助系统模块
+│       ├── browser-check.js # 浏览器兼容性检查
+│       ├── gif-manager.js # GIF动图管理模块
+│       └── libgif.js      # GIF解析库
 ├── img/                    # 图片资源目录
 │   ├── ruler_1.png        # 直尺样式1
 │   ├── ruler_2.png        # 直尺样式2
@@ -369,6 +410,9 @@ Aboard/
 │   ├── gentle-alarm.MP3   # 柔和提示音
 │   ├── digital-beep.MP3   # 数字提示音
 │   └── README.md          # 音频文件说明
+├── tests/                  # 测试文件夹
+│   └── manual/            # 手动测试
+│       └── verify_architecture.spec.js
 └── README.md              # 项目文档（简体中文）
 ```
 
@@ -390,6 +434,10 @@ Aboard/
 - **ExportManager** - 导出管理，处理画布导出功能
 - **TeachingToolsManager** - 教具管理，处理直尺和三角板的插入、移动、旋转和缩放
 - **EdgeDrawingManager** - 边缘绘制管理，处理沿教具边缘画线功能
+- **RandomPickerManager** - 点名器管理，处理点名器逻辑
+- **ScoreboardManager** - 计分板管理，处理计分功能
+- **InsertImageManager** - 插入图片管理，处理画布贴图功能，支持翻转
+- **ImageControls** - 图片控制，处理背景图片的编辑和翻转
 - **DrawingBoard** - 主应用类，集成所有模块并协调交互
 
 ### 性能优化

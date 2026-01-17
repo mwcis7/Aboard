@@ -60,8 +60,8 @@ window.translations = {
             color: '色',
             colorAndSize: '色とサイズ',
             colorPicker: 'カラーピッカー',
-            size: 'サイズ',
-            sizeLabel: 'サイズ：現在',
+            size: '線の太さ',
+            sizeLabel: '太さ：現在',
             sizePx: 'px'
         },
         shape: {
@@ -159,7 +159,18 @@ window.translations = {
         contrastLabel: 'パターン透明度：現在',
         contrastHint: '背景パターン線の明暗を調整します',
         preference: '背景パターンの設定',
-        upload: 'アップロード'
+        upload: 'アップロード',
+        moveCoordinateOrigin: '原点を移動',
+        moveCoordinateOriginHint: 'ボタンをクリックしてキャンバス上でドラッグして座標原点を移動'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: '確定',
+        cancel: 'キャンセル',
+        flipHorizontal: '左右反転',
+        flipVertical: '上下反転',
+        rotate: '回転'
     },
 
     // Page Navigation
@@ -365,12 +376,15 @@ window.translations = {
             textColor: 'テキスト色',
             bgColor: '背景色',
             fontSize: 'フォントサイズ',
+            fontSizeLabel: 'フォントサイズ：現在',
             opacity: '不透明度',
+            opacityLabel: '不透明度：現在',
             fullscreenMode: 'フルスクリーンモード',
             fullscreenDisabled: '無効',
             fullscreenSingle: 'シングルクリック',
             fullscreenDouble: 'ダブルクリック',
             fullscreenFontSize: 'フルスクリーンフォントサイズ',
+            fullscreenFontSizeLabel: 'フルスクリーンフォントサイズ：現在',
             fullscreenFontSizeHint: 'フルスクリーン時刻表示のフォントサイズを調整、範囲10%-85%',
             customColor: 'カスタムカラー'
         }
@@ -381,7 +395,10 @@ window.translations = {
         title: '機能',
         moreFeatures: 'その他の機能',
         time: '時刻',
-        timer: 'タイマー'
+        timer: 'タイマー',
+        randomPicker: '抽選器',
+        scoreboard: 'スコアボード',
+        insertImage: '画像を挿入'
     },
 
     // Teaching Tools
@@ -493,7 +510,9 @@ window.translations = {
         continue: '続行',
         pause: '一時停止',
         reset: 'リセット',
-        stop: '停止'
+        stop: '停止',
+        alertSetTime: 'カウントダウン時間を設定してください',
+        alertTitle: '警告'
     },
 
     // Timezone names
