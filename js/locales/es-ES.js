@@ -473,7 +473,9 @@ window.translations = {
         continue: 'Continuar',
         pause: 'Pausar',
         reset: 'Restablecer',
-        stop: 'Detener'
+        stop: 'Detener',
+        alertSetTime: 'Por favor, establezca el tiempo de cuenta regresiva',
+        alertTitle: 'Alerta'
     },
 
     // Timezone names

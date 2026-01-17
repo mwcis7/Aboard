@@ -408,8 +408,8 @@ class DrawingBoard {
                 return;
             }
             
-            // If two fingers, handle pinch
-            if (e.touches.length === 2) {
+            // If two or more fingers (or pen + finger), handle pinch
+            if (e.touches.length >= 2) {
                 e.preventDefault(); // Prevent default zoom/scroll
                 this.hasTwoFingers = true;
 
@@ -462,7 +462,7 @@ class DrawingBoard {
                 }
             }
 
-            if (e.touches.length === 2) {
+            if (e.touches.length >= 2) {
                 e.preventDefault();
                 this.handlePinchMove(e);
             }
@@ -526,10 +526,13 @@ class DrawingBoard {
                 this.maxTouchesInGesture = 0;
             }
 
+            // If we still have enough fingers to pinch, re-anchor to prevent jumps
+            if (e.touches.length >= 2 && this.isPinching) {
+                this.handlePinchStart(e);
+            }
+
             if (e.touches.length < 2) {
                 this.handlePinchEnd();
-            }
-            if (e.touches.length === 0) {
                 this.hasTwoFingers = false;
             }
         }, { passive: false });
@@ -1244,6 +1247,11 @@ class DrawingBoard {
             localStorage.setItem('edgeSnapEnabled', e.target.checked);
         });
         
+        document.getElementById('touch-zoom-checkbox').addEventListener('change', (e) => {
+            this.settingsManager.touchZoomEnabled = e.target.checked;
+            localStorage.setItem('touchZoomEnabled', e.target.checked);
+        });
+
         // Global font selector
         document.getElementById('global-font-select').addEventListener('change', (e) => {
             this.settingsManager.setGlobalFont(e.target.value);
@@ -2294,10 +2302,10 @@ class DrawingBoard {
             newScale = 2.0;
         }
 
-        this.zoomToPoint(touch.clientX, touch.clientY, newScale);
+        this.zoomToPoint(touch.clientX, touch.clientY, newScale, true);
     }
 
-    zoomToPoint(clientX, clientY, newScale) {
+    zoomToPoint(clientX, clientY, newScale, animate = false) {
         // Get canvas position and dimensions
         const rect = this.canvas.getBoundingClientRect();
 
@@ -2328,7 +2336,20 @@ class DrawingBoard {
         // Update scale
         this.drawingEngine.canvasScale = newScale;
         this.updateZoomUI();
-        this.applyZoom(false);
+
+        if (animate && this.transformLayer) {
+            this.transformLayer.classList.add('smooth-transform');
+            this.applyZoom(false);
+
+            // Remove class after transition
+            setTimeout(() => {
+                if (this.transformLayer) {
+                    this.transformLayer.classList.remove('smooth-transform');
+                }
+            }, 300);
+        } else {
+            this.applyZoom(false);
+        }
 
         // Save to localStorage
         localStorage.setItem('canvasScale', newScale);
@@ -2814,7 +2835,8 @@ class DrawingBoard {
     
     // Pinch zoom and pan gesture handlers
     handlePinchStart(e) {
-        if (e.touches.length !== 2) return;
+        if (e.touches.length < 2) return;
+        if (!this.settingsManager.touchZoomEnabled) return;
         
         this.isPinching = true;
         const touch1 = e.touches[0];
@@ -2824,7 +2846,7 @@ class DrawingBoard {
     }
     
     handlePinchMove(e) {
-        if (!this.isPinching || e.touches.length !== 2) return;
+        if (!this.isPinching || e.touches.length < 2) return;
         
         const touch1 = e.touches[0];
         const touch2 = e.touches[1];
@@ -2839,23 +2861,49 @@ class DrawingBoard {
                 Math.abs(currentCenter.y - this.lastPinchCenter.y) > moveThreshold) {
                 this.isPotentialGesture = false;
             }
-            // Calculate zoom based on pinch distance
-            const scale = currentDistance / this.lastPinchDistance;
-            const newScale = Math.max(0.5, Math.min(5.0, this.drawingEngine.canvasScale * scale));
+
+            // Calculate zoom ratio
+            const scaleRatio = currentDistance / this.lastPinchDistance;
+
+            // Calculate new scale with limits
+            const currentScale = this.drawingEngine.canvasScale;
+            let newScale = currentScale * scaleRatio;
+            newScale = Math.max(0.5, Math.min(5.0, newScale));
+
+            // Recalculate effective scale ratio after clamping
+            const effectiveScaleRatio = newScale / currentScale;
             
             this.drawingEngine.canvasScale = newScale;
             this.updateZoomUI();
-            localStorage.setItem('canvasScale', newScale);
             
-            // Calculate pan based on center movement
-            const deltaX = currentCenter.x - this.lastPinchCenter.x;
-            const deltaY = currentCenter.y - this.lastPinchCenter.y;
+            // Adjust pan offset to zoom towards the pinch center
+            // Visual center of the canvas (relative to screen)
+            // Since transform origin is center center, visual center is at screen center + pan offset
+            const screenCenterX = window.innerWidth / 2;
+            const screenCenterY = window.innerHeight / 2;
+
+            // The point on canvas under the last pinch center
+            // We want to keep this point under the new pinch center (conceptually)
+            // Formula: Pan_new = Pan_old + (PinchCenter_old - VisualCenter_old) * (1 - ScaleRatio) + (PinchCenter_new - PinchCenter_old)
+
+            // Vector from visual center to last pinch center
+            // visualCenter = screenCenter + panOffset
+            const visualCenterX = screenCenterX + this.drawingEngine.panOffset.x;
+            const visualCenterY = screenCenterY + this.drawingEngine.panOffset.y;
             
-            // Apply panning to canvas offset
-            this.drawingEngine.panOffset.x += deltaX;
-            this.drawingEngine.panOffset.y += deltaY;
-            localStorage.setItem('panOffsetX', this.drawingEngine.panOffset.x);
-            localStorage.setItem('panOffsetY', this.drawingEngine.panOffset.y);
+            const offsetX = this.lastPinchCenter.x - visualCenterX;
+            const offsetY = this.lastPinchCenter.y - visualCenterY;
+
+            // 1. Zoom effect (keeping lastPinchCenter fixed relative to canvas content)
+            let newPanX = this.drawingEngine.panOffset.x + offsetX * (1 - effectiveScaleRatio);
+            let newPanY = this.drawingEngine.panOffset.y + offsetY * (1 - effectiveScaleRatio);
+
+            // 2. Pan effect (moving content with fingers)
+            newPanX += (currentCenter.x - this.lastPinchCenter.x);
+            newPanY += (currentCenter.y - this.lastPinchCenter.y);
+
+            this.drawingEngine.panOffset.x = newPanX;
+            this.drawingEngine.panOffset.y = newPanY;
             
             // Apply zoom using applyZoom for consistency
             this.applyZoom(false);
@@ -2869,6 +2917,11 @@ class DrawingBoard {
         this.isPinching = false;
         this.lastPinchDistance = 0;
         this.lastPinchCenter = null;
+
+        // Save state after pinch ends
+        localStorage.setItem('canvasScale', this.drawingEngine.canvasScale);
+        localStorage.setItem('panOffsetX', this.drawingEngine.panOffset.x);
+        localStorage.setItem('panOffsetY', this.drawingEngine.panOffset.y);
     }
     
     getPinchDistance(touch1, touch2) {

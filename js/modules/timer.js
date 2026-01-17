@@ -244,13 +244,10 @@ class TimerInstance {
     }
     
     setupDragging() {
-        const header = this.displayElement.querySelector('.timer-display-header');
-        const timeDisplay = this.displayElement.querySelector('.timer-display-time');
-        
         // Unified handler for mouse and touch start
         const handleStart = (e) => {
-            // Don't start dragging if clicking on close button
-            if (e.target.closest('.timer-close-btn')) return;
+            // Don't start dragging if clicking on interactive elements
+            if (e.target.closest('button') || e.target.closest('input')) return;
             
             this.isDragging = true;
             this.displayElement.classList.add('dragging');
@@ -265,12 +262,10 @@ class TimerInstance {
             e.preventDefault();
         };
         
-        // Allow dragging from header or time display (when compact)
+        // Allow dragging from the entire widget
         // Add both mouse and touch event listeners for better touch device support
-        header.addEventListener('mousedown', handleStart);
-        header.addEventListener('touchstart', handleStart, { passive: false });
-        timeDisplay.addEventListener('mousedown', handleStart);
-        timeDisplay.addEventListener('touchstart', handleStart, { passive: false });
+        this.displayElement.addEventListener('mousedown', handleStart);
+        this.displayElement.addEventListener('touchstart', handleStart, { passive: false });
         
         // Unified handler for mouse and touch move
         const handleMove = (e) => {

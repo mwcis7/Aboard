@@ -470,7 +470,7 @@
     user-select: none;
     min-width: 220px;
     max-width: 300px;
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s ease, width 0.3s ease, min-width 0.3s ease, padding 0.3s ease, background-color 0.3s ease, color 0.3s ease, border-radius 0.3s ease;
     /* Improved touch device support */
     touch-action: none;
     /* Performance optimization */

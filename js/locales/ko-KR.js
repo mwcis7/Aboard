@@ -507,7 +507,9 @@ window.translations = {
         continue: '계속',
         pause: '일시 정지',
         reset: '재설정',
-        stop: '정지'
+        stop: '정지',
+        alertSetTime: '카운트다운 시간을 설정해주세요',
+        alertTitle: '알림'
     },
 
     // Timezone names
