@@ -255,6 +255,8 @@ window.translations = {
             },
             edgeSnap: '啟用边缘吸附',
             edgeSnapHint: '拖动控制面板时自动吸附到屏幕边缘',
+            touchZoom: '觸控縮放',
+            touchZoomHint: '允許雙指捏合縮放畫布',
             controlPosition: '控制按钮位置',
             controlPositionHint: '選擇縮放和分頁控件在屏幕上的顯示位置',
             positionTopLeft: '左上角',
