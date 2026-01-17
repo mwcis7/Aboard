@@ -34,7 +34,7 @@ class TimeDisplayManager {
         
         // Click detection settings
         this.lastClickTime = 0;
-        this.doubleClickDelay = 600; // Increased from default ~300ms to 600ms for easier double-clicking
+        this.doubleClickDelay = 800; // Increased to 800ms for even easier double-clicking
         
         this.applySettings();
         this.setupFullscreenListeners();

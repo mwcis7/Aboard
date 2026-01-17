@@ -422,8 +422,14 @@ class TimeDisplaySettingsModal {
         if (activeBgColorBtn) {
             this.timeDisplayManager.bgColor = activeBgColorBtn.dataset.tdTimeBgColor;
         } else if (customBgColorPicker) {
-            // Use dataset.selectedColor if available, otherwise use the picker's value
-            this.timeDisplayManager.bgColor = customBgColorPicker.dataset.selectedColor || customBgColorPicker.value || '#ffffff';
+            // Only use custom picker if it has been explicitly selected/changed
+            // Check if the custom picker button is active
+            const customBgColorPickerBtn = document.querySelector('label[for="td-custom-bg-color-picker"]');
+            if (customBgColorPickerBtn && customBgColorPickerBtn.classList.contains('active')) {
+                this.timeDisplayManager.bgColor = customBgColorPicker.dataset.selectedColor || customBgColorPicker.value;
+            }
+            // If neither preset nor custom is active (e.g. initial load logic issue), keep existing or fallback safely
+            // But usually one should be active. If none, do not overwrite with black default.
         }
         
         // Get font size
@@ -445,18 +451,22 @@ class TimeDisplaySettingsModal {
         // Get fullscreen colors/opacity
         const activeFsColorBtn = document.querySelector('.color-btn[data-td-fs-color].active');
         const customFsColorPicker = document.getElementById('td-custom-fs-color-picker');
+        const customFsColorBtn = document.querySelector('label[for="td-custom-fs-color-picker"]');
+
         if (activeFsColorBtn) {
             this.timeDisplayManager.setFullscreenColor(activeFsColorBtn.dataset.tdFsColor);
-        } else if (customFsColorPicker) {
-            this.timeDisplayManager.setFullscreenColor(customFsColorPicker.dataset.selectedColor || customFsColorPicker.value || '#ffffff');
+        } else if (customFsColorPicker && customFsColorBtn && customFsColorBtn.classList.contains('active')) {
+            this.timeDisplayManager.setFullscreenColor(customFsColorPicker.dataset.selectedColor || customFsColorPicker.value);
         }
 
         const activeFsBgColorBtn = document.querySelector('.color-btn[data-td-fs-bg-color].active');
         const customFsBgColorPicker = document.getElementById('td-custom-fs-bg-color-picker');
+        const customFsBgColorBtn = document.querySelector('label[for="td-custom-fs-bg-color-picker"]');
+
         if (activeFsBgColorBtn) {
             this.timeDisplayManager.setFullscreenBgColor(activeFsBgColorBtn.dataset.tdFsBgColor);
-        } else if (customFsBgColorPicker) {
-            this.timeDisplayManager.setFullscreenBgColor(customFsBgColorPicker.dataset.selectedColor || customFsBgColorPicker.value || '#000000');
+        } else if (customFsBgColorPicker && customFsBgColorBtn && customFsBgColorBtn.classList.contains('active')) {
+            this.timeDisplayManager.setFullscreenBgColor(customFsBgColorPicker.dataset.selectedColor || customFsBgColorPicker.value);
         }
 
         const fsOpacityInput = document.getElementById('td-fs-opacity-input');
