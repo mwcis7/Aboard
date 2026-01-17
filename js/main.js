@@ -83,8 +83,13 @@ class DrawingBoard {
         this.hasTwoFingers = false;
         
         // Active pointers tracking for multi-touch gesture detection
-        // Maps pointerId to { x, y, pointerType }
+        // Maps pointerId to { x, y, pointerType } for tracking touch and pen inputs
+        // Used to detect pinch gestures when using stylus/pen + finger combinations
         this.activePointers = new Map();
+        
+        // Canvas scale limits
+        this.MIN_CANVAS_SCALE = 0.5;
+        this.MAX_CANVAS_SCALE = 5.0;
         
         // Touch gesture state
         this.lastTapTime = 0;
@@ -3043,7 +3048,7 @@ class DrawingBoard {
             // Calculate new scale with limits
             const currentScale = this.drawingEngine.canvasScale;
             let newScale = currentScale * scaleRatio;
-            newScale = Math.max(0.5, Math.min(5.0, newScale));
+            newScale = Math.max(this.MIN_CANVAS_SCALE, Math.min(this.MAX_CANVAS_SCALE, newScale));
             
             // Recalculate effective scale ratio after clamping
             const effectiveScaleRatio = newScale / currentScale;
@@ -3071,7 +3076,7 @@ class DrawingBoard {
             this.drawingEngine.panOffset.x = newPanX;
             this.drawingEngine.panOffset.y = newPanY;
             
-            // Apply zoom using applyZoom for consistency
+            // Apply zoom (false = don't update config-area scale)
             this.applyZoom(false);
         }
         
