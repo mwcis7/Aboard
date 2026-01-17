@@ -507,6 +507,12 @@ class TimeDisplayManager {
         this.timeFullscreenContent.innerHTML = html;
         this.timeFullscreenContent.style.color = this.fullscreenColor;
 
+        // Apply color to controls (slider label)
+        const controls = this.timeFullscreenModal.querySelector('.time-fullscreen-controls');
+        if (controls) {
+            controls.style.color = this.fullscreenColor;
+        }
+
         // Apply background color and opacity to modal
         if (this.timeFullscreenModal) {
             const rgb = this.hexToRgb(this.fullscreenBgColor) || { r: 0, g: 0, b: 0 };

@@ -1563,11 +1563,12 @@ class DrawingBoard {
             }
         });
         
-        // Time fullscreen mode buttons
-        document.querySelectorAll('.fullscreen-mode-btn').forEach(btn => {
+        // Time fullscreen mode buttons (in General Settings)
+        document.querySelectorAll('.fullscreen-mode-btn[data-mode]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const mode = e.target.dataset.mode;
-                document.querySelectorAll('.fullscreen-mode-btn').forEach(b => b.classList.remove('active'));
+                // Only affect buttons with data-mode (General Settings)
+                document.querySelectorAll('.fullscreen-mode-btn[data-mode]').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 this.timeDisplayManager.setFullscreenMode(mode);
             });

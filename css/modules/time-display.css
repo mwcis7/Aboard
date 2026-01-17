@@ -236,9 +236,10 @@
 }
 
 .time-fullscreen-slider-label {
-    color: rgba(255, 255, 255, 0.8);
+    /* color: inherited from parent */
     font-size: 14px;
     margin-bottom: 4px;
+    opacity: 0.8;
 }
 
 .time-fullscreen-slider {
