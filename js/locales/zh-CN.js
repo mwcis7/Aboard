@@ -498,6 +498,7 @@ window.translations = {
         opacity: '透明度',
         opacityLabel: '透明度：当前',
         fullscreenMode: '全屏模式',
+        fullscreenColorSettings: '全屏颜色设置',
         fullscreenFontSize: '全屏字体大小',
         fullscreenFontSizeLabel: '全屏字体大小：当前',
         fullscreenFontSizeHint: '调整全屏时间显示的字体大小，范围10%-85%',

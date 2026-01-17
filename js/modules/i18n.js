@@ -694,6 +694,7 @@ class I18n {
             '字体大小': 'timeDisplay.fontSize',
             '透明度': 'timeDisplay.opacity',
             '全屏模式': 'timeDisplay.fullscreenMode',
+            '全屏颜色设置': 'timeDisplay.fullscreenColorSettings',
             '全屏字体大小': 'timeDisplay.fullscreenFontSize',
             '自定义颜色': 'timeDisplay.customColor'
         };

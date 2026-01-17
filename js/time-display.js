@@ -25,6 +25,10 @@ class TimeDisplayManager {
         this.showTime = localStorage.getItem('timeDisplayShowTime') !== 'false'; // Default true
         this.fullscreenMode = localStorage.getItem('timeDisplayFullscreenMode') || 'double'; // Default 'double' (disabled/single/double)
         this.fullscreenFontSize = parseInt(localStorage.getItem('timeDisplayFullscreenFontSize')) || 15; // Default 15 (vmin percentage)
+        this.fullscreenColor = localStorage.getItem('timeDisplayFullscreenColor') || '#ffffff';
+        this.fullscreenBgColor = localStorage.getItem('timeDisplayFullscreenBgColor') || '#000000';
+        this.fullscreenOpacity = parseInt(localStorage.getItem('timeDisplayFullscreenOpacity')) || 95;
+
         // Get user's current timezone by default, or use saved value
         this.timezone = localStorage.getItem('timeDisplayTimezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
         
@@ -301,6 +305,30 @@ class TimeDisplayManager {
             this.updateFullscreenDisplay();
         }
     }
+
+    setFullscreenColor(color) {
+        this.fullscreenColor = color;
+        localStorage.setItem('timeDisplayFullscreenColor', color);
+        if (this.isFullscreen) {
+            this.updateFullscreenDisplay();
+        }
+    }
+
+    setFullscreenBgColor(color) {
+        this.fullscreenBgColor = color;
+        localStorage.setItem('timeDisplayFullscreenBgColor', color);
+        if (this.isFullscreen) {
+            this.updateFullscreenDisplay();
+        }
+    }
+
+    setFullscreenOpacity(opacity) {
+        this.fullscreenOpacity = opacity;
+        localStorage.setItem('timeDisplayFullscreenOpacity', opacity);
+        if (this.isFullscreen) {
+            this.updateFullscreenDisplay();
+        }
+    }
     
     setFontSize(size) {
         this.fontSize = size;
@@ -477,5 +505,12 @@ class TimeDisplayManager {
         }
         
         this.timeFullscreenContent.innerHTML = html;
+        this.timeFullscreenContent.style.color = this.fullscreenColor;
+
+        // Apply background color and opacity to modal
+        if (this.timeFullscreenModal) {
+            const rgb = this.hexToRgb(this.fullscreenBgColor) || { r: 0, g: 0, b: 0 };
+            this.timeFullscreenModal.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${this.fullscreenOpacity / 100})`;
+        }
     }
 }

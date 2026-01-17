@@ -1148,7 +1148,6 @@ class DrawingBoard {
             randomPickerBtn.addEventListener('click', () => {
                 this.randomPickerManager.create();
                 this.closeFeaturePanel();
-                this.switchToPen();
             });
         }
 
@@ -1158,7 +1157,6 @@ class DrawingBoard {
             scoreboardBtn.addEventListener('click', () => {
                 this.scoreboardManager.create();
                 this.closeFeaturePanel();
-                this.switchToPen();
             });
         }
 
@@ -1847,6 +1845,8 @@ class DrawingBoard {
         const handleDragStart = (e, element) => {
             if (e.target.closest('button') || e.target.closest('input')) return;
             
+            e.stopPropagation(); // Prevent drawing on canvas
+
             this.isDraggingPanel = true;
             this.draggedElement = element;
             

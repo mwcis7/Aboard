@@ -222,7 +222,7 @@
 /* Fullscreen Font Size Slider */
 .time-fullscreen-controls {
     position: absolute;
-    bottom: 40px;
+    bottom: max(40px, env(safe-area-inset-bottom));
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -232,6 +232,7 @@
     z-index: 10001;
     width: 80%;
     max-width: 600px;
+    padding-bottom: 10px; /* Extra padding for touch targets */
 }
 
 .time-fullscreen-slider-label {
