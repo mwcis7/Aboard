@@ -1244,6 +1244,11 @@ class DrawingBoard {
             localStorage.setItem('edgeSnapEnabled', e.target.checked);
         });
         
+        document.getElementById('touch-zoom-checkbox').addEventListener('change', (e) => {
+            this.settingsManager.touchZoomEnabled = e.target.checked;
+            localStorage.setItem('touchZoomEnabled', e.target.checked);
+        });
+
         // Global font selector
         document.getElementById('global-font-select').addEventListener('change', (e) => {
             this.settingsManager.setGlobalFont(e.target.value);
@@ -2828,6 +2833,7 @@ class DrawingBoard {
     // Pinch zoom and pan gesture handlers
     handlePinchStart(e) {
         if (e.touches.length !== 2) return;
+        if (!this.settingsManager.touchZoomEnabled) return;
         
         this.isPinching = true;
         const touch1 = e.touches[0];

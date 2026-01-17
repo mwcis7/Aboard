@@ -267,7 +267,9 @@ window.translations = {
             pagination: 'Pagination Mode',
             infiniteCanvas: 'Infinite Canvas',
             autoSave: 'Auto Save',
-            autoSaveHint: 'Periodically save your drawing'
+            autoSaveHint: 'Periodically save your drawing',
+            touchZoom: 'Touch Zoom',
+            touchZoomHint: 'Allow pinch gesture to zoom canvas'
         },
         canvas: {
             title: 'Canvas Settings',

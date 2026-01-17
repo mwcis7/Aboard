@@ -534,7 +534,9 @@ window.translations = {
         continue: 'Fortsetzen',
         pause: 'Pause',
         reset: 'Zurücksetzen',
-        stop: 'Stoppen'
+        stop: 'Stoppen',
+        alertSetTime: 'Bitte stellen Sie die Countdown-Zeit ein',
+        alertTitle: 'Hinweis'
     },
 
     // Timezone names

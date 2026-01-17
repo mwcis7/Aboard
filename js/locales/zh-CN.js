@@ -569,7 +569,9 @@ window.translations = {
         continue: '继续',
         pause: '暂停',
         reset: '重置',
-        stop: '停止'
+        stop: '停止',
+        alertSetTime: '请设置倒计时时间',
+        alertTitle: '提示'
     },
 
     // Timezone names

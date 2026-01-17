@@ -524,7 +524,9 @@ window.translations = {
         continue: '繼續',
         pause: '暂停',
         reset: '重置',
-        stop: '停止'
+        stop: '停止',
+        alertSetTime: '請設置倒計時時間',
+        alertTitle: '提示'
     },
 
     // Timezone names
