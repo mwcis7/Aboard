@@ -88,6 +88,8 @@
     align-items: center;
     min-width: 80px;
     flex: 1;
+    position: relative; /* Context for absolute positioning */
+    padding-top: 12px; /* Space for remove button */
 }
 
 .score-team-name {
@@ -122,7 +124,9 @@
 
 .score-controls {
     display: flex;
-    gap: 5px;
+    gap: 12px; /* Increased gap since remove button is gone */
+    justify-content: center;
+    width: 100%;
 }
 
 .score-btn {
@@ -157,8 +161,11 @@
     color: #34C759;
 }
 
-/* Remove button in the middle */
+/* Remove button moved to top-right corner */
 .score-remove-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
     width: 20px;
     height: 20px;
     border: none;
@@ -170,18 +177,19 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    margin: 0 2px;
-    align-self: center;
     opacity: 0; /* Hidden by default */
+    pointer-events: none; /* Prevent clicks when hidden */
 }
 
 .score-column:hover .score-remove-btn {
     opacity: 1; /* Show on hover */
+    pointer-events: auto; /* Enable clicks when visible */
 }
 
 .score-remove-btn:hover {
-    background-color: #f0f0f0;
+    background-color: #ffe5e5;
     color: #FF3B30;
+    transform: scale(1.1);
 }
 
 /* Settings Modal Specifics */
