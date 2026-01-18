@@ -418,19 +418,14 @@ class TimeDisplaySettingsModal {
         // For background color, check preset buttons first, then fallback to custom picker
         const activeBgColorBtn = document.querySelector('.color-btn[data-td-time-bg-color].active');
         const customBgColorPicker = document.getElementById('td-custom-bg-color-picker');
+        const customBgColorPickerBtn = document.querySelector('label[for="td-custom-bg-color-picker"]');
         
         if (activeBgColorBtn) {
             this.timeDisplayManager.bgColor = activeBgColorBtn.dataset.tdTimeBgColor;
-        } else if (customBgColorPicker) {
-            // Only use custom picker if it has been explicitly selected/changed
-            // Check if the custom picker button is active
-            const customBgColorPickerBtn = document.querySelector('label[for="td-custom-bg-color-picker"]');
-            if (customBgColorPickerBtn && customBgColorPickerBtn.classList.contains('active')) {
-                this.timeDisplayManager.bgColor = customBgColorPicker.dataset.selectedColor || customBgColorPicker.value;
-            }
-            // If neither preset nor custom is active (e.g. initial load logic issue), keep existing or fallback safely
-            // But usually one should be active. If none, do not overwrite with black default.
+        } else if (customBgColorPicker && customBgColorPickerBtn && customBgColorPickerBtn.classList.contains('active')) {
+            this.timeDisplayManager.bgColor = customBgColorPicker.dataset.selectedColor || customBgColorPicker.value;
         }
+        // If neither is active, keep the current bgColor (do nothing), protecting it from overwrite
         
         // Get font size
         const fontInput = document.getElementById('td-time-font-size-input');

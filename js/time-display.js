@@ -35,7 +35,7 @@ class TimeDisplayManager {
         // Click detection settings
         this.clickTimeout = null;
         this.clickCount = 0;
-        this.doubleClickDelay = 300; // Standard double click delay
+        this.doubleClickDelay = 500; // Relaxed double click delay
         
         this.applySettings();
         this.setupFullscreenListeners();
