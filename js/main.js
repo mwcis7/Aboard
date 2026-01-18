@@ -89,7 +89,7 @@ class DrawingBoard {
         
         // Canvas scale limits
         this.MIN_CANVAS_SCALE = 0.5;
-        this.MAX_CANVAS_SCALE = 5.0;
+        this.MAX_CANVAS_SCALE = 500.0;
         
         // Touch gesture state
         this.lastTapTime = 0;
@@ -2428,7 +2428,7 @@ class DrawingBoard {
 
     zoomIn() {
         const currentScale = this.drawingEngine.canvasScale;
-        const newScale = Math.min(currentScale + 0.1, 5.0);
+        const newScale = Math.min(currentScale + 0.1, this.MAX_CANVAS_SCALE);
         this.drawingEngine.canvasScale = newScale;
         this.updateZoomUI();
         this.applyZoom(false); // Don't update config-area scale on zoom
@@ -2450,7 +2450,7 @@ class DrawingBoard {
             this.updateZoomUI();
             return;
         }
-        percent = Math.max(50, Math.min(500, percent));
+        percent = Math.max(50, Math.min(this.MAX_CANVAS_SCALE * 100, percent));
         const newScale = percent / 100;
         this.drawingEngine.canvasScale = newScale;
         this.updateZoomUI();
@@ -2937,7 +2937,7 @@ class DrawingBoard {
             // Calculate new scale with limits
             const currentScale = this.drawingEngine.canvasScale;
             let newScale = currentScale * scaleRatio;
-            newScale = Math.max(0.5, Math.min(5.0, newScale));
+            newScale = Math.max(this.MIN_CANVAS_SCALE, Math.min(this.MAX_CANVAS_SCALE, newScale));
 
             // Recalculate effective scale ratio after clamping
             const effectiveScaleRatio = newScale / currentScale;

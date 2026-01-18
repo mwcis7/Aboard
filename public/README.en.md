@@ -72,7 +72,7 @@ graph LR
 ### 🎯 Smart Interactive Experience
 - **Selection Tool**: Select and manipulate strokes and images on canvas, supports copy and delete
 - **Move Canvas**: Drag tool or hold Shift key to drag canvas
-- **Smart Zoom**: Ctrl+scroll to zoom canvas, zoom center follows mouse position, supports 50%-500% zoom range
+- **Smart Zoom**: Ctrl+scroll to zoom canvas, zoom center follows mouse position, supports 50%-Unlimited zoom range
 - **Initial Canvas Size**: On first load or refresh, canvas automatically adjusts to 80% of browser window size
 - **Undo/Redo**: Supports up to 50 history steps (Ctrl+Z / Ctrl+Y)
 - **Fullscreen Mode**: Focus on creation with immersive experience (F11)
@@ -154,7 +154,7 @@ That's it! No build process or dependencies required.
 - **Select Tool**: Click corresponding icon in bottom toolbar
 - **Draw**: Click and drag on canvas
 - **Erase**: Use eraser tool, adjust size as needed
-- **Zoom**: Use zoom buttons or Ctrl+scroll wheel (50%-500%)
+- **Zoom**: Use zoom buttons or Ctrl+scroll wheel (50%-Unlimited)
 - **Undo/Redo**: Ctrl+Z / Ctrl+Y or click toolbar buttons
 - **Fullscreen**: Press F11 or click fullscreen button
 
