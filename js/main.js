@@ -268,6 +268,7 @@ class DrawingBoard {
                     e.target.closest('#history-controls') || 
                     e.target.closest('#pagination-controls') ||
                     e.target.closest('#time-display-area') ||
+                    e.target.closest('#time-display') ||
                     e.target.closest('#feature-area') ||
                     e.target.closest('.modal') ||
                     e.target.closest('.timer-display-widget') ||
