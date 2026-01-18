@@ -274,7 +274,10 @@ class DrawingBoard {
                     e.target.closest('.random-picker-widget') ||
                     e.target.closest('.scoreboard-widget') ||
                     e.target.closest('.feature-widget') ||
-                    e.target.closest('.canvas-image-selection')) {
+                    e.target.closest('.canvas-image-selection') ||
+                    e.target.closest('.time-fullscreen-modal') ||
+                    e.target.closest('.timer-fullscreen-modal') ||
+                    e.target.closest('input[type="range"]')) {
                     return;
                 }
             }
@@ -1148,7 +1151,6 @@ class DrawingBoard {
             randomPickerBtn.addEventListener('click', () => {
                 this.randomPickerManager.create();
                 this.closeFeaturePanel();
-                this.switchToPen();
             });
         }
 
@@ -1158,7 +1160,6 @@ class DrawingBoard {
             scoreboardBtn.addEventListener('click', () => {
                 this.scoreboardManager.create();
                 this.closeFeaturePanel();
-                this.switchToPen();
             });
         }
 
@@ -1565,11 +1566,12 @@ class DrawingBoard {
             }
         });
         
-        // Time fullscreen mode buttons
-        document.querySelectorAll('.fullscreen-mode-btn').forEach(btn => {
+        // Time fullscreen mode buttons (in General Settings)
+        document.querySelectorAll('.fullscreen-mode-btn[data-mode]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const mode = e.target.dataset.mode;
-                document.querySelectorAll('.fullscreen-mode-btn').forEach(b => b.classList.remove('active'));
+                // Only affect buttons with data-mode (General Settings)
+                document.querySelectorAll('.fullscreen-mode-btn[data-mode]').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 this.timeDisplayManager.setFullscreenMode(mode);
             });
@@ -1847,6 +1849,8 @@ class DrawingBoard {
         const handleDragStart = (e, element) => {
             if (e.target.closest('button') || e.target.closest('input')) return;
             
+            e.stopPropagation(); // Prevent drawing on canvas
+
             this.isDraggingPanel = true;
             this.draggedElement = element;
             

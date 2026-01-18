@@ -25,12 +25,17 @@ class TimeDisplayManager {
         this.showTime = localStorage.getItem('timeDisplayShowTime') !== 'false'; // Default true
         this.fullscreenMode = localStorage.getItem('timeDisplayFullscreenMode') || 'double'; // Default 'double' (disabled/single/double)
         this.fullscreenFontSize = parseInt(localStorage.getItem('timeDisplayFullscreenFontSize')) || 15; // Default 15 (vmin percentage)
+        this.fullscreenColor = localStorage.getItem('timeDisplayFullscreenColor') || '#ffffff';
+        this.fullscreenBgColor = localStorage.getItem('timeDisplayFullscreenBgColor') || '#000000';
+        this.fullscreenOpacity = parseInt(localStorage.getItem('timeDisplayFullscreenOpacity')) || 95;
+
         // Get user's current timezone by default, or use saved value
         this.timezone = localStorage.getItem('timeDisplayTimezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
         
         // Click detection settings
-        this.lastClickTime = 0;
-        this.doubleClickDelay = 600; // Increased from default ~300ms to 600ms for easier double-clicking
+        this.clickTimeout = null;
+        this.clickCount = 0;
+        this.doubleClickDelay = 500; // Relaxed double click delay
         
         this.applySettings();
         this.setupFullscreenListeners();
@@ -301,6 +306,30 @@ class TimeDisplayManager {
             this.updateFullscreenDisplay();
         }
     }
+
+    setFullscreenColor(color) {
+        this.fullscreenColor = color;
+        localStorage.setItem('timeDisplayFullscreenColor', color);
+        if (this.isFullscreen) {
+            this.updateFullscreenDisplay();
+        }
+    }
+
+    setFullscreenBgColor(color) {
+        this.fullscreenBgColor = color;
+        localStorage.setItem('timeDisplayFullscreenBgColor', color);
+        if (this.isFullscreen) {
+            this.updateFullscreenDisplay();
+        }
+    }
+
+    setFullscreenOpacity(opacity) {
+        this.fullscreenOpacity = opacity;
+        localStorage.setItem('timeDisplayFullscreenOpacity', opacity);
+        if (this.isFullscreen) {
+            this.updateFullscreenDisplay();
+        }
+    }
     
     setFontSize(size) {
         this.fontSize = size;
@@ -379,19 +408,23 @@ class TimeDisplayManager {
             if (this.fullscreenMode === 'disabled' || !this.enabled) return;
             
             if (this.fullscreenMode === 'single') {
-                // Single-click mode
+                // Single-click mode - Enter immediately
                 this.enterFullscreen();
             } else if (this.fullscreenMode === 'double') {
-                // Double-click mode
-                const now = Date.now();
-                const timeSinceLastClick = now - this.lastClickTime;
+                // Double-click mode - Use timeout logic
+                this.clickCount++;
                 
-                if (timeSinceLastClick < this.doubleClickDelay && timeSinceLastClick > 50) {
-                    // Double-click detected
-                    this.enterFullscreen();
-                    this.lastClickTime = 0; // Reset to prevent triple-click
+                if (this.clickCount === 1) {
+                    // First click, set timeout
+                    this.clickTimeout = setTimeout(() => {
+                        // Timeout expired, was just a single click
+                        this.clickCount = 0;
+                    }, this.doubleClickDelay);
                 } else {
-                    this.lastClickTime = now;
+                    // Second click within timeout
+                    clearTimeout(this.clickTimeout);
+                    this.clickCount = 0;
+                    this.enterFullscreen();
                 }
             }
         });
@@ -477,5 +510,18 @@ class TimeDisplayManager {
         }
         
         this.timeFullscreenContent.innerHTML = html;
+        this.timeFullscreenContent.style.color = this.fullscreenColor;
+
+        // Apply color to controls (slider label)
+        const controls = this.timeFullscreenModal.querySelector('.time-fullscreen-controls');
+        if (controls) {
+            controls.style.color = this.fullscreenColor;
+        }
+
+        // Apply background color and opacity to modal
+        if (this.timeFullscreenModal) {
+            const rgb = this.hexToRgb(this.fullscreenBgColor) || { r: 0, g: 0, b: 0 };
+            this.timeFullscreenModal.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${this.fullscreenOpacity / 100})`;
+        }
     }
 }
