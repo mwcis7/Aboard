@@ -274,7 +274,10 @@ class DrawingBoard {
                     e.target.closest('.random-picker-widget') ||
                     e.target.closest('.scoreboard-widget') ||
                     e.target.closest('.feature-widget') ||
-                    e.target.closest('.canvas-image-selection')) {
+                    e.target.closest('.canvas-image-selection') ||
+                    e.target.closest('.time-fullscreen-modal') ||
+                    e.target.closest('.timer-fullscreen-modal') ||
+                    e.target.closest('input[type="range"]')) {
                     return;
                 }
             }

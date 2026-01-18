@@ -33,8 +33,9 @@ class TimeDisplayManager {
         this.timezone = localStorage.getItem('timeDisplayTimezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
         
         // Click detection settings
-        this.lastClickTime = 0;
-        this.doubleClickDelay = 800; // Increased to 800ms for even easier double-clicking
+        this.clickTimeout = null;
+        this.clickCount = 0;
+        this.doubleClickDelay = 300; // Standard double click delay
         
         this.applySettings();
         this.setupFullscreenListeners();
@@ -407,19 +408,23 @@ class TimeDisplayManager {
             if (this.fullscreenMode === 'disabled' || !this.enabled) return;
             
             if (this.fullscreenMode === 'single') {
-                // Single-click mode
+                // Single-click mode - Enter immediately
                 this.enterFullscreen();
             } else if (this.fullscreenMode === 'double') {
-                // Double-click mode
-                const now = Date.now();
-                const timeSinceLastClick = now - this.lastClickTime;
+                // Double-click mode - Use timeout logic
+                this.clickCount++;
                 
-                if (timeSinceLastClick < this.doubleClickDelay && timeSinceLastClick > 50) {
-                    // Double-click detected
-                    this.enterFullscreen();
-                    this.lastClickTime = 0; // Reset to prevent triple-click
+                if (this.clickCount === 1) {
+                    // First click, set timeout
+                    this.clickTimeout = setTimeout(() => {
+                        // Timeout expired, was just a single click
+                        this.clickCount = 0;
+                    }, this.doubleClickDelay);
                 } else {
-                    this.lastClickTime = now;
+                    // Second click within timeout
+                    clearTimeout(this.clickTimeout);
+                    this.clickCount = 0;
+                    this.enterFullscreen();
                 }
             }
         });
