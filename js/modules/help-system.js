@@ -38,6 +38,9 @@ class HelpSystem {
                         label.style.alignItems = 'center';
                         label.style.justifyContent = 'flex-start';
                         label.style.width = '100%';
+                        // Prevent clicking label from triggering the button (which is valid for labels containing buttons)
+                        label.style.pointerEvents = 'none';
+                        btn.style.pointerEvents = 'auto';
                         btn.style.marginLeft = '8px';
                         label.appendChild(btn);
                     }
