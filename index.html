@@ -1158,213 +1158,225 @@
                 </button>
             </div>
             <div class="timer-modal-body">
-                <!-- Display Options -->
-                <div class="timer-input-group">
-                    <label data-i18n="timeDisplay.displayOptions">显示选项</label>
-                    <div class="button-size-options" style="grid-template-columns: 1fr 1fr 1fr;">
-                        <button class="display-option-btn active" data-td-display-type="both" data-i18n="timeDisplay.dateAndTime">日期和时间</button>
-                        <button class="display-option-btn" data-td-display-type="date-only" data-i18n="timeDisplay.dateOnly">仅日期</button>
-                        <button class="display-option-btn" data-td-display-type="time-only" data-i18n="timeDisplay.timeOnly">仅时间</button>
-                    </div>
-                </div>
-                
-                <!-- Timezone -->
-                <div class="timer-input-group">
-                    <label data-i18n="timeDisplay.timezone">时区</label>
-                    <select id="td-timezone-select" class="format-select">
-                        <option value="Asia/Shanghai">中国 (UTC+8)</option>
-                        <option value="America/New_York">纽约 (UTC-5/-4)</option>
-                        <option value="America/Los_Angeles">洛杉矶 (UTC-8/-7)</option>
-                        <option value="America/Chicago">芝加哥 (UTC-6/-5)</option>
-                        <option value="Europe/London">伦敦 (UTC+0/+1)</option>
-                        <option value="Europe/Paris">巴黎 (UTC+1/+2)</option>
-                        <option value="Europe/Berlin">柏林 (UTC+1/+2)</option>
-                        <option value="Asia/Tokyo">东京 (UTC+9)</option>
-                        <option value="Asia/Seoul">首尔 (UTC+9)</option>
-                        <option value="Asia/Hong_Kong">香港 (UTC+8)</option>
-                        <option value="Asia/Singapore">新加坡 (UTC+8)</option>
-                        <option value="Asia/Dubai">迪拜 (UTC+4)</option>
-                        <option value="Australia/Sydney">悉尼 (UTC+10/+11)</option>
-                        <option value="Pacific/Auckland">奥克兰 (UTC+12/+13)</option>
-                        <option value="UTC">UTC (协调世界时)</option>
-                    </select>
-                </div>
-                
-                <!-- Time Format -->
-                <div class="timer-input-group">
-                    <label data-i18n="timeDisplay.timeFormat">时间格式</label>
-                    <select id="td-time-format-select" class="format-select">
-                        <option value="12h">12小时制 (上午/下午)</option>
-                        <option value="24h">24小时制</option>
-                    </select>
-                </div>
-                
-                <!-- Date Format -->
-                <div class="timer-input-group">
-                    <label data-i18n="timeDisplay.dateFormat">日期格式</label>
-                    <select id="td-date-format-select" class="format-select">
-                        <option value="auto">自动 (Auto)</option>
-                        <option value="yyyy-mm-dd">年-月-日 (2024-01-01)</option>
-                        <option value="mm-dd-yyyy">月-日-年 (01-01-2024)</option>
-                        <option value="dd-mm-yyyy">日-月-年 (01-01-2024)</option>
-                        <option value="chinese">中文 (2024年1月1日)</option>
-                    </select>
-                </div>
-                
-                <!-- Colors -->
-                <div class="timer-input-group">
-                    <label data-i18n="timeDisplay.colorSettings">颜色设置</label>
-                    <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px;">
-                        <div style="flex: 1; min-width: 200px;">
-                            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 8px;" data-i18n="timeDisplay.textColor">字体颜色</label>
-                            <div class="color-picker-row">
-                                <div class="color-picker-main">
-                                    <button class="color-btn active" data-td-time-color="#000000" style="background-color: #000000;"></button>
-                                    <button class="color-btn" data-td-time-color="#FFFFFF" style="background-color: #FFFFFF; border: 1px solid #ccc;"></button>
-                                    <button class="color-btn" data-td-time-color="#007AFF" style="background-color: #007AFF;"></button>
-                                    <button class="color-btn" data-td-time-color="#FF0000" style="background-color: #FF0000;"></button>
-                                </div>
-                                <div class="color-picker-main">
-                                    <button class="color-btn" data-td-time-color="#00FF00" style="background-color: #00FF00;"></button>
-                                    <button class="color-btn" data-td-time-color="#FFFF00" style="background-color: #FFFF00; border: 1px solid #ccc;"></button>
-                                    <button class="color-btn" data-td-time-color="#FF8800" style="background-color: #FF8800;"></button>
-                                    <button class="color-btn" data-td-time-color="#8800FF" style="background-color: #8800FF;"></button>
-                                </div>
-                            </div>
-                            <label class="color-picker-icon-btn" for="td-custom-time-color-picker" style="margin-top: 8px;">
-                                <svg width="24" height="24" viewBox="-0.4 -5 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" style="position: relative; z-index: 2;"></polygon>
-                                    <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" style="position: relative; z-index: 2;"></path>
-                                </svg>
-                                <input type="color" id="td-custom-time-color-picker" class="custom-color-picker-input" value="#000000">
-                            </label>
-                        </div>
-                        <div style="flex: 1; min-width: 200px;">
-                            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 8px;" data-i18n="timeDisplay.bgColor">背景颜色</label>
-                            <div class="color-picker-row">
-                                <div class="color-picker-main">
-                                    <button class="color-btn active" data-td-time-bg-color="#000000" style="background-color: #000000;"></button>
-                                    <button class="color-btn" data-td-time-bg-color="#FF0000" style="background-color: #FF0000;"></button>
-                                    <button class="color-btn" data-td-time-bg-color="#0000FF" style="background-color: #0000FF;"></button>
-                                    <button class="color-btn" data-td-time-bg-color="#00FF00" style="background-color: #00FF00;"></button>
-                                </div>
-                                <div class="color-picker-main">
-                                    <button class="color-btn" data-td-time-bg-color="#FFFF00" style="background-color: #FFFF00; border: 1px solid #ccc;"></button>
-                                    <button class="color-btn" data-td-time-bg-color="#FF8800" style="background-color: #FF8800;"></button>
-                                    <button class="color-btn" data-td-time-bg-color="#8800FF" style="background-color: #8800FF;"></button>
-                                    <button class="color-btn" data-td-time-bg-color="#FFFFFF" style="background-color: #FFFFFF; border: 1px solid #ccc;"></button>
-                                </div>
-                            </div>
-                            <label class="color-picker-icon-btn" for="td-custom-bg-color-picker" style="margin-top: 8px;">
-                                <svg width="24" height="24" viewBox="-0.4 -5 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" style="position: relative; z-index: 2;"></polygon>
-                                    <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" style="position: relative; z-index: 2;"></path>
-                                </svg>
-                                <input type="color" id="td-custom-bg-color-picker" class="custom-color-picker-input" value="#ffffff">
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Font Size -->
-                <div class="timer-input-group">
-                    <label><span data-i18n="timeDisplay.fontSizeLabel">字体大小：当前</span> <span id="td-time-font-size-value">16</span>px</label>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="range" id="td-time-font-size-slider" min="12" max="48" value="16" class="slider" style="flex: 1;">
-                        <input type="number" id="td-time-font-size-input" min="12" max="48" value="16" class="size-input">
-                    </div>
-                </div>
-                
-                <!-- Opacity -->
-                <div class="timer-input-group">
-                    <label><span data-i18n="timeDisplay.opacityLabel">透明度：当前</span> <span id="td-time-opacity-value">100</span>%</label>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="range" id="td-time-opacity-slider" min="10" max="100" value="100" class="slider" style="flex: 1;">
-                        <input type="number" id="td-time-opacity-input" min="10" max="100" value="100" class="size-input">
-                    </div>
-                </div>
-                
-                <!-- Fullscreen Mode -->
-                <div class="timer-input-group">
-                    <label data-i18n="timeDisplay.fullscreenMode">全屏模式</label>
-                    <div class="button-size-options" style="grid-template-columns: 1fr 1fr 1fr;">
-                        <button class="fullscreen-mode-btn" data-td-mode="disabled" data-i18n="timeDisplay.fullscreenDisabled">关闭</button>
-                        <button class="fullscreen-mode-btn" data-td-mode="single" data-i18n="timeDisplay.fullscreenSingle">单击</button>
-                        <button class="fullscreen-mode-btn active" data-td-mode="double" data-i18n="timeDisplay.fullscreenDouble">双击</button>
-                    </div>
-                </div>
-                
-                <!-- Fullscreen Font Size -->
-                <div class="timer-input-group">
-                    <label><span data-i18n="timeDisplay.fullscreenFontSizeLabel">全屏字体大小：当前</span> <span id="td-time-fullscreen-font-size-value">15</span>%</label>
-                    <p class="settings-hint" style="font-size: 11px; color: #999; margin: 4px 0 8px 0;" data-i18n="timeDisplay.fullscreenFontSizeHint">调整全屏时间显示的字体大小，范围10%-85%</p>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="range" id="td-time-fullscreen-font-size-slider" min="10" max="85" value="15" class="slider" style="flex: 1;">
-                        <input type="number" id="td-time-fullscreen-font-size-input" min="10" max="85" value="15" class="size-input">
-                    </div>
+                <!-- Tab Navigation -->
+                <div class="timer-tab-nav">
+                    <button class="timer-tab-btn active" data-tab="widget">框体显示设置</button>
+                    <button class="timer-tab-btn" data-tab="fullscreen">全屏显示设置</button>
                 </div>
 
-                <!-- Fullscreen Colors -->
-                <div class="timer-input-group">
-                    <label data-i18n="timeDisplay.fullscreenColorSettings">全屏颜色设置</label>
-                    <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px;">
-                        <div style="flex: 1; min-width: 200px;">
-                            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 8px;" data-i18n="timeDisplay.textColor">字体颜色</label>
-                            <div class="color-picker-row">
-                                <div class="color-picker-main">
-                                    <button class="color-btn active" data-td-fs-color="#ffffff" style="background-color: #ffffff; border: 1px solid #ccc;"></button>
-                                    <button class="color-btn" data-td-fs-color="#000000" style="background-color: #000000;"></button>
-                                    <button class="color-btn" data-td-fs-color="#007AFF" style="background-color: #007AFF;"></button>
-                                    <button class="color-btn" data-td-fs-color="#FF0000" style="background-color: #FF0000;"></button>
-                                </div>
-                                <div class="color-picker-main">
-                                    <button class="color-btn" data-td-fs-color="#00FF00" style="background-color: #00FF00;"></button>
-                                    <button class="color-btn" data-td-fs-color="#FFFF00" style="background-color: #FFFF00; border: 1px solid #ccc;"></button>
-                                    <button class="color-btn" data-td-fs-color="#FF8800" style="background-color: #FF8800;"></button>
-                                    <button class="color-btn" data-td-fs-color="#8800FF" style="background-color: #8800FF;"></button>
-                                </div>
-                            </div>
-                            <label class="color-picker-icon-btn" for="td-custom-fs-color-picker" style="margin-top: 8px;">
-                                <svg width="24" height="24" viewBox="-0.4 -5 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" style="position: relative; z-index: 2;"></polygon>
-                                    <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" style="position: relative; z-index: 2;"></path>
-                                </svg>
-                                <input type="color" id="td-custom-fs-color-picker" class="custom-color-picker-input" value="#ffffff">
-                            </label>
+                <!-- Widget Tab Content -->
+                <div id="td-tab-content-widget" class="td-tab-content active">
+                    <!-- Display Options -->
+                    <div class="timer-input-group">
+                        <label data-i18n="timeDisplay.displayOptions">显示选项</label>
+                        <div class="button-size-options" style="grid-template-columns: 1fr 1fr 1fr;">
+                            <button class="display-option-btn active" data-td-display-type="both" data-i18n="timeDisplay.dateAndTime">日期和时间</button>
+                            <button class="display-option-btn" data-td-display-type="date-only" data-i18n="timeDisplay.dateOnly">仅日期</button>
+                            <button class="display-option-btn" data-td-display-type="time-only" data-i18n="timeDisplay.timeOnly">仅时间</button>
                         </div>
-                        <div style="flex: 1; min-width: 200px;">
-                            <label style="font-size: 12px; color: #666; display: block; margin-bottom: 8px;" data-i18n="timeDisplay.bgColor">背景颜色</label>
-                            <div class="color-picker-row">
-                                <div class="color-picker-main">
-                                    <button class="color-btn active" data-td-fs-bg-color="#000000" style="background-color: #000000;"></button>
-                                    <button class="color-btn" data-td-fs-bg-color="#FFFFFF" style="background-color: #FFFFFF; border: 1px solid #ccc;"></button>
-                                    <button class="color-btn" data-td-fs-bg-color="#007AFF" style="background-color: #007AFF;"></button>
-                                    <button class="color-btn" data-td-fs-bg-color="#FF0000" style="background-color: #FF0000;"></button>
+                    </div>
+
+                    <!-- Timezone -->
+                    <div class="timer-input-group">
+                        <label data-i18n="timeDisplay.timezone">时区</label>
+                        <select id="td-timezone-select" class="format-select">
+                            <option value="Asia/Shanghai">中国 (UTC+8)</option>
+                            <option value="America/New_York">纽约 (UTC-5/-4)</option>
+                            <option value="America/Los_Angeles">洛杉矶 (UTC-8/-7)</option>
+                            <option value="America/Chicago">芝加哥 (UTC-6/-5)</option>
+                            <option value="Europe/London">伦敦 (UTC+0/+1)</option>
+                            <option value="Europe/Paris">巴黎 (UTC+1/+2)</option>
+                            <option value="Europe/Berlin">柏林 (UTC+1/+2)</option>
+                            <option value="Asia/Tokyo">东京 (UTC+9)</option>
+                            <option value="Asia/Seoul">首尔 (UTC+9)</option>
+                            <option value="Asia/Hong_Kong">香港 (UTC+8)</option>
+                            <option value="Asia/Singapore">新加坡 (UTC+8)</option>
+                            <option value="Asia/Dubai">迪拜 (UTC+4)</option>
+                            <option value="Australia/Sydney">悉尼 (UTC+10/+11)</option>
+                            <option value="Pacific/Auckland">奥克兰 (UTC+12/+13)</option>
+                            <option value="UTC">UTC (协调世界时)</option>
+                        </select>
+                    </div>
+
+                    <!-- Time Format -->
+                    <div class="timer-input-group">
+                        <label data-i18n="timeDisplay.timeFormat">时间格式</label>
+                        <select id="td-time-format-select" class="format-select">
+                            <option value="12h">12小时制 (上午/下午)</option>
+                            <option value="24h">24小时制</option>
+                        </select>
+                    </div>
+
+                    <!-- Date Format -->
+                    <div class="timer-input-group">
+                        <label data-i18n="timeDisplay.dateFormat">日期格式</label>
+                        <select id="td-date-format-select" class="format-select">
+                            <option value="auto">自动 (Auto)</option>
+                            <option value="yyyy-mm-dd">年-月-日 (2024-01-01)</option>
+                            <option value="mm-dd-yyyy">月-日-年 (01-01-2024)</option>
+                            <option value="dd-mm-yyyy">日-月-年 (01-01-2024)</option>
+                            <option value="chinese">中文 (2024年1月1日)</option>
+                        </select>
+                    </div>
+
+                    <!-- Colors -->
+                    <div class="timer-input-group">
+                        <label data-i18n="timeDisplay.colorSettings">颜色设置</label>
+                        <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <label style="font-size: 12px; color: #666; display: block; margin-bottom: 8px;" data-i18n="timeDisplay.textColor">字体颜色</label>
+                                <div class="color-picker-row">
+                                    <div class="color-picker-main">
+                                        <button class="color-btn active" data-td-time-color="#000000" style="background-color: #000000;"></button>
+                                        <button class="color-btn" data-td-time-color="#FFFFFF" style="background-color: #FFFFFF; border: 1px solid #ccc;"></button>
+                                        <button class="color-btn" data-td-time-color="#007AFF" style="background-color: #007AFF;"></button>
+                                        <button class="color-btn" data-td-time-color="#FF0000" style="background-color: #FF0000;"></button>
+                                    </div>
+                                    <div class="color-picker-main">
+                                        <button class="color-btn" data-td-time-color="#00FF00" style="background-color: #00FF00;"></button>
+                                        <button class="color-btn" data-td-time-color="#FFFF00" style="background-color: #FFFF00; border: 1px solid #ccc;"></button>
+                                        <button class="color-btn" data-td-time-color="#FF8800" style="background-color: #FF8800;"></button>
+                                        <button class="color-btn" data-td-time-color="#8800FF" style="background-color: #8800FF;"></button>
+                                    </div>
                                 </div>
-                                <div class="color-picker-main">
-                                    <button class="color-btn" data-td-fs-bg-color="#00FF00" style="background-color: #00FF00;"></button>
-                                    <button class="color-btn" data-td-fs-bg-color="#FFFF00" style="background-color: #FFFF00; border: 1px solid #ccc;"></button>
-                                    <button class="color-btn" data-td-fs-bg-color="#FF8800" style="background-color: #FF8800;"></button>
-                                    <button class="color-btn" data-td-fs-bg-color="#8800FF" style="background-color: #8800FF;"></button>
-                                </div>
+                                <label class="color-picker-icon-btn" for="td-custom-time-color-picker" style="margin-top: 8px;">
+                                    <svg width="24" height="24" viewBox="-0.4 -5 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" style="position: relative; z-index: 2;"></polygon>
+                                        <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" style="position: relative; z-index: 2;"></path>
+                                    </svg>
+                                    <input type="color" id="td-custom-time-color-picker" class="custom-color-picker-input" value="#000000">
+                                </label>
                             </div>
-                            <label class="color-picker-icon-btn" for="td-custom-fs-bg-color-picker" style="margin-top: 8px;">
-                                <svg width="24" height="24" viewBox="-0.4 -5 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" style="position: relative; z-index: 2;"></polygon>
-                                    <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" style="position: relative; z-index: 2;"></path>
-                                </svg>
-                                <input type="color" id="td-custom-fs-bg-color-picker" class="custom-color-picker-input" value="#000000">
-                            </label>
+                            <div style="flex: 1; min-width: 200px;">
+                                <label style="font-size: 12px; color: #666; display: block; margin-bottom: 8px;" data-i18n="timeDisplay.bgColor">背景颜色</label>
+                                <div class="color-picker-row">
+                                    <div class="color-picker-main">
+                                        <button class="color-btn active" data-td-time-bg-color="#000000" style="background-color: #000000;"></button>
+                                        <button class="color-btn" data-td-time-bg-color="#FF0000" style="background-color: #FF0000;"></button>
+                                        <button class="color-btn" data-td-time-bg-color="#0000FF" style="background-color: #0000FF;"></button>
+                                        <button class="color-btn" data-td-time-bg-color="#00FF00" style="background-color: #00FF00;"></button>
+                                    </div>
+                                    <div class="color-picker-main">
+                                        <button class="color-btn" data-td-time-bg-color="#FFFF00" style="background-color: #FFFF00; border: 1px solid #ccc;"></button>
+                                        <button class="color-btn" data-td-time-bg-color="#FF8800" style="background-color: #FF8800;"></button>
+                                        <button class="color-btn" data-td-time-bg-color="#8800FF" style="background-color: #8800FF;"></button>
+                                        <button class="color-btn" data-td-time-bg-color="#FFFFFF" style="background-color: #FFFFFF; border: 1px solid #ccc;"></button>
+                                    </div>
+                                </div>
+                                <label class="color-picker-icon-btn" for="td-custom-bg-color-picker" style="margin-top: 8px;">
+                                    <svg width="24" height="24" viewBox="-0.4 -5 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" style="position: relative; z-index: 2;"></polygon>
+                                        <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" style="position: relative; z-index: 2;"></path>
+                                    </svg>
+                                    <input type="color" id="td-custom-bg-color-picker" class="custom-color-picker-input" value="#ffffff">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Font Size -->
+                    <div class="timer-input-group">
+                        <label><span data-i18n="timeDisplay.fontSizeLabel">字体大小：当前</span> <span id="td-time-font-size-value">16</span>px</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="range" id="td-time-font-size-slider" min="12" max="48" value="16" class="slider" style="flex: 1;">
+                            <input type="number" id="td-time-font-size-input" min="12" max="48" value="16" class="size-input">
+                        </div>
+                    </div>
+
+                    <!-- Opacity -->
+                    <div class="timer-input-group">
+                        <label><span data-i18n="timeDisplay.opacityLabel">透明度：当前</span> <span id="td-time-opacity-value">100</span>%</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="range" id="td-time-opacity-slider" min="10" max="100" value="100" class="slider" style="flex: 1;">
+                            <input type="number" id="td-time-opacity-input" min="10" max="100" value="100" class="size-input">
                         </div>
                     </div>
                 </div>
 
-                <!-- Fullscreen Opacity -->
-                <div class="timer-input-group">
-                    <label><span data-i18n="timeDisplay.opacityLabel">透明度：当前</span> <span id="td-fs-opacity-value">95</span>%</label>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="range" id="td-fs-opacity-slider" min="10" max="100" value="95" class="slider" style="flex: 1;">
-                        <input type="number" id="td-fs-opacity-input" min="10" max="100" value="95" class="size-input">
+                <!-- Fullscreen Tab Content -->
+                <div id="td-tab-content-fullscreen" class="td-tab-content">
+                    <!-- Fullscreen Mode -->
+                    <div class="timer-input-group">
+                        <label data-i18n="timeDisplay.fullscreenMode">全屏模式</label>
+                        <div class="button-size-options" style="grid-template-columns: 1fr 1fr 1fr;">
+                            <button class="fullscreen-mode-btn" data-td-mode="disabled" data-i18n="timeDisplay.fullscreenDisabled">关闭</button>
+                            <button class="fullscreen-mode-btn" data-td-mode="single" data-i18n="timeDisplay.fullscreenSingle">单击</button>
+                            <button class="fullscreen-mode-btn active" data-td-mode="double" data-i18n="timeDisplay.fullscreenDouble">双击</button>
+                        </div>
+                    </div>
+
+                    <!-- Fullscreen Font Size -->
+                    <div class="timer-input-group">
+                        <label><span data-i18n="timeDisplay.fullscreenFontSizeLabel">全屏字体大小：当前</span> <span id="td-time-fullscreen-font-size-value">15</span>%</label>
+                        <p class="settings-hint" style="font-size: 11px; color: #999; margin: 4px 0 8px 0;" data-i18n="timeDisplay.fullscreenFontSizeHint">调整全屏时间显示的字体大小，范围10%-85%</p>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="range" id="td-time-fullscreen-font-size-slider" min="10" max="85" value="15" class="slider" style="flex: 1;">
+                            <input type="number" id="td-time-fullscreen-font-size-input" min="10" max="85" value="15" class="size-input">
+                        </div>
+                    </div>
+
+                    <!-- Fullscreen Colors -->
+                    <div class="timer-input-group">
+                        <label data-i18n="timeDisplay.fullscreenColorSettings">全屏颜色设置</label>
+                        <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <label style="font-size: 12px; color: #666; display: block; margin-bottom: 8px;" data-i18n="timeDisplay.textColor">字体颜色</label>
+                                <div class="color-picker-row">
+                                    <div class="color-picker-main">
+                                        <button class="color-btn active" data-td-fs-color="#ffffff" style="background-color: #ffffff; border: 1px solid #ccc;"></button>
+                                        <button class="color-btn" data-td-fs-color="#000000" style="background-color: #000000;"></button>
+                                        <button class="color-btn" data-td-fs-color="#007AFF" style="background-color: #007AFF;"></button>
+                                        <button class="color-btn" data-td-fs-color="#FF0000" style="background-color: #FF0000;"></button>
+                                    </div>
+                                    <div class="color-picker-main">
+                                        <button class="color-btn" data-td-fs-color="#00FF00" style="background-color: #00FF00;"></button>
+                                        <button class="color-btn" data-td-fs-color="#FFFF00" style="background-color: #FFFF00; border: 1px solid #ccc;"></button>
+                                        <button class="color-btn" data-td-fs-color="#FF8800" style="background-color: #FF8800;"></button>
+                                        <button class="color-btn" data-td-fs-color="#8800FF" style="background-color: #8800FF;"></button>
+                                    </div>
+                                </div>
+                                <label class="color-picker-icon-btn" for="td-custom-fs-color-picker" style="margin-top: 8px;">
+                                    <svg width="24" height="24" viewBox="-0.4 -5 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" style="position: relative; z-index: 2;"></polygon>
+                                        <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" style="position: relative; z-index: 2;"></path>
+                                    </svg>
+                                    <input type="color" id="td-custom-fs-color-picker" class="custom-color-picker-input" value="#ffffff">
+                                </label>
+                            </div>
+                            <div style="flex: 1; min-width: 200px;">
+                                <label style="font-size: 12px; color: #666; display: block; margin-bottom: 8px;" data-i18n="timeDisplay.bgColor">背景颜色</label>
+                                <div class="color-picker-row">
+                                    <div class="color-picker-main">
+                                        <button class="color-btn active" data-td-fs-bg-color="#000000" style="background-color: #000000;"></button>
+                                        <button class="color-btn" data-td-fs-bg-color="#FFFFFF" style="background-color: #FFFFFF; border: 1px solid #ccc;"></button>
+                                        <button class="color-btn" data-td-fs-bg-color="#007AFF" style="background-color: #007AFF;"></button>
+                                        <button class="color-btn" data-td-fs-bg-color="#FF0000" style="background-color: #FF0000;"></button>
+                                    </div>
+                                    <div class="color-picker-main">
+                                        <button class="color-btn" data-td-fs-bg-color="#00FF00" style="background-color: #00FF00;"></button>
+                                        <button class="color-btn" data-td-fs-bg-color="#FFFF00" style="background-color: #FFFF00; border: 1px solid #ccc;"></button>
+                                        <button class="color-btn" data-td-fs-bg-color="#FF8800" style="background-color: #FF8800;"></button>
+                                        <button class="color-btn" data-td-fs-bg-color="#8800FF" style="background-color: #8800FF;"></button>
+                                    </div>
+                                </div>
+                                <label class="color-picker-icon-btn" for="td-custom-fs-bg-color-picker" style="margin-top: 8px;">
+                                    <svg width="24" height="24" viewBox="-0.4 -5 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="18 2 22 6 12 16 8 16 8 12 18 2" style="position: relative; z-index: 2;"></polygon>
+                                        <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34" style="position: relative; z-index: 2;"></path>
+                                    </svg>
+                                    <input type="color" id="td-custom-fs-bg-color-picker" class="custom-color-picker-input" value="#000000">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fullscreen Opacity -->
+                    <div class="timer-input-group">
+                        <label><span data-i18n="timeDisplay.opacityLabel">透明度：当前</span> <span id="td-fs-opacity-value">95</span>%</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="range" id="td-fs-opacity-slider" min="10" max="100" value="95" class="slider" style="flex: 1;">
+                            <input type="number" id="td-fs-opacity-input" min="10" max="100" value="95" class="size-input">
+                        </div>
                     </div>
                 </div>
                 

@@ -257,6 +257,31 @@ class TimeDisplaySettingsModal {
                 this.applySettings();
             });
         }
+
+        // Tab Switching Logic
+        const tabBtns = this.modal ? this.modal.querySelectorAll('.timer-tab-btn') : [];
+        const tabContents = this.modal ? this.modal.querySelectorAll('.td-tab-content') : [];
+
+        if (tabBtns.length > 0) {
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetTab = btn.dataset.tab;
+
+                    // Update button states
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    // Update content visibility
+                    tabContents.forEach(content => {
+                        if (content.id === `td-tab-content-${targetTab}`) {
+                            content.classList.add('active');
+                        } else {
+                            content.classList.remove('active');
+                        }
+                    });
+                });
+            });
+        }
     }
     
     show() {
