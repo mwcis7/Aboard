@@ -277,6 +277,8 @@ window.translations = {
             modeHint: 'Choose canvas display mode',
             size: 'Canvas Size',
             sizeHint: 'Choose preset size or custom size/ratio',
+            unlimitedZoom: 'Unlimited Zoom',
+            unlimitedZoomHint: 'Allow canvas to zoom infinitely (up to 500x)',
             infiniteCanvas: 'Infinite Canvas',
             pagination: 'Pagination Mode',
             presets: {

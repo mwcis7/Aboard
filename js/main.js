@@ -89,7 +89,9 @@ class DrawingBoard {
         
         // Canvas scale limits
         this.MIN_CANVAS_SCALE = 0.5;
-        this.MAX_CANVAS_SCALE = 500.0;
+        this.NORMAL_MAX_SCALE = 5.0;
+        this.UNLIMITED_MAX_SCALE = 500.0;
+        this.MAX_CANVAS_SCALE = this.settingsManager.unlimitedZoom ? this.UNLIMITED_MAX_SCALE : this.NORMAL_MAX_SCALE;
         
         // Touch gesture state
         this.lastTapTime = 0;
@@ -1318,6 +1320,12 @@ class DrawingBoard {
             localStorage.setItem('touchZoomEnabled', e.target.checked);
         });
 
+        document.getElementById('unlimited-zoom-checkbox').addEventListener('change', (e) => {
+            this.settingsManager.unlimitedZoom = e.target.checked;
+            localStorage.setItem('unlimitedZoom', e.target.checked);
+            this.updateMaxCanvasScale();
+        });
+
         // Global font selector
         document.getElementById('global-font-select').addEventListener('change', (e) => {
             this.settingsManager.setGlobalFont(e.target.value);
@@ -2509,6 +2517,21 @@ class DrawingBoard {
         }
     }
     
+    updateMaxCanvasScale() {
+        if (this.settingsManager.unlimitedZoom) {
+            this.MAX_CANVAS_SCALE = this.UNLIMITED_MAX_SCALE;
+        } else {
+            this.MAX_CANVAS_SCALE = this.NORMAL_MAX_SCALE;
+            // If current scale exceeds new max, reset to max
+            if (this.drawingEngine.canvasScale > this.MAX_CANVAS_SCALE) {
+                this.drawingEngine.canvasScale = this.MAX_CANVAS_SCALE;
+                this.updateZoomUI();
+                this.applyZoom(false);
+                localStorage.setItem('canvasScale', this.drawingEngine.canvasScale);
+            }
+        }
+    }
+
     updateZoomUI() {
         const percent = Math.round(this.drawingEngine.canvasScale * 100);
         document.getElementById('zoom-input').value = percent + '%';
@@ -2622,9 +2645,9 @@ class DrawingBoard {
                 const delta = e.deltaY;
                 let newScale;
                 if (delta < 0) {
-                    newScale = Math.min(oldScale + 0.1, 5.0);
+                    newScale = Math.min(oldScale + 0.1, this.MAX_CANVAS_SCALE);
                 } else {
-                    newScale = Math.max(oldScale - 0.1, 0.5);
+                    newScale = Math.max(oldScale - 0.1, this.MIN_CANVAS_SCALE);
                 }
                 
                 // Calculate scale ratio

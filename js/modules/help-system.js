@@ -36,8 +36,9 @@ class HelpSystem {
                     if (label) {
                         label.style.display = 'flex';
                         label.style.alignItems = 'center';
-                        label.style.justifyContent = 'space-between';
+                        label.style.justifyContent = 'flex-start';
                         label.style.width = '100%';
+                        btn.style.marginLeft = '8px';
                         label.appendChild(btn);
                     }
                 }
