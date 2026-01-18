@@ -177,13 +177,12 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    opacity: 0; /* Hidden by default */
-    pointer-events: none; /* Prevent clicks when hidden */
+    opacity: 1; /* Always visible */
+    pointer-events: auto;
 }
 
 .score-column:hover .score-remove-btn {
-    opacity: 1; /* Show on hover */
-    pointer-events: auto; /* Enable clicks when visible */
+    opacity: 1;
 }
 
 .score-remove-btn:hover {
