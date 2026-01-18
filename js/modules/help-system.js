@@ -38,8 +38,18 @@ class HelpSystem {
                         label.style.alignItems = 'center';
                         label.style.justifyContent = 'flex-start';
                         label.style.width = '100%';
+                        label.style.cursor = 'pointer'; // Make the whole label indicate interaction
                         btn.style.marginLeft = '8px';
                         label.appendChild(btn);
+
+                        // Allow clicking the label text to also open help
+                        label.addEventListener('click', (e) => {
+                            // Avoid double triggering if clicking the button itself (though button stops propagation)
+                            // and avoid triggering if clicking an input inside the label (if any)
+                            if (e.target !== btn && !e.target.closest('button') && !e.target.closest('input') && !e.target.closest('select')) {
+                                this.showHelp(this.helpMap[panel.id]);
+                            }
+                        });
                     }
                 }
             }
@@ -72,7 +82,8 @@ class HelpSystem {
 
     injectIntoModal(modal) {
         if (this.helpMap[modal.id] && !modal.querySelector('.help-btn')) {
-            const header = modal.querySelector('.modal-header');
+            // Try standard .modal-header or specific .timer-modal-header
+            const header = modal.querySelector('.modal-header') || modal.querySelector('.timer-modal-header');
             if (header) {
                 const btn = this.createHelpButton(this.helpMap[modal.id]);
                 btn.style.marginRight = '10px';
@@ -82,6 +93,18 @@ class HelpSystem {
                     header.insertBefore(btn, closeBtn);
                 } else {
                     header.appendChild(btn);
+                }
+
+                // Make the title clickable as well
+                const title = header.querySelector('h2');
+                if (title) {
+                    title.style.cursor = 'pointer';
+                    title.style.display = 'flex';
+                    title.style.alignItems = 'center';
+
+                    title.addEventListener('click', () => {
+                        this.showHelp(this.helpMap[modal.id]);
+                    });
                 }
             }
         }
