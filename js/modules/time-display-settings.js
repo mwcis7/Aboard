@@ -314,6 +314,58 @@ class TimeDisplaySettingsModal {
             opacityInput.value = opacity;
             if (opacityValue) opacityValue.textContent = opacity;
         }
+
+        // Sync colors
+        const timeColor = this.timeDisplayManager.timeColor || this.timeDisplayManager.color || '#000000';
+        let foundTimeColor = false;
+        document.querySelectorAll('.color-btn[data-td-time-color]').forEach(btn => {
+            if (btn.dataset.tdTimeColor.toLowerCase() === timeColor.toLowerCase()) {
+                btn.classList.add('active');
+                foundTimeColor = true;
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        const customTimeColorBtn = document.querySelector('label[for="td-custom-time-color-picker"]');
+        const customTimeColorPicker = document.getElementById('td-custom-time-color-picker');
+
+        if (!foundTimeColor && customTimeColorBtn) {
+            customTimeColorBtn.classList.add('active');
+            if (customTimeColorPicker) {
+                customTimeColorPicker.value = timeColor;
+                customTimeColorPicker.dataset.selectedColor = timeColor;
+            }
+        } else if (customTimeColorBtn) {
+            customTimeColorBtn.classList.remove('active');
+        }
+
+        // Sync bg color
+        const bgColor = this.timeDisplayManager.bgColor || '#FFFFFF';
+        let foundBgColor = false;
+        document.querySelectorAll('.color-btn[data-td-time-bg-color]').forEach(btn => {
+            if (btn.dataset.tdTimeBgColor.toLowerCase() === bgColor.toLowerCase()) {
+                btn.classList.add('active');
+                foundBgColor = true;
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        const customBgColorBtn = document.querySelector('label[for="td-custom-bg-color-picker"]');
+        const customBgColorPicker = document.getElementById('td-custom-bg-color-picker');
+
+        if (!foundBgColor && customBgColorBtn && bgColor !== 'transparent') {
+            customBgColorBtn.classList.add('active');
+            if (customBgColorPicker) {
+                if (bgColor.startsWith('#') && bgColor.length === 7) {
+                    customBgColorPicker.value = bgColor;
+                }
+                customBgColorPicker.dataset.selectedColor = bgColor;
+            }
+        } else if (customBgColorBtn) {
+            customBgColorBtn.classList.remove('active');
+        }
         
         // Sync fullscreen mode
         const fsMode = this.timeDisplayManager.fullscreenMode || 'double';
