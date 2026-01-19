@@ -155,18 +155,18 @@ class ScoreboardInstance {
             col.dataset.index = index;
 
             col.innerHTML = `
+                <button class="score-remove-btn" title="${window.i18n.t('scoreboard.removeTeam')}">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
                 <div class="score-team-name" contenteditable="true">${team.name}</div>
                 <div class="score-value">${team.score}</div>
                 <div class="score-controls">
                     <button class="score-btn minus">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                             <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                    </button>
-                    <button class="score-remove-btn" title="${window.i18n.t('scoreboard.removeTeam')}">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
                         </svg>
                     </button>
                     <button class="score-btn plus">

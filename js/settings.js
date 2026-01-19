@@ -8,6 +8,7 @@ class SettingsManager {
         this.controlPosition = localStorage.getItem('controlPosition') || 'top-right';
         this.edgeSnapEnabled = localStorage.getItem('edgeSnapEnabled') !== 'false';
         this.touchZoomEnabled = localStorage.getItem('touchZoomEnabled') !== 'false';
+        this.unlimitedZoom = localStorage.getItem('unlimitedZoom') === 'true';
         this.infiniteCanvas = false; // Always use pagination mode
         this.showZoomControls = localStorage.getItem('showZoomControls') !== 'false';
         this.showFullscreenBtn = localStorage.getItem('showFullscreenBtn') !== 'false';
@@ -205,6 +206,7 @@ class SettingsManager {
         
         document.getElementById('edge-snap-checkbox').checked = this.edgeSnapEnabled;
         document.getElementById('touch-zoom-checkbox').checked = this.touchZoomEnabled;
+        document.getElementById('unlimited-zoom-checkbox').checked = this.unlimitedZoom;
         document.getElementById('show-zoom-controls-checkbox').checked = this.showZoomControls;
         
         // Canvas is always in pagination mode now

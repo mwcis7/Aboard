@@ -36,8 +36,12 @@ class HelpSystem {
                     if (label) {
                         label.style.display = 'flex';
                         label.style.alignItems = 'center';
-                        label.style.justifyContent = 'space-between';
+                        label.style.justifyContent = 'flex-start';
                         label.style.width = '100%';
+                        // Prevent clicking label from triggering the button (which is valid for labels containing buttons)
+                        label.style.pointerEvents = 'none';
+                        btn.style.pointerEvents = 'auto';
+                        btn.style.marginLeft = '8px';
                         label.appendChild(btn);
                     }
                 }
@@ -71,7 +75,8 @@ class HelpSystem {
 
     injectIntoModal(modal) {
         if (this.helpMap[modal.id] && !modal.querySelector('.help-btn')) {
-            const header = modal.querySelector('.modal-header');
+            // Try standard .modal-header or specific .timer-modal-header
+            const header = modal.querySelector('.modal-header') || modal.querySelector('.timer-modal-header');
             if (header) {
                 const btn = this.createHelpButton(this.helpMap[modal.id]);
                 btn.style.marginRight = '10px';

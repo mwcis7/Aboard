@@ -549,12 +549,15 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    padding-right: 4px; /* Ensure space for close button */
 }
 
 .modal-header h2 {
     font-size: 20px;
     font-weight: 600;
     color: #333;
+    display: flex;
+    align-items: center; /* Align help button with title text */
 }
 
 .modal-close-btn {

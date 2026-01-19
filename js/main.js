@@ -89,7 +89,9 @@ class DrawingBoard {
         
         // Canvas scale limits
         this.MIN_CANVAS_SCALE = 0.5;
-        this.MAX_CANVAS_SCALE = 5.0;
+        this.NORMAL_MAX_SCALE = 5.0;
+        this.UNLIMITED_MAX_SCALE = 500.0;
+        this.MAX_CANVAS_SCALE = this.settingsManager.unlimitedZoom ? this.UNLIMITED_MAX_SCALE : this.NORMAL_MAX_SCALE;
         
         // Touch gesture state
         this.lastTapTime = 0;
@@ -268,6 +270,7 @@ class DrawingBoard {
                     e.target.closest('#history-controls') || 
                     e.target.closest('#pagination-controls') ||
                     e.target.closest('#time-display-area') ||
+                    e.target.closest('#time-display') ||
                     e.target.closest('#feature-area') ||
                     e.target.closest('.modal') ||
                     e.target.closest('.timer-display-widget') ||
@@ -1315,6 +1318,12 @@ class DrawingBoard {
         document.getElementById('touch-zoom-checkbox').addEventListener('change', (e) => {
             this.settingsManager.touchZoomEnabled = e.target.checked;
             localStorage.setItem('touchZoomEnabled', e.target.checked);
+        });
+
+        document.getElementById('unlimited-zoom-checkbox').addEventListener('change', (e) => {
+            this.settingsManager.unlimitedZoom = e.target.checked;
+            localStorage.setItem('unlimitedZoom', e.target.checked);
+            this.updateMaxCanvasScale();
         });
 
         // Global font selector
@@ -2427,7 +2436,7 @@ class DrawingBoard {
 
     zoomIn() {
         const currentScale = this.drawingEngine.canvasScale;
-        const newScale = Math.min(currentScale + 0.1, 5.0);
+        const newScale = Math.min(currentScale + 0.1, this.MAX_CANVAS_SCALE);
         this.drawingEngine.canvasScale = newScale;
         this.updateZoomUI();
         this.applyZoom(false); // Don't update config-area scale on zoom
@@ -2449,7 +2458,7 @@ class DrawingBoard {
             this.updateZoomUI();
             return;
         }
-        percent = Math.max(50, Math.min(500, percent));
+        percent = Math.max(50, Math.min(this.MAX_CANVAS_SCALE * 100, percent));
         const newScale = percent / 100;
         this.drawingEngine.canvasScale = newScale;
         this.updateZoomUI();
@@ -2508,6 +2517,21 @@ class DrawingBoard {
         }
     }
     
+    updateMaxCanvasScale() {
+        if (this.settingsManager.unlimitedZoom) {
+            this.MAX_CANVAS_SCALE = this.UNLIMITED_MAX_SCALE;
+        } else {
+            this.MAX_CANVAS_SCALE = this.NORMAL_MAX_SCALE;
+            // If current scale exceeds new max, reset to max
+            if (this.drawingEngine.canvasScale > this.MAX_CANVAS_SCALE) {
+                this.drawingEngine.canvasScale = this.MAX_CANVAS_SCALE;
+                this.updateZoomUI();
+                this.applyZoom(false);
+                localStorage.setItem('canvasScale', this.drawingEngine.canvasScale);
+            }
+        }
+    }
+
     updateZoomUI() {
         const percent = Math.round(this.drawingEngine.canvasScale * 100);
         document.getElementById('zoom-input').value = percent + '%';
@@ -2621,9 +2645,9 @@ class DrawingBoard {
                 const delta = e.deltaY;
                 let newScale;
                 if (delta < 0) {
-                    newScale = Math.min(oldScale + 0.1, 5.0);
+                    newScale = Math.min(oldScale + 0.1, this.MAX_CANVAS_SCALE);
                 } else {
-                    newScale = Math.max(oldScale - 0.1, 0.5);
+                    newScale = Math.max(oldScale - 0.1, this.MIN_CANVAS_SCALE);
                 }
                 
                 // Calculate scale ratio
@@ -2936,7 +2960,7 @@ class DrawingBoard {
             // Calculate new scale with limits
             const currentScale = this.drawingEngine.canvasScale;
             let newScale = currentScale * scaleRatio;
-            newScale = Math.max(0.5, Math.min(5.0, newScale));
+            newScale = Math.max(this.MIN_CANVAS_SCALE, Math.min(this.MAX_CANVAS_SCALE, newScale));
 
             // Recalculate effective scale ratio after clamping
             const effectiveScaleRatio = newScale / currentScale;
@@ -3247,7 +3271,7 @@ if (document.readyState === 'loading') {
         if (window.i18n) {
             await window.i18n.init();
         }
-        new DrawingBoard();
+        window.drawingBoard = new DrawingBoard();
     });
 } else {
     // If DOM is already loaded, initialize immediately
@@ -3258,6 +3282,6 @@ if (document.readyState === 'loading') {
         if (window.i18n) {
             await window.i18n.init();
         }
-        new DrawingBoard();
+        window.drawingBoard = new DrawingBoard();
     })();
 }
