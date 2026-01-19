@@ -3271,7 +3271,7 @@ if (document.readyState === 'loading') {
         if (window.i18n) {
             await window.i18n.init();
         }
-        new DrawingBoard();
+        window.drawingBoard = new DrawingBoard();
     });
 } else {
     // If DOM is already loaded, initialize immediately
@@ -3282,6 +3282,6 @@ if (document.readyState === 'loading') {
         if (window.i18n) {
             await window.i18n.init();
         }
-        new DrawingBoard();
+        window.drawingBoard = new DrawingBoard();
     })();
 }
