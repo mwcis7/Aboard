@@ -1084,9 +1084,7 @@ class DrawingBoard {
             this.drawingEngine.setEraserSize(parseInt(e.target.value));
             eraserSizeValue.textContent = e.target.value;
             if (this.drawingEngine.currentTool === 'eraser') {
-                // Apply canvas scale to visual eraser cursor size
-                const finalScale = this.canvasFitScale * this.drawingEngine.canvasScale;
-                const visualEraserSize = parseInt(e.target.value) * finalScale;
+                const visualEraserSize = this.calculateVisualEraserSize(parseInt(e.target.value));
                 this.eraserCursor.style.width = visualEraserSize + 'px';
                 this.eraserCursor.style.height = visualEraserSize + 'px';
             }
@@ -2921,11 +2919,19 @@ class DrawingBoard {
         }
     }
     
+    /**
+     * Calculate the visual eraser size by applying the canvas scale
+     * @param {number} eraserSize - The base eraser size in canvas pixels
+     * @returns {number} The visual eraser size in screen pixels
+     */
+    calculateVisualEraserSize(eraserSize) {
+        const finalScale = this.canvasFitScale * this.drawingEngine.canvasScale;
+        return eraserSize * finalScale;
+    }
+    
     updateEraserCursor(e) {
         if (this.drawingEngine.currentTool === 'eraser') {
-            // Calculate the visual eraser size by applying the canvas scale
-            const finalScale = this.canvasFitScale * this.drawingEngine.canvasScale;
-            const visualEraserSize = this.drawingEngine.eraserSize * finalScale;
+            const visualEraserSize = this.calculateVisualEraserSize(this.drawingEngine.eraserSize);
             
             this.eraserCursor.style.left = e.clientX + 'px';
             this.eraserCursor.style.top = e.clientY + 'px';
