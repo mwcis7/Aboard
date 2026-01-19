@@ -53,12 +53,20 @@ class HelpSystem {
     }
 
     observeModals() {
+        // List of modal IDs that should have help buttons
+        const helpModalIds = [
+            'random-picker-settings-modal',
+            'timer-settings-modal',
+            'teaching-tools-modal',
+            'time-display-settings-modal'
+        ];
+        
         // MutationObserver to detect when settings modals are created/shown
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
                 if (mutation.type === 'childList') {
                     mutation.addedNodes.forEach((node) => {
-                        if (node.nodeType === 1 && (node.id === 'random-picker-settings-modal' || node.id === 'timer-settings-modal' || node.id === 'teaching-tools-modal' || node.id === 'time-display-settings-modal')) {
+                        if (node.nodeType === 1 && helpModalIds.includes(node.id)) {
                             this.injectIntoModal(node);
                         }
                     });

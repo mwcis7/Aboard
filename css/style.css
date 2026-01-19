@@ -25,16 +25,17 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Global touch device improvements */
-button, a, input[type="button"], input[type="submit"], .tool-btn, .history-btn, .color-btn, .feature-btn {
-    /* Disable tap highlight on all interactive elements */
+/* Global touch device improvements - disable tap highlight on all interactive elements */
+button, a, input[type="button"], input[type="submit"] {
     -webkit-tap-highlight-color: transparent;
-    /* Ensure minimum touch target size (44x44px recommended by WCAG) */
-    min-height: 44px;
-    min-width: 44px;
-    /* Prevent text selection on touch */
     -webkit-user-select: none;
     user-select: none;
+}
+
+/* Minimum touch target size for primary navigation buttons (44x44px recommended by WCAG) */
+.tool-btn, .history-btn, .feature-btn, .timer-action-btn, .timer-control-btn {
+    min-height: 44px;
+    min-width: 44px;
 }
 
 /* Canvas */
