@@ -1084,8 +1084,11 @@ class DrawingBoard {
             this.drawingEngine.setEraserSize(parseInt(e.target.value));
             eraserSizeValue.textContent = e.target.value;
             if (this.drawingEngine.currentTool === 'eraser') {
-                this.eraserCursor.style.width = e.target.value + 'px';
-                this.eraserCursor.style.height = e.target.value + 'px';
+                // Apply canvas scale to visual eraser cursor size
+                const finalScale = this.canvasFitScale * this.drawingEngine.canvasScale;
+                const visualEraserSize = parseInt(e.target.value) * finalScale;
+                this.eraserCursor.style.width = visualEraserSize + 'px';
+                this.eraserCursor.style.height = visualEraserSize + 'px';
             }
         });
         
@@ -2920,10 +2923,14 @@ class DrawingBoard {
     
     updateEraserCursor(e) {
         if (this.drawingEngine.currentTool === 'eraser') {
+            // Calculate the visual eraser size by applying the canvas scale
+            const finalScale = this.canvasFitScale * this.drawingEngine.canvasScale;
+            const visualEraserSize = this.drawingEngine.eraserSize * finalScale;
+            
             this.eraserCursor.style.left = e.clientX + 'px';
             this.eraserCursor.style.top = e.clientY + 'px';
-            this.eraserCursor.style.width = this.drawingEngine.eraserSize + 'px';
-            this.eraserCursor.style.height = this.drawingEngine.eraserSize + 'px';
+            this.eraserCursor.style.width = visualEraserSize + 'px';
+            this.eraserCursor.style.height = visualEraserSize + 'px';
         }
     }
     
