@@ -63,27 +63,41 @@ class HelpSystem {
                         }
                     });
                 }
+                // Also check for class changes (modal being shown)
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const target = mutation.target;
+                    if (target.classList && target.classList.contains('show')) {
+                        this.checkAndInjectModal(target.id);
+                    }
+                }
             });
         });
 
-        observer.observe(document.body, { childList: true });
+        observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
 
-        // Also check existing
-        const rpModal = document.getElementById('random-picker-settings-modal');
-        if (rpModal) this.injectIntoModal(rpModal);
-
-        const timerModal = document.getElementById('timer-settings-modal');
-        if (timerModal) this.injectIntoModal(timerModal);
-        
-        const teachingToolsModal = document.getElementById('teaching-tools-modal');
-        if (teachingToolsModal) this.injectIntoModal(teachingToolsModal);
-        
-        const timeDisplaySettingsModal = document.getElementById('time-display-settings-modal');
-        if (timeDisplaySettingsModal) this.injectIntoModal(timeDisplaySettingsModal);
+        // Check existing modals after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            this.checkExistingModals();
+        }, 100);
+    }
+    
+    checkExistingModals() {
+        const modalIds = ['random-picker-settings-modal', 'timer-settings-modal', 'teaching-tools-modal', 'time-display-settings-modal'];
+        modalIds.forEach(id => {
+            const modal = document.getElementById(id);
+            if (modal) this.injectIntoModal(modal);
+        });
         
         // Also inject into the time display area (not a modal but a panel)
         const timeDisplayArea = document.getElementById('time-display-area');
         if (timeDisplayArea) this.injectIntoPanel(timeDisplayArea);
+    }
+    
+    checkAndInjectModal(modalId) {
+        if (this.helpMap[modalId]) {
+            const modal = document.getElementById(modalId);
+            if (modal) this.injectIntoModal(modal);
+        }
     }
 
     injectIntoModal(modal) {

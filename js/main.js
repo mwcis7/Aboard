@@ -853,27 +853,32 @@ class DrawingBoard {
         // Background image size slider
         const bgImageSizeSlider = document.getElementById('bg-image-size-slider');
         const bgImageSizeValue = document.getElementById('bg-image-size-value');
-        bgImageSizeSlider.addEventListener('input', (e) => {
-            this.backgroundManager.setImageSize(parseInt(e.target.value) / 100);
-            bgImageSizeValue.textContent = e.target.value;
-        });
+        if (bgImageSizeSlider) {
+            bgImageSizeSlider.addEventListener('input', (e) => {
+                this.backgroundManager.setImageSize(parseInt(e.target.value) / 100);
+                if (bgImageSizeValue) bgImageSizeValue.textContent = e.target.value;
+            });
+        }
         
         // Adjust background image button
-        document.getElementById('adjust-bg-image-btn').addEventListener('click', () => {
-            // Reset confirmation state to allow re-adjustment
-            this.imageControls.resetConfirmation();
-            
-            // Show image controls for the current background image
-            const imgData = this.backgroundManager.getImageData();
-            if (imgData) {
-                this.imageControls.showControls(imgData);
-            }
-        });
+        const adjustBgImageBtn = document.getElementById('adjust-bg-image-btn');
+        if (adjustBgImageBtn) {
+            adjustBgImageBtn.addEventListener('click', () => {
+                // Reset confirmation state to allow re-adjustment
+                this.imageControls.resetConfirmation();
+                
+                // Show image controls for the current background image
+                const imgData = this.backgroundManager.getImageData();
+                if (imgData) {
+                    this.imageControls.showControls(imgData);
+                }
+            });
+        }
 
         // Background GIF settings button
         const gifSettingsBtn = document.getElementById('bg-gif-settings-btn');
         const gifSettingsModal = document.getElementById('gif-settings-modal');
-        if (gifSettingsBtn) {
+        if (gifSettingsBtn && gifSettingsModal) {
             gifSettingsBtn.addEventListener('click', () => {
                 const input = document.getElementById('gif-loop-count-input');
                 if (input) {
@@ -883,21 +888,30 @@ class DrawingBoard {
             });
         }
 
-        document.getElementById('gif-settings-cancel-btn').addEventListener('click', () => {
-            gifSettingsModal.classList.remove('show');
-        });
+        const gifSettingsCancelBtn = document.getElementById('gif-settings-cancel-btn');
+        if (gifSettingsCancelBtn && gifSettingsModal) {
+            gifSettingsCancelBtn.addEventListener('click', () => {
+                gifSettingsModal.classList.remove('show');
+            });
+        }
 
-        document.getElementById('gif-settings-ok-btn').addEventListener('click', () => {
-            const input = document.getElementById('gif-loop-count-input');
-            if (input) {
-                this.backgroundManager.setGifLoopCount(parseInt(input.value));
-            }
-            gifSettingsModal.classList.remove('show');
-        });
+        const gifSettingsOkBtn = document.getElementById('gif-settings-ok-btn');
+        if (gifSettingsOkBtn && gifSettingsModal) {
+            gifSettingsOkBtn.addEventListener('click', () => {
+                const input = document.getElementById('gif-loop-count-input');
+                if (input) {
+                    this.backgroundManager.setGifLoopCount(parseInt(input.value));
+                }
+                gifSettingsModal.classList.remove('show');
+            });
+        }
 
-        document.getElementById('gif-settings-close-btn').addEventListener('click', () => {
-            gifSettingsModal.classList.remove('show');
-        });
+        const gifSettingsCloseBtn = document.getElementById('gif-settings-close-btn');
+        if (gifSettingsCloseBtn && gifSettingsModal) {
+            gifSettingsCloseBtn.addEventListener('click', () => {
+                gifSettingsModal.classList.remove('show');
+            });
+        }
 
         // Background playback toggle (for GIFs)
         const playbackBtn = document.getElementById('bg-image-playback-btn');

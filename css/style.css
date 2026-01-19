@@ -21,6 +21,20 @@ body {
     /* Performance optimization: use GPU acceleration */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Remove tap highlight on touch devices */
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Global touch device improvements */
+button, a, input[type="button"], input[type="submit"], .tool-btn, .history-btn, .color-btn, .feature-btn {
+    /* Disable tap highlight on all interactive elements */
+    -webkit-tap-highlight-color: transparent;
+    /* Ensure minimum touch target size (44x44px recommended by WCAG) */
+    min-height: 44px;
+    min-width: 44px;
+    /* Prevent text selection on touch */
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 /* Canvas */
@@ -101,7 +115,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     color: #333;
 }
 
@@ -236,7 +250,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
     color: #666;
 }
 
@@ -449,7 +463,7 @@ body {
     border-radius: 12px;
     background-color: transparent;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     color: #666;
     min-width: 70px;
 }
@@ -484,7 +498,7 @@ body {
 }
 
 .tool-btn svg {
-    transition: all 0.2s ease;
+    transition: stroke 0.2s ease, transform 0.2s ease;
 }
 
 .tool-btn span {
