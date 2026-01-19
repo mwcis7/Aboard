@@ -1,0 +1,20 @@
+window.help_translations = {
+    help: {
+        tools: {
+            pen: "Stiftwerkzeug-Anleitung:\n1. Stifttypen: Normal, Bleistift (körnig), Kugelschreiber (Druck), Füller (Kalligraphie) oder Pinsel (Tinte).\n2. Farbe: 8 Voreinstellungen verfügbar. Klicken Sie auf das Plus-Symbol für eine benutzerdefinierte Farbauswahl.\n3. Größe: Strichbreite anpassen (1-50px) mit dem Schieberegler.\n4. Tipp: Shift-Taste gedrückt halten, um gerade Linien zu zeichnen.",
+            shape: "Formwerkzeug-Anleitung:\n1. Formen: Linie, Rechteck, Kreis, Ellipse, Pfeil, Doppelpfeil.\n2. Wie zeichnen: Drücken und ziehen, dann loslassen zum Abschließen.\n3. Pfeilgröße: Pfeilspitzengröße unabhängig anpassen (mindestens auf Linienstärke begrenzt).\n4. Stil: Formen verwenden die aktuellen Stiftfarben- und Dickeeinstellungen.",
+            eraser: "Radierer-Anleitung:\n1. Form: Wählen Sie zwischen rundem oder eckigem Radierer.\n2. Größe: Radierergröße mit dem Schieberegler anpassen.\n3. Alles löschen: Verwenden Sie die 'Löschen'-Schaltfläche in der Symbolleiste, um die gesamte Leinwand zu löschen.",
+        },
+        background: "Hintergrundeinstellungen-Anleitung:\n1. Farbe: Leinwand-Hintergrundfarbe wählen.\n2. Muster: Gitter, Linien, Notenlinien, Koordinatensystem, usw.\n3. Bild: Lokales Bild als Hintergrund hochladen. Unterstützt Verschieben, Größenänderung, Drehung und Spiegelung.\n4. Koordinaten: Bei ausgewähltem Koordinatenmuster auf 'Ursprung verschieben' klicken, um den Ursprungspunkt auf der Leinwand zu ziehen.",
+        features: {
+            timer: "Timer-Anleitung:\n1. Modi: Stoppuhr und Countdown.\n2. Zeit einstellen: Stunden, Minuten und Sekunden für Countdown eingeben.\n3. Ton: Abschlusston aktivieren. Unterstützt benutzerdefinierten Audio-Upload.\n4. Schleife: Wiederholungszahl für den Ton festlegen.\n5. Vollbild: Timer im Vollbildmodus anzeigen.\n6. Minimalmodus: Doppelklick auf die Zeitanzeige, um zur minimalen Ansicht zu wechseln.",
+            randomPicker: "Zufallsauswahl-Anleitung:\n1. Namen importieren:\n   - Manuell: Namen eingeben, einer pro Zeile.\n   - Excel-Import: In den Einstellungen auf 'Importieren' klicken, Excel/CSV-Datei auswählen. 'Name'-Spalte wird automatisch gelesen (anpassbar).\n2. Modi: Auswahl nach Name oder Nummer.\n3. Wiederholung: 'Wiederholungen erlauben' aktivieren, um denselben Namen mehrfach auszuwählen.",
+            scoreboard: "Anzeigetafel-Anleitung:\n1. Team hinzufügen: Klicken Sie, um eine neue Punktespalte hinzuzufügen.\n2. Punktestand anpassen: Auf '+' oder '-' Schaltflächen klicken.\n3. Name bearbeiten: Doppelklick auf Teamname zum Bearbeiten.\n4. Zurücksetzen: Setzt alle Punkte auf Null zurück, behält aber Teams bei.",
+            teachingTools: "Lehrmittel-Anleitung:\n1. Werkzeugtypen: Lineal (2 Stile) und Geodreieck (60° und 45° Typen).\n2. Werkzeuge hinzufügen: Menge im Abschnitt 'Neu hinzufügen' festlegen und auf 'Bestätigen' klicken, um zur Leinwand hinzuzufügen.\n3. Werkzeuge verschieben: Einfachklick und ziehen, um die Werkzeugposition zu verschieben.\n4. Werkzeuge anpassen: Doppelklick zum Anzeigen der Kontrollpunkte für Drehung, Größenänderung und Löschen.\n5. Kantenzeichnung: Zeichnen in der Nähe von Werkzeugkanten lässt den Strich an der Kante einrasten.\n6. Mehrere Instanzen: Sie können mehrere Werkzeuge gleichzeitig auf der Leinwand platzieren.",
+            timeDisplay: "Zeitanzeige-Einstellungen-Anleitung:\n1. Anzeigeoptionen: Wählen Sie, ob Datum, Uhrzeit oder beides angezeigt werden soll.\n2. Zeitzone: Unterstützt wichtige globale Zeitzonen mit automatischer Sommerzeit-Anpassung.\n3. Format: 12/24-Stunden-Zeitformat, verschiedene Datumsformate verfügbar.\n4. Stil: Schriftfarbe, Hintergrundfarbe und Deckkraft anpassen.\n5. Vollbildmodus: Einfach- oder Doppelklick zum Aufrufen der Vollbild-Zeitanzeige.\n6. Zum Verschieben ziehen: Das Zeitanzeige-Widget kann frei an jede Position gezogen werden."
+        }
+    },
+    common: {
+        help: "Hilfe"
+    }
+};

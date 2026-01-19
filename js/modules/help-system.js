@@ -11,7 +11,10 @@ class HelpSystem {
             'background-config': 'help.background',
             'timer-settings-modal': 'help.features.timer',
             'random-picker-settings-modal': 'help.features.randomPicker',
-            'scoreboard-feature-btn': 'help.features.scoreboard'
+            'scoreboard-feature-btn': 'help.features.scoreboard',
+            'teaching-tools-modal': 'help.features.teachingTools',
+            'time-display-settings-modal': 'help.features.timeDisplay',
+            'time-display-area': 'help.features.timeDisplay'
         };
     }
 
@@ -55,7 +58,7 @@ class HelpSystem {
             mutations.forEach((mutation) => {
                 if (mutation.type === 'childList') {
                     mutation.addedNodes.forEach((node) => {
-                        if (node.nodeType === 1 && (node.id === 'random-picker-settings-modal' || node.id === 'timer-settings-modal')) {
+                        if (node.nodeType === 1 && (node.id === 'random-picker-settings-modal' || node.id === 'timer-settings-modal' || node.id === 'teaching-tools-modal' || node.id === 'time-display-settings-modal')) {
                             this.injectIntoModal(node);
                         }
                     });
@@ -71,6 +74,16 @@ class HelpSystem {
 
         const timerModal = document.getElementById('timer-settings-modal');
         if (timerModal) this.injectIntoModal(timerModal);
+        
+        const teachingToolsModal = document.getElementById('teaching-tools-modal');
+        if (teachingToolsModal) this.injectIntoModal(teachingToolsModal);
+        
+        const timeDisplaySettingsModal = document.getElementById('time-display-settings-modal');
+        if (timeDisplaySettingsModal) this.injectIntoModal(timeDisplaySettingsModal);
+        
+        // Also inject into the time display area (not a modal but a panel)
+        const timeDisplayArea = document.getElementById('time-display-area');
+        if (timeDisplayArea) this.injectIntoPanel(timeDisplayArea);
     }
 
     injectIntoModal(modal) {
@@ -79,13 +92,50 @@ class HelpSystem {
             const header = modal.querySelector('.modal-header') || modal.querySelector('.timer-modal-header');
             if (header) {
                 const btn = this.createHelpButton(this.helpMap[modal.id]);
-                btn.style.marginRight = '10px';
-                // Insert before close button
-                const closeBtn = header.querySelector('.modal-close-btn');
-                if (closeBtn) {
-                    header.insertBefore(btn, closeBtn);
+                btn.style.marginLeft = '8px';
+                btn.style.marginRight = '0';
+                btn.style.flexShrink = '0';
+                
+                // Find the h2 title element and insert help button after it
+                const h2 = header.querySelector('h2');
+                if (h2) {
+                    // Wrap h2 text with span if not already wrapped
+                    if (!h2.querySelector('.help-btn')) {
+                        // Make h2 a flex container to align title and help button
+                        h2.style.display = 'flex';
+                        h2.style.alignItems = 'center';
+                        h2.style.gap = '8px';
+                        h2.appendChild(btn);
+                    }
                 } else {
-                    header.appendChild(btn);
+                    // Fallback: insert before close button
+                    const closeBtn = header.querySelector('.modal-close-btn');
+                    if (closeBtn) {
+                        header.insertBefore(btn, closeBtn);
+                    } else {
+                        header.appendChild(btn);
+                    }
+                }
+            }
+        }
+    }
+    
+    injectIntoPanel(panel) {
+        if (this.helpMap[panel.id] && !panel.querySelector('.help-btn')) {
+            const firstGroup = panel.querySelector('.config-group');
+            if (firstGroup) {
+                const label = firstGroup.querySelector('label');
+                if (label && !label.querySelector('.help-btn')) {
+                    const btn = this.createHelpButton(this.helpMap[panel.id]);
+                    label.style.display = 'flex';
+                    label.style.alignItems = 'center';
+                    label.style.justifyContent = 'flex-start';
+                    label.style.width = '100%';
+                    // Prevent clicking label from triggering the button
+                    label.style.pointerEvents = 'none';
+                    btn.style.pointerEvents = 'auto';
+                    btn.style.marginLeft = '8px';
+                    label.appendChild(btn);
                 }
             }
         }
@@ -167,6 +217,8 @@ class HelpSystem {
             modal = document.createElement('div');
             modal.id = modalId;
             modal.className = 'modal';
+            // Set highest z-index to ensure help modal is always on top
+            modal.style.zIndex = '99999';
             modal.innerHTML = `
                 <div class="modal-content" style="max-width:500px;">
                     <div class="modal-header">
