@@ -36,7 +36,7 @@ window.translations = {
         pen: '笔',
         shape: '形状',
         move: '移动',
-        eraser: '橡皮',
+        eraser: '擦除',
         clear: '清空',
         background: '背景',
         teachingTools: '教具',
@@ -80,12 +80,12 @@ window.translations = {
             lineProperties: '线条属性'
         },
         eraser: {
-            title: '橡皮',
-            type: '橡皮类型',
-            normal: '普通橡皮',
-            pixel: '像素橡皮',
-            size: '橡皮大小',
-            sizeLabel: '橡皮擦大小：当前',
+            title: '擦除',
+            type: '擦除类型',
+            normal: '普通擦除',
+            pixel: '像素擦除',
+            size: '擦除大小',
+            sizeLabel: '擦除大小：当前',
             shape: '形状',
             shapeCircle: '圆形',
             shapeRectangle: '方形'

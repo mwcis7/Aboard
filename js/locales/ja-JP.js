@@ -428,6 +428,7 @@ window.translations = {
         showDate: '日付を表示',
         showTime: '時刻を表示',
         settings: '設定',
+        fullscreenDisplay: 'フルスクリーン表示',
         displayOptions: '表示オプション',
         dateAndTime: '日付と時刻',
         dateOnly: '日付のみ',
@@ -449,11 +450,16 @@ window.translations = {
         opacityLabel: '不透明度：現在',
         fullscreenMode: 'フルスクリーンモード',
         fullscreenModeHint: '時刻をフルスクリーン表示するトリガーを選択',
+        fullscreenColorSettings: 'フルスクリーン色設定',
         fullscreenFontSize: 'フルスクリーンフォントサイズ',
         fullscreenFontSizeLabel: 'フルスクリーンフォントサイズ：現在',
+        fullscreenFontSizeHint: 'フルスクリーンフォントサイズを調整 (10%-85%)',
         fullscreenSliderLabel: 'フォントサイズ調整 (10%-85%)',
         customColor: 'カスタムカラー',
-        transparent: '透明'
+        transparent: '透明',
+        fullscreenDisabled: '無効',
+        fullscreenSingle: 'シングルクリック',
+        fullscreenDouble: 'ダブルクリック'
     },
 
     // Timer

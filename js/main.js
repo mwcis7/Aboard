@@ -2275,6 +2275,13 @@ class DrawingBoard {
             document.getElementById('eraser-btn').classList.add('active');
             document.getElementById('eraser-config').classList.add('active');
             this.canvas.style.cursor = 'pointer';
+            // Sync eraser size display with current value
+            const eraserSizeSlider = document.getElementById('eraser-size-slider');
+            const eraserSizeValue = document.getElementById('eraser-size-value');
+            if (eraserSizeSlider && eraserSizeValue) {
+                eraserSizeSlider.value = this.drawingEngine.eraserSize;
+                eraserSizeValue.textContent = this.drawingEngine.eraserSize;
+            }
         } else if (tool === 'background') {
             document.getElementById('background-btn').classList.add('active');
             document.getElementById('background-config').classList.add('active');

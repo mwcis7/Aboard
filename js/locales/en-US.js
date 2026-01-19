@@ -500,6 +500,7 @@ window.translations = {
         opacity: 'Opacity',
         opacityLabel: 'Opacity: Current',
         fullscreenMode: 'Fullscreen Mode',
+        fullscreenColorSettings: 'Fullscreen Color Settings',
         fullscreenFontSize: 'Fullscreen Font Size',
         fullscreenFontSizeLabel: 'Fullscreen Font Size: Current',
         fullscreenFontSizeHint: 'Adjust fullscreen font size (10%-85%)',

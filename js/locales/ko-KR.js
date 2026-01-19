@@ -428,6 +428,7 @@ window.translations = {
         showDate: '날짜 표시',
         showTime: '시간 표시',
         settings: '설정',
+        fullscreenDisplay: '전체 화면 표시',
         displayOptions: '표시 옵션',
         dateAndTime: '날짜 및 시간',
         dateOnly: '날짜만',
@@ -449,11 +450,16 @@ window.translations = {
         opacityLabel: '불투명도: 현재',
         fullscreenMode: '전체 화면 모드',
         fullscreenModeHint: '시간 전체 화면 표시 트리거 선택',
+        fullscreenColorSettings: '전체 화면 색상 설정',
         fullscreenFontSize: '전체 화면 글꼴 크기',
         fullscreenFontSizeLabel: '전체 화면 글꼴 크기: 현재',
+        fullscreenFontSizeHint: '전체 화면 글꼴 크기 조정 (10%-85%)',
         fullscreenSliderLabel: '글꼴 크기 조정 (10%-85%)',
         customColor: '사용자 정의 색상',
-        transparent: '투명'
+        transparent: '투명',
+        fullscreenDisabled: '비활성화',
+        fullscreenSingle: '한 번 클릭',
+        fullscreenDouble: '두 번 클릭'
     },
 
     // Timer

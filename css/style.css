@@ -270,6 +270,11 @@ button, a, input[type="button"], input[type="submit"] {
     align-items: flex-start;
 }
 
+/* Eraser config panel: center the size slider vertically */
+#eraser-config.active {
+    align-items: center;
+}
+
 .config-group {
     display: flex;
     flex-direction: column;

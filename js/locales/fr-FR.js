@@ -431,14 +431,38 @@ window.translations = {
 
     // Time Display
     timeDisplay: {
+        title: 'Affichage de l\'heure',
+        settingsTitle: 'Paramètres d\'affichage de l\'heure',
         options: 'Options d\'affichage de l\'heure',
         showDate: 'Afficher la date',
         showTime: 'Afficher l\'heure',
         settings: 'Paramètres',
+        fullscreenDisplay: 'Plein écran',
         displayOptions: 'Options d\'affichage',
         dateAndTime: 'Date et heure',
         dateOnly: 'Date seulement',
-        timeOnly: 'Heure seulement'
+        timeOnly: 'Heure seulement',
+        timezone: 'Fuseau horaire',
+        timeFormat: 'Format de l\'heure',
+        dateFormat: 'Format de date',
+        colorSettings: 'Paramètres de couleur',
+        textColor: 'Couleur du texte',
+        bgColor: 'Couleur de fond',
+        fontSize: 'Taille de police',
+        fontSizeLabel: 'Taille de police: Actuelle',
+        opacity: 'Opacité',
+        opacityLabel: 'Opacité: Actuelle',
+        fullscreenMode: 'Mode plein écran',
+        fullscreenColorSettings: 'Paramètres de couleur en plein écran',
+        fullscreenFontSize: 'Taille de police en plein écran',
+        fullscreenFontSizeLabel: 'Taille de police en plein écran: Actuelle',
+        fullscreenFontSizeHint: 'Ajuster la taille de police en plein écran (10%-85%)',
+        fullscreenSliderLabel: 'Taille de police (10%-85%)',
+        customColor: 'Couleur personnalisée',
+        transparent: 'Transparent',
+        fullscreenDisabled: 'Désactivé',
+        fullscreenSingle: 'Simple clic',
+        fullscreenDouble: 'Double clic'
     },
 
     // Timer

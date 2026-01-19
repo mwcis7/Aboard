@@ -36,7 +36,7 @@ window.translations = {
         pen: '筆',
         shape: '形狀',
         move: '移動',
-        eraser: '橡皮',
+        eraser: '擦除',
         clear: '清空',
         background: '背景',
         teachingTools: '教具',
@@ -80,12 +80,12 @@ window.translations = {
             lineProperties: '線條屬性'
         },
         eraser: {
-            title: '橡皮',
-            type: '橡皮類型',
-            normal: '普通橡皮',
-            pixel: '像素橡皮',
-            size: '橡皮大小',
-            sizeLabel: '橡皮擦大小：目前',
+            title: '擦除',
+            type: '擦除類型',
+            normal: '普通擦除',
+            pixel: '像素擦除',
+            size: '擦除大小',
+            sizeLabel: '擦除大小：目前',
             shape: '形狀',
             shapeCircle: '圓形',
             shapeRectangle: '方形'
@@ -449,6 +449,7 @@ window.translations = {
         showDate: '顯示日期',
         showTime: '顯示時間',
         settings: '設置',
+        fullscreenDisplay: '全螢幕顯示',
         displayOptions: '顯示選項',
         dateAndTime: '日期和時間',
         dateOnly: '僅日期',
@@ -464,11 +465,16 @@ window.translations = {
         opacity: '透明度',
         opacityLabel: '透明度：目前',
         fullscreenMode: '全螢幕模式',
+        fullscreenColorSettings: '全螢幕顏色設置',
         fullscreenFontSize: '全螢幕字體大小',
         fullscreenFontSizeLabel: '全螢幕字體大小：目前',
+        fullscreenFontSizeHint: '調整全螢幕時間顯示的字體大小，範圍10%-85%',
         fullscreenSliderLabel: '字體大小調節 (10%-85%)',
         customColor: '自定義顏色',
-        transparent: '透明'
+        transparent: '透明',
+        fullscreenDisabled: '關閉',
+        fullscreenSingle: '單擊',
+        fullscreenDouble: '雙擊'
     },
 
     // Timer
