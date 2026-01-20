@@ -89,7 +89,9 @@ class DrawingBoard {
         
         // Canvas scale limits
         this.MIN_CANVAS_SCALE = 0.5;
-        this.MAX_CANVAS_SCALE = 5.0;
+        this.NORMAL_MAX_SCALE = 5.0;
+        this.UNLIMITED_MAX_SCALE = 500.0;
+        this.MAX_CANVAS_SCALE = this.settingsManager.unlimitedZoom ? this.UNLIMITED_MAX_SCALE : this.NORMAL_MAX_SCALE;
         
         // Touch gesture state
         this.lastTapTime = 0;
@@ -115,6 +117,18 @@ class DrawingBoard {
         // Connect edge drawing manager to drawing engine
         this.drawingEngine.setEdgeDrawingManager(this.edgeDrawingManager);
         
+        // Initialize StorageManager
+        this.storageManager = new StorageManager();
+
+        // Debounced save function
+        this.saveTimeout = null;
+        this.saveSessionDebounced = () => {
+            if (this.saveTimeout) clearTimeout(this.saveTimeout);
+            this.saveTimeout = setTimeout(() => {
+                this.saveSession();
+            }, 1000); // 1 second delay
+        };
+
         // Initialize
         this.resizeCanvas();
         this.setupEventListeners();
@@ -141,15 +155,18 @@ class DrawingBoard {
         // Listen for fullscreen changes
         document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
         
-        // Add refresh warning to prevent accidental content loss
+        // Save canvas data before page unload (Attempt synchronous save, though IndexedDB is async)
         window.addEventListener('beforeunload', (e) => {
+            this.saveSession();
             // Show warning message when user tries to refresh or close the page
-            // Use i18n translation if available, otherwise fallback to English
             const message = window.i18n ? window.i18n.t('tools.refresh.warning') : 'Refreshing will clear all canvas content and cannot be recovered. Are you sure you want to refresh?';
             e.preventDefault();
             e.returnValue = message;
             return message;
         });
+        
+        // Check for saved canvas data and show recovery dialog
+        this.checkForRecovery();
     }
     
     
@@ -268,13 +285,17 @@ class DrawingBoard {
                     e.target.closest('#history-controls') || 
                     e.target.closest('#pagination-controls') ||
                     e.target.closest('#time-display-area') ||
+                    e.target.closest('#time-display') ||
                     e.target.closest('#feature-area') ||
                     e.target.closest('.modal') ||
                     e.target.closest('.timer-display-widget') ||
                     e.target.closest('.random-picker-widget') ||
                     e.target.closest('.scoreboard-widget') ||
                     e.target.closest('.feature-widget') ||
-                    e.target.closest('.canvas-image-selection')) {
+                    e.target.closest('.canvas-image-selection') ||
+                    e.target.closest('.time-fullscreen-modal') ||
+                    e.target.closest('.timer-fullscreen-modal') ||
+                    e.target.closest('input[type="range"]')) {
                     return;
                 }
             }
@@ -623,6 +644,7 @@ class DrawingBoard {
                 // Clear stroke selection as strokes are no longer valid
                 this.drawingEngine.clearStrokes();
                 this.updateUI();
+                this.saveSessionDebounced();
             }
         });
         
@@ -631,6 +653,7 @@ class DrawingBoard {
                 // Clear stroke selection as strokes are no longer valid
                 this.drawingEngine.clearStrokes();
                 this.updateUI();
+                this.saveSessionDebounced();
             }
         });
         
@@ -847,27 +870,32 @@ class DrawingBoard {
         // Background image size slider
         const bgImageSizeSlider = document.getElementById('bg-image-size-slider');
         const bgImageSizeValue = document.getElementById('bg-image-size-value');
-        bgImageSizeSlider.addEventListener('input', (e) => {
-            this.backgroundManager.setImageSize(parseInt(e.target.value) / 100);
-            bgImageSizeValue.textContent = e.target.value;
-        });
+        if (bgImageSizeSlider) {
+            bgImageSizeSlider.addEventListener('input', (e) => {
+                this.backgroundManager.setImageSize(parseInt(e.target.value) / 100);
+                if (bgImageSizeValue) bgImageSizeValue.textContent = e.target.value;
+            });
+        }
         
         // Adjust background image button
-        document.getElementById('adjust-bg-image-btn').addEventListener('click', () => {
-            // Reset confirmation state to allow re-adjustment
-            this.imageControls.resetConfirmation();
-            
-            // Show image controls for the current background image
-            const imgData = this.backgroundManager.getImageData();
-            if (imgData) {
-                this.imageControls.showControls(imgData);
-            }
-        });
+        const adjustBgImageBtn = document.getElementById('adjust-bg-image-btn');
+        if (adjustBgImageBtn) {
+            adjustBgImageBtn.addEventListener('click', () => {
+                // Reset confirmation state to allow re-adjustment
+                this.imageControls.resetConfirmation();
+                
+                // Show image controls for the current background image
+                const imgData = this.backgroundManager.getImageData();
+                if (imgData) {
+                    this.imageControls.showControls(imgData);
+                }
+            });
+        }
 
         // Background GIF settings button
         const gifSettingsBtn = document.getElementById('bg-gif-settings-btn');
         const gifSettingsModal = document.getElementById('gif-settings-modal');
-        if (gifSettingsBtn) {
+        if (gifSettingsBtn && gifSettingsModal) {
             gifSettingsBtn.addEventListener('click', () => {
                 const input = document.getElementById('gif-loop-count-input');
                 if (input) {
@@ -877,21 +905,30 @@ class DrawingBoard {
             });
         }
 
-        document.getElementById('gif-settings-cancel-btn').addEventListener('click', () => {
-            gifSettingsModal.classList.remove('show');
-        });
+        const gifSettingsCancelBtn = document.getElementById('gif-settings-cancel-btn');
+        if (gifSettingsCancelBtn && gifSettingsModal) {
+            gifSettingsCancelBtn.addEventListener('click', () => {
+                gifSettingsModal.classList.remove('show');
+            });
+        }
 
-        document.getElementById('gif-settings-ok-btn').addEventListener('click', () => {
-            const input = document.getElementById('gif-loop-count-input');
-            if (input) {
-                this.backgroundManager.setGifLoopCount(parseInt(input.value));
-            }
-            gifSettingsModal.classList.remove('show');
-        });
+        const gifSettingsOkBtn = document.getElementById('gif-settings-ok-btn');
+        if (gifSettingsOkBtn && gifSettingsModal) {
+            gifSettingsOkBtn.addEventListener('click', () => {
+                const input = document.getElementById('gif-loop-count-input');
+                if (input) {
+                    this.backgroundManager.setGifLoopCount(parseInt(input.value));
+                }
+                gifSettingsModal.classList.remove('show');
+            });
+        }
 
-        document.getElementById('gif-settings-close-btn').addEventListener('click', () => {
-            gifSettingsModal.classList.remove('show');
-        });
+        const gifSettingsCloseBtn = document.getElementById('gif-settings-close-btn');
+        if (gifSettingsCloseBtn && gifSettingsModal) {
+            gifSettingsCloseBtn.addEventListener('click', () => {
+                gifSettingsModal.classList.remove('show');
+            });
+        }
 
         // Background playback toggle (for GIFs)
         const playbackBtn = document.getElementById('bg-image-playback-btn');
@@ -1064,8 +1101,9 @@ class DrawingBoard {
             this.drawingEngine.setEraserSize(parseInt(e.target.value));
             eraserSizeValue.textContent = e.target.value;
             if (this.drawingEngine.currentTool === 'eraser') {
-                this.eraserCursor.style.width = e.target.value + 'px';
-                this.eraserCursor.style.height = e.target.value + 'px';
+                const visualEraserSize = this.calculateVisualEraserSize(parseInt(e.target.value));
+                this.eraserCursor.style.width = visualEraserSize + 'px';
+                this.eraserCursor.style.height = visualEraserSize + 'px';
             }
         });
         
@@ -1148,7 +1186,6 @@ class DrawingBoard {
             randomPickerBtn.addEventListener('click', () => {
                 this.randomPickerManager.create();
                 this.closeFeaturePanel();
-                this.switchToPen();
             });
         }
 
@@ -1158,7 +1195,6 @@ class DrawingBoard {
             scoreboardBtn.addEventListener('click', () => {
                 this.scoreboardManager.create();
                 this.closeFeaturePanel();
-                this.switchToPen();
             });
         }
 
@@ -1316,6 +1352,12 @@ class DrawingBoard {
             localStorage.setItem('touchZoomEnabled', e.target.checked);
         });
 
+        document.getElementById('unlimited-zoom-checkbox').addEventListener('change', (e) => {
+            this.settingsManager.unlimitedZoom = e.target.checked;
+            localStorage.setItem('unlimitedZoom', e.target.checked);
+            this.updateMaxCanvasScale();
+        });
+
         // Global font selector
         document.getElementById('global-font-select').addEventListener('change', (e) => {
             this.settingsManager.setGlobalFont(e.target.value);
@@ -1399,6 +1441,12 @@ class DrawingBoard {
             this.updateFullscreenBtnVisibility();
         });
         
+        // Toolbar customization handlers
+        this.initToolbarCustomization();
+        
+        // Control button settings handlers
+        this.initControlButtonSettings();
+        
         // Theme color buttons
         document.querySelectorAll('.color-btn[data-theme-color]').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -1441,42 +1489,47 @@ class DrawingBoard {
             }
         });
         
-        // Time display settings
-        document.getElementById('show-time-display-checkbox').addEventListener('change', (e) => {
-            const timeDisplaySettings = document.getElementById('time-display-settings');
-            const timezoneSettings = document.getElementById('timezone-settings');
-            const timeFormatSettings = document.getElementById('time-format-settings');
-            const dateFormatSettings = document.getElementById('date-format-settings');
-            const timeColorSettings = document.getElementById('time-color-settings');
-            const timeFontSizeSettings = document.getElementById('time-font-size-settings');
-            const timeOpacitySettings = document.getElementById('time-opacity-settings');
-            const timeFullscreenSettings = document.getElementById('time-fullscreen-settings');
-            const timeFullscreenFontSizeSettings = document.getElementById('time-fullscreen-font-size-settings');
-            
-            if (e.target.checked) {
-                this.timeDisplayManager.show();
-                timeDisplaySettings.style.display = 'flex';
-                timezoneSettings.style.display = 'flex';
-                timeFormatSettings.style.display = 'flex';
-                dateFormatSettings.style.display = 'flex';
-                timeColorSettings.style.display = 'flex';
-                timeFontSizeSettings.style.display = 'flex';
-                timeOpacitySettings.style.display = 'flex';
-                timeFullscreenSettings.style.display = 'flex';
-                timeFullscreenFontSizeSettings.style.display = 'flex';
-            } else {
-                this.timeDisplayManager.hide();
-                timeDisplaySettings.style.display = 'none';
-                timezoneSettings.style.display = 'none';
-                timeFormatSettings.style.display = 'none';
-                dateFormatSettings.style.display = 'none';
-                timeColorSettings.style.display = 'none';
-                timeFontSizeSettings.style.display = 'none';
-                timeOpacitySettings.style.display = 'none';
-                timeFullscreenSettings.style.display = 'none';
-                timeFullscreenFontSizeSettings.style.display = 'none';
-            }
-        });
+        // Time display settings (in Settings > More - now removed, these elements are in time-display-settings modal)
+        // The elements below are no longer in index.html's Settings > More section
+        // They are now only available in the time-display-settings-modal
+        const showTimeDisplayCheckbox = document.getElementById('show-time-display-checkbox');
+        if (showTimeDisplayCheckbox) {
+            showTimeDisplayCheckbox.addEventListener('change', (e) => {
+                const timeDisplaySettings = document.getElementById('time-display-settings');
+                const timezoneSettings = document.getElementById('timezone-settings');
+                const timeFormatSettings = document.getElementById('time-format-settings');
+                const dateFormatSettings = document.getElementById('date-format-settings');
+                const timeColorSettings = document.getElementById('time-color-settings');
+                const timeFontSizeSettings = document.getElementById('time-font-size-settings');
+                const timeOpacitySettings = document.getElementById('time-opacity-settings');
+                const timeFullscreenSettings = document.getElementById('time-fullscreen-settings');
+                const timeFullscreenFontSizeSettings = document.getElementById('time-fullscreen-font-size-settings');
+                
+                if (e.target.checked) {
+                    this.timeDisplayManager.show();
+                    if (timeDisplaySettings) timeDisplaySettings.style.display = 'flex';
+                    if (timezoneSettings) timezoneSettings.style.display = 'flex';
+                    if (timeFormatSettings) timeFormatSettings.style.display = 'flex';
+                    if (dateFormatSettings) dateFormatSettings.style.display = 'flex';
+                    if (timeColorSettings) timeColorSettings.style.display = 'flex';
+                    if (timeFontSizeSettings) timeFontSizeSettings.style.display = 'flex';
+                    if (timeOpacitySettings) timeOpacitySettings.style.display = 'flex';
+                    if (timeFullscreenSettings) timeFullscreenSettings.style.display = 'flex';
+                    if (timeFullscreenFontSizeSettings) timeFullscreenFontSizeSettings.style.display = 'flex';
+                } else {
+                    this.timeDisplayManager.hide();
+                    if (timeDisplaySettings) timeDisplaySettings.style.display = 'none';
+                    if (timezoneSettings) timezoneSettings.style.display = 'none';
+                    if (timeFormatSettings) timeFormatSettings.style.display = 'none';
+                    if (dateFormatSettings) dateFormatSettings.style.display = 'none';
+                    if (timeColorSettings) timeColorSettings.style.display = 'none';
+                    if (timeFontSizeSettings) timeFontSizeSettings.style.display = 'none';
+                    if (timeOpacitySettings) timeOpacitySettings.style.display = 'none';
+                    if (timeFullscreenSettings) timeFullscreenSettings.style.display = 'none';
+                    if (timeFullscreenFontSizeSettings) timeFullscreenFontSizeSettings.style.display = 'none';
+                }
+            });
+        }
         
         // Display type buttons (both, date-only, time-only)
         document.querySelectorAll('.display-option-btn').forEach(btn => {
@@ -1502,18 +1555,27 @@ class DrawingBoard {
             });
         });
         
-        // Timezone selector
-        document.getElementById('timezone-select').addEventListener('change', (e) => {
-            this.timeDisplayManager.setTimezone(e.target.value);
-        });
+        // Timezone selector (may be in time-display-settings modal)
+        const timezoneSelect = document.getElementById('timezone-select');
+        if (timezoneSelect) {
+            timezoneSelect.addEventListener('change', (e) => {
+                this.timeDisplayManager.setTimezone(e.target.value);
+            });
+        }
         
-        document.getElementById('time-format-select').addEventListener('change', (e) => {
-            this.timeDisplayManager.setTimeFormat(e.target.value);
-        });
+        const timeFormatSelect = document.getElementById('time-format-select');
+        if (timeFormatSelect) {
+            timeFormatSelect.addEventListener('change', (e) => {
+                this.timeDisplayManager.setTimeFormat(e.target.value);
+            });
+        }
         
-        document.getElementById('date-format-select').addEventListener('change', (e) => {
-            this.timeDisplayManager.setDateFormat(e.target.value);
-        });
+        const dateFormatSelect = document.getElementById('date-format-select');
+        if (dateFormatSelect) {
+            dateFormatSelect.addEventListener('change', (e) => {
+                this.timeDisplayManager.setDateFormat(e.target.value);
+            });
+        }
         
         // Time color buttons
         document.querySelectorAll('.color-btn[data-time-color]').forEach(btn => {
@@ -1531,14 +1593,16 @@ class DrawingBoard {
         
         const customTimeColorPicker = document.getElementById('custom-time-color-picker');
         const customTimeColorPickerBtn = document.querySelector('label[for="custom-time-color-picker"]');
-        customTimeColorPicker.addEventListener('input', (e) => {
-            this.timeDisplayManager.setColor(e.target.value);
-            document.querySelectorAll('.color-btn[data-time-color]').forEach(b => b.classList.remove('active'));
-            // Mark color picker button as active
-            if (customTimeColorPickerBtn) {
-                customTimeColorPickerBtn.classList.add('active');
-            }
-        });
+        if (customTimeColorPicker) {
+            customTimeColorPicker.addEventListener('input', (e) => {
+                this.timeDisplayManager.setColor(e.target.value);
+                document.querySelectorAll('.color-btn[data-time-color]').forEach(b => b.classList.remove('active'));
+                // Mark color picker button as active
+                if (customTimeColorPickerBtn) {
+                    customTimeColorPickerBtn.classList.add('active');
+                }
+            });
+        }
         
         // Time background color buttons
         document.querySelectorAll('.color-btn[data-time-bg-color]').forEach(btn => {
@@ -1556,20 +1620,23 @@ class DrawingBoard {
         
         const customTimeBgColorPicker = document.getElementById('custom-time-bg-color-picker');
         const customTimeBgColorPickerBtn = document.querySelector('label[for="custom-time-bg-color-picker"]');
-        customTimeBgColorPicker.addEventListener('input', (e) => {
-            this.timeDisplayManager.setBgColor(e.target.value);
-            document.querySelectorAll('.color-btn[data-time-bg-color]').forEach(b => b.classList.remove('active'));
-            // Mark color picker button as active
-            if (customTimeBgColorPickerBtn) {
-                customTimeBgColorPickerBtn.classList.add('active');
-            }
-        });
+        if (customTimeBgColorPicker) {
+            customTimeBgColorPicker.addEventListener('input', (e) => {
+                this.timeDisplayManager.setBgColor(e.target.value);
+                document.querySelectorAll('.color-btn[data-time-bg-color]').forEach(b => b.classList.remove('active'));
+                // Mark color picker button as active
+                if (customTimeBgColorPickerBtn) {
+                    customTimeBgColorPickerBtn.classList.add('active');
+                }
+            });
+        }
         
-        // Time fullscreen mode buttons
-        document.querySelectorAll('.fullscreen-mode-btn').forEach(btn => {
+        // Time fullscreen mode buttons (in General Settings)
+        document.querySelectorAll('.fullscreen-mode-btn[data-mode]').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const mode = e.target.dataset.mode;
-                document.querySelectorAll('.fullscreen-mode-btn').forEach(b => b.classList.remove('active'));
+                // Only affect buttons with data-mode (General Settings)
+                document.querySelectorAll('.fullscreen-mode-btn[data-mode]').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 this.timeDisplayManager.setFullscreenMode(mode);
             });
@@ -1598,47 +1665,51 @@ class DrawingBoard {
             });
         }
         
-        // Font size slider and input
+        // Font size slider and input (may be in time-display-settings modal)
         const timeFontSizeSlider = document.getElementById('time-font-size-slider');
         const timeFontSizeValue = document.getElementById('time-font-size-value');
         const timeFontSizeInput = document.getElementById('time-font-size-input');
         
-        timeFontSizeSlider.addEventListener('input', (e) => {
-            const size = parseInt(e.target.value);
-            timeFontSizeValue.textContent = size;
-            timeFontSizeInput.value = size;
-            this.timeDisplayManager.setFontSize(size);
-        });
-        
-        timeFontSizeInput.addEventListener('change', (e) => {
-            const size = parseInt(e.target.value);
-            if (size >= 12 && size <= 48) {
+        if (timeFontSizeSlider && timeFontSizeValue && timeFontSizeInput) {
+            timeFontSizeSlider.addEventListener('input', (e) => {
+                const size = parseInt(e.target.value);
                 timeFontSizeValue.textContent = size;
-                timeFontSizeSlider.value = size;
+                timeFontSizeInput.value = size;
                 this.timeDisplayManager.setFontSize(size);
-            }
-        });
+            });
+            
+            timeFontSizeInput.addEventListener('change', (e) => {
+                const size = parseInt(e.target.value);
+                if (size >= 12 && size <= 48) {
+                    timeFontSizeValue.textContent = size;
+                    timeFontSizeSlider.value = size;
+                    this.timeDisplayManager.setFontSize(size);
+                }
+            });
+        }
         
-        // Opacity slider and input
+        // Opacity slider and input (may be in time-display-settings modal)
         const timeOpacitySlider = document.getElementById('time-opacity-slider');
         const timeOpacityValue = document.getElementById('time-opacity-value');
         const timeOpacityInput = document.getElementById('time-opacity-input');
         
-        timeOpacitySlider.addEventListener('input', (e) => {
-            const opacity = parseInt(e.target.value);
-            timeOpacityValue.textContent = opacity;
-            timeOpacityInput.value = opacity;
-            this.timeDisplayManager.setOpacity(opacity);
-        });
-        
-        timeOpacityInput.addEventListener('change', (e) => {
-            const opacity = parseInt(e.target.value);
-            if (opacity >= 10 && opacity <= 100) {
+        if (timeOpacitySlider && timeOpacityValue && timeOpacityInput) {
+            timeOpacitySlider.addEventListener('input', (e) => {
+                const opacity = parseInt(e.target.value);
                 timeOpacityValue.textContent = opacity;
-                timeOpacitySlider.value = opacity;
+                timeOpacityInput.value = opacity;
                 this.timeDisplayManager.setOpacity(opacity);
-            }
-        });
+            });
+            
+            timeOpacityInput.addEventListener('change', (e) => {
+                const opacity = parseInt(e.target.value);
+                if (opacity >= 10 && opacity <= 100) {
+                    timeOpacityValue.textContent = opacity;
+                    timeOpacitySlider.value = opacity;
+                    this.timeDisplayManager.setOpacity(opacity);
+                }
+            });
+        }
         
         // Confirm modal
         document.getElementById('confirm-cancel-btn').addEventListener('click', () => {
@@ -1847,6 +1918,8 @@ class DrawingBoard {
         const handleDragStart = (e, element) => {
             if (e.target.closest('button') || e.target.closest('input')) return;
             
+            e.stopPropagation(); // Prevent drawing on canvas
+
             this.isDraggingPanel = true;
             this.draggedElement = element;
             
@@ -2111,6 +2184,7 @@ class DrawingBoard {
         
         if (this.drawingEngine.stopDrawing()) {
             this.historyManager.saveState();
+            this.saveSessionDebounced();
             this.closeConfigPanel();
             this.closeFeaturePanel();
         }
@@ -2139,11 +2213,13 @@ class DrawingBoard {
     openSettings() {
         document.getElementById('settings-modal').classList.add('show');
         
-        // Update time display settings UI with current values
+        // Update time display settings UI with current values (elements may not exist if removed from Settings > More)
         const timeDisplayCheckbox = document.getElementById('show-time-display-checkbox');
-        timeDisplayCheckbox.checked = this.timeDisplayManager.enabled;
+        if (timeDisplayCheckbox) {
+            timeDisplayCheckbox.checked = this.timeDisplayManager.enabled;
+        }
         
-        // Show/hide time display settings based on enabled state
+        // Show/hide time display settings based on enabled state (elements may not exist)
         const timeDisplaySettings = document.getElementById('time-display-settings');
         const timezoneSettings = document.getElementById('timezone-settings');
         const timeFormatSettings = document.getElementById('time-format-settings');
@@ -2155,15 +2231,15 @@ class DrawingBoard {
         const timeFullscreenFontSizeSettings = document.getElementById('time-fullscreen-font-size-settings');
         
         const isEnabled = this.timeDisplayManager.enabled;
-        timeDisplaySettings.style.display = isEnabled ? 'flex' : 'none';
-        timezoneSettings.style.display = isEnabled ? 'flex' : 'none';
-        timeFormatSettings.style.display = isEnabled ? 'flex' : 'none';
-        dateFormatSettings.style.display = isEnabled ? 'flex' : 'none';
-        timeColorSettings.style.display = isEnabled ? 'flex' : 'none';
-        timeFontSizeSettings.style.display = isEnabled ? 'flex' : 'none';
-        timeOpacitySettings.style.display = isEnabled ? 'flex' : 'none';
-        timeFullscreenSettings.style.display = isEnabled ? 'flex' : 'none';
-        timeFullscreenFontSizeSettings.style.display = isEnabled ? 'flex' : 'none';
+        if (timeDisplaySettings) timeDisplaySettings.style.display = isEnabled ? 'flex' : 'none';
+        if (timezoneSettings) timezoneSettings.style.display = isEnabled ? 'flex' : 'none';
+        if (timeFormatSettings) timeFormatSettings.style.display = isEnabled ? 'flex' : 'none';
+        if (dateFormatSettings) dateFormatSettings.style.display = isEnabled ? 'flex' : 'none';
+        if (timeColorSettings) timeColorSettings.style.display = isEnabled ? 'flex' : 'none';
+        if (timeFontSizeSettings) timeFontSizeSettings.style.display = isEnabled ? 'flex' : 'none';
+        if (timeOpacitySettings) timeOpacitySettings.style.display = isEnabled ? 'flex' : 'none';
+        if (timeFullscreenSettings) timeFullscreenSettings.style.display = isEnabled ? 'flex' : 'none';
+        if (timeFullscreenFontSizeSettings) timeFullscreenFontSizeSettings.style.display = isEnabled ? 'flex' : 'none';
         
         // Set active display type button
         document.querySelectorAll('.display-option-btn').forEach(btn => btn.classList.remove('active'));
@@ -2176,20 +2252,40 @@ class DrawingBoard {
         const activeBtn = document.querySelector(`.display-option-btn[data-display-type="${displayType}"]`);
         if (activeBtn) activeBtn.classList.add('active');
         
-        // Set timezone selector
-        document.getElementById('timezone-select').value = this.timeDisplayManager.timezone;
+        // Set timezone selector (may not exist)
+        const timezoneSelect = document.getElementById('timezone-select');
+        if (timezoneSelect) timezoneSelect.value = this.timeDisplayManager.timezone;
         
-        document.getElementById('time-format-select').value = this.timeDisplayManager.timeFormat;
-        document.getElementById('date-format-select').value = this.timeDisplayManager.dateFormat;
-        document.getElementById('time-font-size-slider').value = this.timeDisplayManager.fontSize;
-        document.getElementById('time-font-size-value').textContent = this.timeDisplayManager.fontSize;
-        document.getElementById('time-font-size-input').value = this.timeDisplayManager.fontSize;
-        document.getElementById('time-opacity-slider').value = this.timeDisplayManager.opacity;
-        document.getElementById('time-opacity-value').textContent = this.timeDisplayManager.opacity;
-        document.getElementById('time-opacity-input').value = this.timeDisplayManager.opacity;
-        document.getElementById('custom-time-color-picker').value = this.timeDisplayManager.color;
+        const timeFormatSelect = document.getElementById('time-format-select');
+        if (timeFormatSelect) timeFormatSelect.value = this.timeDisplayManager.timeFormat;
+        
+        const dateFormatSelect = document.getElementById('date-format-select');
+        if (dateFormatSelect) dateFormatSelect.value = this.timeDisplayManager.dateFormat;
+        
+        const timeFontSizeSlider = document.getElementById('time-font-size-slider');
+        if (timeFontSizeSlider) timeFontSizeSlider.value = this.timeDisplayManager.fontSize;
+        
+        const timeFontSizeValue = document.getElementById('time-font-size-value');
+        if (timeFontSizeValue) timeFontSizeValue.textContent = this.timeDisplayManager.fontSize;
+        
+        const timeFontSizeInput = document.getElementById('time-font-size-input');
+        if (timeFontSizeInput) timeFontSizeInput.value = this.timeDisplayManager.fontSize;
+        
+        const timeOpacitySlider = document.getElementById('time-opacity-slider');
+        if (timeOpacitySlider) timeOpacitySlider.value = this.timeDisplayManager.opacity;
+        
+        const timeOpacityValue = document.getElementById('time-opacity-value');
+        if (timeOpacityValue) timeOpacityValue.textContent = this.timeDisplayManager.opacity;
+        
+        const timeOpacityInput = document.getElementById('time-opacity-input');
+        if (timeOpacityInput) timeOpacityInput.value = this.timeDisplayManager.opacity;
+        
+        const customTimeColorPicker = document.getElementById('custom-time-color-picker');
+        if (customTimeColorPicker) customTimeColorPicker.value = this.timeDisplayManager.color;
+        
         const defaultBgColor = '#FFFFFF'; // Default background color constant
-        document.getElementById('custom-time-bg-color-picker').value = this.timeDisplayManager.bgColor === 'transparent' ? defaultBgColor : this.timeDisplayManager.bgColor;
+        const customTimeBgColorPicker = document.getElementById('custom-time-bg-color-picker');
+        if (customTimeBgColorPicker) customTimeBgColorPicker.value = this.timeDisplayManager.bgColor === 'transparent' ? defaultBgColor : this.timeDisplayManager.bgColor;
         
         // Set fullscreen mode buttons
         document.querySelectorAll('.fullscreen-mode-btn').forEach(btn => {
@@ -2201,10 +2297,13 @@ class DrawingBoard {
         });
         
         // Set fullscreen font size values
-        if (document.getElementById('time-fullscreen-font-size-slider')) {
-            document.getElementById('time-fullscreen-font-size-slider').value = this.timeDisplayManager.fullscreenFontSize;
-            document.getElementById('time-fullscreen-font-size-value').textContent = this.timeDisplayManager.fullscreenFontSize;
-            document.getElementById('time-fullscreen-font-size-input').value = this.timeDisplayManager.fullscreenFontSize;
+        const timeFullscreenFontSizeSlider = document.getElementById('time-fullscreen-font-size-slider');
+        if (timeFullscreenFontSizeSlider) {
+            timeFullscreenFontSizeSlider.value = this.timeDisplayManager.fullscreenFontSize;
+            const timeFullscreenFontSizeValue = document.getElementById('time-fullscreen-font-size-value');
+            if (timeFullscreenFontSizeValue) timeFullscreenFontSizeValue.textContent = this.timeDisplayManager.fullscreenFontSize;
+            const timeFullscreenFontSizeInput = document.getElementById('time-fullscreen-font-size-input');
+            if (timeFullscreenFontSizeInput) timeFullscreenFontSizeInput.value = this.timeDisplayManager.fullscreenFontSize;
         }
     }
     
@@ -2221,6 +2320,7 @@ class DrawingBoard {
         if (saveToHistory) {
             this.historyManager.saveState();
         }
+        this.saveSessionDebounced();
     }
     
     updateUI() {
@@ -2248,6 +2348,13 @@ class DrawingBoard {
             document.getElementById('eraser-btn').classList.add('active');
             document.getElementById('eraser-config').classList.add('active');
             this.canvas.style.cursor = 'pointer';
+            // Sync eraser size display with current value
+            const eraserSizeSlider = document.getElementById('eraser-size-slider');
+            const eraserSizeValue = document.getElementById('eraser-size-value');
+            if (eraserSizeSlider && eraserSizeValue) {
+                eraserSizeSlider.value = this.drawingEngine.eraserSize;
+                eraserSizeValue.textContent = this.drawingEngine.eraserSize;
+            }
         } else if (tool === 'background') {
             document.getElementById('background-btn').classList.add('active');
             document.getElementById('background-config').classList.add('active');
@@ -2423,7 +2530,7 @@ class DrawingBoard {
 
     zoomIn() {
         const currentScale = this.drawingEngine.canvasScale;
-        const newScale = Math.min(currentScale + 0.1, 5.0);
+        const newScale = Math.min(currentScale + 0.1, this.MAX_CANVAS_SCALE);
         this.drawingEngine.canvasScale = newScale;
         this.updateZoomUI();
         this.applyZoom(false); // Don't update config-area scale on zoom
@@ -2445,7 +2552,7 @@ class DrawingBoard {
             this.updateZoomUI();
             return;
         }
-        percent = Math.max(50, Math.min(500, percent));
+        percent = Math.max(50, Math.min(this.MAX_CANVAS_SCALE * 100, percent));
         const newScale = percent / 100;
         this.drawingEngine.canvasScale = newScale;
         this.updateZoomUI();
@@ -2504,6 +2611,21 @@ class DrawingBoard {
         }
     }
     
+    updateMaxCanvasScale() {
+        if (this.settingsManager.unlimitedZoom) {
+            this.MAX_CANVAS_SCALE = this.UNLIMITED_MAX_SCALE;
+        } else {
+            this.MAX_CANVAS_SCALE = this.NORMAL_MAX_SCALE;
+            // If current scale exceeds new max, reset to max
+            if (this.drawingEngine.canvasScale > this.MAX_CANVAS_SCALE) {
+                this.drawingEngine.canvasScale = this.MAX_CANVAS_SCALE;
+                this.updateZoomUI();
+                this.applyZoom(false);
+                localStorage.setItem('canvasScale', this.drawingEngine.canvasScale);
+            }
+        }
+    }
+
     updateZoomUI() {
         const percent = Math.round(this.drawingEngine.canvasScale * 100);
         document.getElementById('zoom-input').value = percent + '%';
@@ -2525,6 +2647,265 @@ class DrawingBoard {
         } else {
             fullscreenBtn.style.display = 'none';
         }
+    }
+    
+    // Initialize toolbar customization
+    initToolbarCustomization() {
+        const toolbarList = document.getElementById('toolbar-customization-list');
+        if (!toolbarList) return;
+        
+        // Load saved settings
+        const savedToolbarOrder = localStorage.getItem('toolbarOrder');
+        const savedToolbarVisibility = localStorage.getItem('toolbarVisibility');
+        
+        if (savedToolbarOrder) {
+            try {
+                const order = JSON.parse(savedToolbarOrder);
+                this.reorderToolbarItems(toolbarList, order);
+            } catch (e) {
+                console.error('Error loading toolbar order:', e);
+            }
+        }
+        
+        if (savedToolbarVisibility) {
+            try {
+                const visibility = JSON.parse(savedToolbarVisibility);
+                Object.keys(visibility).forEach(tool => {
+                    const checkbox = document.getElementById(`toolbar-show-${tool}`);
+                    if (checkbox) {
+                        checkbox.checked = visibility[tool];
+                    }
+                });
+                this.applyToolbarVisibility(visibility);
+            } catch (e) {
+                console.error('Error loading toolbar visibility:', e);
+            }
+        }
+        
+        // Add drag and drop handlers
+        const items = toolbarList.querySelectorAll('.toolbar-item');
+        items.forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                item.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', item.dataset.tool);
+            });
+            
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+                this.saveToolbarOrder();
+                this.applyToolbarOrder();
+            });
+            
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const dragging = toolbarList.querySelector('.dragging');
+                if (dragging && dragging !== item) {
+                    const rect = item.getBoundingClientRect();
+                    const midY = rect.top + rect.height / 2;
+                    if (e.clientY < midY) {
+                        toolbarList.insertBefore(dragging, item);
+                    } else {
+                        toolbarList.insertBefore(dragging, item.nextSibling);
+                    }
+                }
+            });
+            
+            // Checkbox change handler
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.addEventListener('change', () => {
+                    this.saveToolbarVisibility();
+                    this.applyToolbarVisibility();
+                });
+            }
+        });
+    }
+    
+    reorderToolbarItems(container, order) {
+        order.forEach(tool => {
+            const item = container.querySelector(`[data-tool="${tool}"]`);
+            if (item) {
+                container.appendChild(item);
+            }
+        });
+    }
+    
+    saveToolbarOrder() {
+        const items = document.querySelectorAll('#toolbar-customization-list .toolbar-item');
+        const order = Array.from(items).map(item => item.dataset.tool);
+        localStorage.setItem('toolbarOrder', JSON.stringify(order));
+    }
+    
+    saveToolbarVisibility() {
+        const items = document.querySelectorAll('#toolbar-customization-list .toolbar-item');
+        const visibility = {};
+        items.forEach(item => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                visibility[item.dataset.tool] = checkbox.checked;
+            }
+        });
+        localStorage.setItem('toolbarVisibility', JSON.stringify(visibility));
+    }
+    
+    // Tool to button ID mapping (shared constant)
+    getToolToButtonIdMap() {
+        return {
+            'undo': 'undo-btn',
+            'redo': 'redo-btn',
+            'pen': 'pen-btn',
+            'pan': 'pan-btn',
+            'eraser': 'eraser-btn',
+            'clear': 'clear-btn',
+            'background': 'background-btn',
+            'more': 'more-btn',
+            'settings': 'settings-btn'
+        };
+    }
+    
+    applyToolbarOrder() {
+        const savedOrder = localStorage.getItem('toolbarOrder');
+        if (!savedOrder) return;
+        
+        try {
+            const order = JSON.parse(savedOrder);
+            const toolbar = document.getElementById('toolbar');
+            if (!toolbar) return;
+            
+            const toolToButtonId = this.getToolToButtonIdMap();
+            
+            order.forEach(tool => {
+                const btnId = toolToButtonId[tool];
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    toolbar.appendChild(btn);
+                }
+            });
+        } catch (e) {
+            console.error('Error applying toolbar order:', e);
+        }
+    }
+    
+    applyToolbarVisibility(visibility) {
+        if (!visibility) {
+            const savedVisibility = localStorage.getItem('toolbarVisibility');
+            if (!savedVisibility) return;
+            try {
+                visibility = JSON.parse(savedVisibility);
+            } catch (e) {
+                return;
+            }
+        }
+        
+        const toolToButtonId = this.getToolToButtonIdMap();
+        
+        Object.keys(visibility).forEach(tool => {
+            const btnId = toolToButtonId[tool];
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.style.display = visibility[tool] ? 'flex' : 'none';
+            }
+        });
+    }
+    
+    // Initialize control button settings
+    initControlButtonSettings() {
+        // Load saved settings
+        const controlSettings = {
+            zoom: localStorage.getItem('controlShowZoom') !== 'false',
+            pagination: localStorage.getItem('controlShowPagination') !== 'false',
+            time: localStorage.getItem('controlShowTime') !== 'false',
+            fullscreen: localStorage.getItem('controlShowFullscreen') !== 'false',
+            download: localStorage.getItem('controlShowDownload') !== 'false'
+        };
+        
+        // Set checkbox states with null checks
+        const zoomCheckbox = document.getElementById('control-show-zoom');
+        const paginationCheckbox = document.getElementById('control-show-pagination');
+        const timeCheckbox = document.getElementById('control-show-time');
+        const fullscreenCheckbox = document.getElementById('control-show-fullscreen');
+        const downloadCheckbox = document.getElementById('control-show-download');
+        
+        if (zoomCheckbox) zoomCheckbox.checked = controlSettings.zoom;
+        if (paginationCheckbox) paginationCheckbox.checked = controlSettings.pagination;
+        if (timeCheckbox) timeCheckbox.checked = controlSettings.time;
+        if (fullscreenCheckbox) fullscreenCheckbox.checked = controlSettings.fullscreen;
+        if (downloadCheckbox) downloadCheckbox.checked = controlSettings.download;
+        
+        // Apply initial visibility
+        this.applyControlButtonVisibility(controlSettings);
+        
+        // Add event listeners with null checks
+        if (zoomCheckbox) {
+            zoomCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowZoom', e.target.checked);
+                this.applyControlButtonVisibility();
+            });
+        }
+        
+        if (paginationCheckbox) {
+            paginationCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowPagination', e.target.checked);
+                this.applyControlButtonVisibility();
+            });
+        }
+        
+        if (timeCheckbox) {
+            timeCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowTime', e.target.checked);
+                this.applyControlButtonVisibility();
+            });
+        }
+        
+        if (fullscreenCheckbox) {
+            fullscreenCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowFullscreen', e.target.checked);
+                this.applyControlButtonVisibility();
+            });
+        }
+        
+        if (downloadCheckbox) {
+            downloadCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowDownload', e.target.checked);
+                this.applyControlButtonVisibility();
+            });
+        }
+    }
+    
+    applyControlButtonVisibility(settings) {
+        if (!settings) {
+            settings = {
+                zoom: localStorage.getItem('controlShowZoom') !== 'false',
+                pagination: localStorage.getItem('controlShowPagination') !== 'false',
+                time: localStorage.getItem('controlShowTime') !== 'false',
+                fullscreen: localStorage.getItem('controlShowFullscreen') !== 'false',
+                download: localStorage.getItem('controlShowDownload') !== 'false'
+            };
+        }
+        
+        // Zoom buttons (zoom-out, zoom-input, zoom-in)
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+        const zoomInput = document.getElementById('zoom-input');
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+        if (zoomOutBtn) zoomOutBtn.style.display = settings.zoom ? 'flex' : 'none';
+        if (zoomInput) zoomInput.style.display = settings.zoom ? 'block' : 'none';
+        if (zoomInBtn) zoomInBtn.style.display = settings.zoom ? 'flex' : 'none';
+        
+        // Pagination controls
+        const pageControls = document.getElementById('page-controls');
+        if (pageControls) pageControls.style.display = settings.pagination ? 'flex' : 'none';
+        
+        // Time display
+        const timeDisplay = document.getElementById('time-display');
+        if (timeDisplay) timeDisplay.style.display = settings.time ? 'flex' : 'none';
+        
+        // Fullscreen button
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        if (fullscreenBtn) fullscreenBtn.style.display = settings.fullscreen ? 'flex' : 'none';
+        
+        // Download button
+        const downloadBtn = document.getElementById('download-btn');
+        if (downloadBtn) downloadBtn.style.display = settings.download ? 'flex' : 'none';
     }
     
     toggleFullscreen() {
@@ -2617,9 +2998,9 @@ class DrawingBoard {
                 const delta = e.deltaY;
                 let newScale;
                 if (delta < 0) {
-                    newScale = Math.min(oldScale + 0.1, 5.0);
+                    newScale = Math.min(oldScale + 0.1, this.MAX_CANVAS_SCALE);
                 } else {
-                    newScale = Math.max(oldScale - 0.1, 0.5);
+                    newScale = Math.max(oldScale - 0.1, this.MIN_CANVAS_SCALE);
                 }
                 
                 // Calculate scale ratio
@@ -2760,6 +3141,9 @@ class DrawingBoard {
         
         // Restore page-specific background if exists
         this.restorePageBackground(pageNumber);
+
+        // Save session state (current page change)
+        this.saveSessionDebounced();
     }
     
     savePageBackground(pageNumber) {
@@ -2869,12 +3253,24 @@ class DrawingBoard {
         }
     }
     
+    /**
+     * Calculate the visual eraser size by applying the canvas scale
+     * @param {number} eraserSize - The base eraser size in canvas pixels
+     * @returns {number} The visual eraser size in screen pixels
+     */
+    calculateVisualEraserSize(eraserSize) {
+        const finalScale = this.canvasFitScale * this.drawingEngine.canvasScale;
+        return eraserSize * finalScale;
+    }
+    
     updateEraserCursor(e) {
         if (this.drawingEngine.currentTool === 'eraser') {
+            const visualEraserSize = this.calculateVisualEraserSize(this.drawingEngine.eraserSize);
+            
             this.eraserCursor.style.left = e.clientX + 'px';
             this.eraserCursor.style.top = e.clientY + 'px';
-            this.eraserCursor.style.width = this.drawingEngine.eraserSize + 'px';
-            this.eraserCursor.style.height = this.drawingEngine.eraserSize + 'px';
+            this.eraserCursor.style.width = visualEraserSize + 'px';
+            this.eraserCursor.style.height = visualEraserSize + 'px';
         }
     }
     
@@ -2932,7 +3328,7 @@ class DrawingBoard {
             // Calculate new scale with limits
             const currentScale = this.drawingEngine.canvasScale;
             let newScale = currentScale * scaleRatio;
-            newScale = Math.max(0.5, Math.min(5.0, newScale));
+            newScale = Math.max(this.MIN_CANVAS_SCALE, Math.min(this.MAX_CANVAS_SCALE, newScale));
 
             // Recalculate effective scale ratio after clamping
             const effectiveScaleRatio = newScale / currentScale;
@@ -3231,6 +3627,205 @@ class DrawingBoard {
             }
         }
     }
+    
+    // Save session data to IndexedDB via StorageManager
+    async saveSession() {
+        try {
+            // Save current page to pages array first
+            if (this.currentPage > 0 && this.currentPage <= this.pages.length) {
+                this.pages[this.currentPage - 1] = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+            }
+            
+            // Save background settings for current page to ensure they are up to date
+            this.savePageBackground(this.currentPage);
+
+            // Convert all pages to Blobs
+            const pagesBlobs = await Promise.all(this.pages.map(page => StorageManager.imageDataToBlob(page)));
+
+            // Collect settings
+            const settings = {
+                currentTool: this.drawingEngine.currentTool,
+                penSize: this.drawingEngine.penSize,
+                penColor: this.drawingEngine.currentColor,
+                penType: this.drawingEngine.penType,
+                eraserSize: this.drawingEngine.eraserSize,
+                eraserShape: this.drawingEngine.eraserShape,
+                currentPage: this.currentPage,
+                canvasScale: this.drawingEngine.canvasScale,
+                panOffset: this.drawingEngine.panOffset,
+                pageBackgrounds: this.pageBackgrounds,
+                // Global background settings
+                backgroundColor: this.backgroundManager.backgroundColor,
+                backgroundPattern: this.backgroundManager.backgroundPattern,
+                bgOpacity: this.backgroundManager.bgOpacity,
+                patternIntensity: this.backgroundManager.patternIntensity,
+                patternDensity: this.backgroundManager.patternDensity,
+                imageSize: this.backgroundManager.imageSize,
+                backgroundImageData: this.backgroundManager.backgroundImageData,
+                uploadedImages: this.uploadedImages
+            };
+
+            const data = {
+                pages: pagesBlobs,
+                settings: settings,
+                canvasWidth: this.canvas.width,
+                canvasHeight: this.canvas.height
+            };
+
+            await this.storageManager.saveSession(data);
+            console.log('Session saved to IndexedDB');
+        } catch (e) {
+            console.warn('Failed to save session:', e);
+        }
+    }
+    
+    // Check for saved session and show recovery dialog
+    async checkForRecovery() {
+        try {
+            const hasSession = await this.storageManager.hasSession();
+            if (hasSession) {
+                this.showRecoveryModal();
+            }
+        } catch (e) {
+            console.warn('Error checking for recovery:', e);
+        }
+    }
+    
+    // Show recovery dialog
+    showRecoveryModal() {
+        const modal = document.getElementById('recovery-modal');
+        if (!modal) return;
+        
+        modal.classList.add('show');
+        
+        // Restore button
+        const restoreBtn = document.getElementById('recovery-restore-btn');
+        if (restoreBtn) {
+            restoreBtn.onclick = () => {
+                this.restoreSession();
+                modal.classList.remove('show');
+            };
+        }
+        
+        // Discard button
+        const discardBtn = document.getElementById('recovery-discard-btn');
+        if (discardBtn) {
+            discardBtn.onclick = () => {
+                this.clearSessionData();
+                modal.classList.remove('show');
+            };
+        }
+    }
+    
+    // Restore session data from IndexedDB
+    async restoreSession() {
+        try {
+            const sessionData = await this.storageManager.loadSession();
+            if (!sessionData) return;
+
+            const { pages, settings } = sessionData;
+
+            // Restore settings
+            if (settings) {
+                // Restore drawing tools
+                if (settings.penSize) this.drawingEngine.setPenSize(settings.penSize);
+                if (settings.penColor) this.drawingEngine.setColor(settings.penColor);
+                if (settings.penType) this.drawingEngine.setPenType(settings.penType);
+                if (settings.eraserSize) this.drawingEngine.setEraserSize(settings.eraserSize);
+                if (settings.eraserShape) this.drawingEngine.setEraserShape(settings.eraserShape);
+                if (settings.currentTool) this.setTool(settings.currentTool, false);
+
+                // Restore View
+                if (settings.canvasScale) this.drawingEngine.canvasScale = settings.canvasScale;
+                if (settings.panOffset) this.drawingEngine.panOffset = settings.panOffset;
+
+                // Restore Backgrounds
+                if (settings.pageBackgrounds) this.pageBackgrounds = settings.pageBackgrounds;
+                if (settings.backgroundColor) this.backgroundManager.backgroundColor = settings.backgroundColor;
+                if (settings.backgroundPattern) this.backgroundManager.backgroundPattern = settings.backgroundPattern;
+                if (settings.bgOpacity) this.backgroundManager.bgOpacity = settings.bgOpacity;
+                if (settings.patternIntensity) this.backgroundManager.patternIntensity = settings.patternIntensity;
+                if (settings.patternDensity) this.backgroundManager.patternDensity = settings.patternDensity;
+                if (settings.imageSize) this.backgroundManager.imageSize = settings.imageSize;
+                if (settings.backgroundImageData) this.backgroundManager.backgroundImageData = settings.backgroundImageData;
+
+                if (settings.uploadedImages) {
+                    this.uploadedImages = settings.uploadedImages;
+                    this.updateUploadedImagesButtons();
+                }
+
+                // Restore current page index
+                if (settings.currentPage) this.currentPage = settings.currentPage;
+            }
+
+            // Restore pages
+            if (pages && Array.isArray(pages)) {
+                this.pages = await Promise.all(pages.map(blob => StorageManager.blobToImageData(blob)));
+            }
+
+            // Apply restored state
+            this.loadPage(this.currentPage);
+            this.updateUI();
+            this.updateZoomUI();
+            this.applyZoom(false);
+            this.updatePaginationUI();
+
+            // Sync UI controls
+            this.syncSettingsUI(settings);
+
+            console.log('Session restored');
+        } catch (e) {
+            console.warn('Failed to restore session:', e);
+        }
+    }
+    
+    // Helper to sync UI elements with restored settings
+    syncSettingsUI(settings) {
+        if (!settings) return;
+
+        // Sync Pen Size Slider
+        const penSizeSlider = document.getElementById('pen-size-slider');
+        const penSizeValue = document.getElementById('pen-size-value');
+        if (penSizeSlider && settings.penSize) {
+            penSizeSlider.value = settings.penSize;
+            penSizeValue.textContent = settings.penSize;
+        }
+
+        // Sync Eraser Size Slider
+        const eraserSizeSlider = document.getElementById('eraser-size-slider');
+        const eraserSizeValue = document.getElementById('eraser-size-value');
+        if (eraserSizeSlider && settings.eraserSize) {
+            eraserSizeSlider.value = settings.eraserSize;
+            eraserSizeValue.textContent = settings.eraserSize;
+        }
+
+        // Sync active color buttons
+        if (settings.penColor) {
+            document.querySelectorAll('.color-btn[data-color]').forEach(btn => {
+                if (btn.dataset.color === settings.penColor) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            const customPicker = document.getElementById('custom-color-picker');
+            if (customPicker) customPicker.value = settings.penColor;
+        }
+    }
+
+    // Clear saved session data
+    async clearSessionData() {
+        try {
+            await this.storageManager.clearSession();
+            // Also clear legacy localStorage data to be clean
+            localStorage.removeItem('savedCanvasData');
+            localStorage.removeItem('savedBgCanvasData');
+            localStorage.removeItem('savedCanvasTimestamp');
+            localStorage.removeItem('savedCurrentPage');
+        } catch (e) {
+            console.warn('Failed to clear session:', e);
+        }
+    }
 }
 
 // Initialize the application
@@ -3243,7 +3838,7 @@ if (document.readyState === 'loading') {
         if (window.i18n) {
             await window.i18n.init();
         }
-        new DrawingBoard();
+        window.drawingBoard = new DrawingBoard();
     });
 } else {
     // If DOM is already loaded, initialize immediately
@@ -3254,6 +3849,6 @@ if (document.readyState === 'loading') {
         if (window.i18n) {
             await window.i18n.init();
         }
-        new DrawingBoard();
+        window.drawingBoard = new DrawingBoard();
     })();
 }

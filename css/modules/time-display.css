@@ -222,7 +222,7 @@
 /* Fullscreen Font Size Slider */
 .time-fullscreen-controls {
     position: absolute;
-    bottom: 40px;
+    bottom: max(60px, env(safe-area-inset-bottom)); /* Increased bottom spacing */
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -232,12 +232,16 @@
     z-index: 10001;
     width: 80%;
     max-width: 600px;
+    padding: 20px; /* Added padding to ensure content isn't cut off */
+    background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%); /* Optional: improve visibility against bg */
+    border-radius: 12px;
 }
 
 .time-fullscreen-slider-label {
-    color: rgba(255, 255, 255, 0.8);
+    /* color: inherited from parent */
     font-size: 14px;
     margin-bottom: 4px;
+    opacity: 0.8;
 }
 
 .time-fullscreen-slider {
@@ -287,4 +291,54 @@
 
 #time-display-settings-modal.show {
     display: flex;
+}
+
+/* Tab Navigation Styles */
+.timer-tab-nav {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 4px;
+    background-color: #f5f5f7;
+    border-radius: 12px;
+}
+
+.timer-tab-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.timer-tab-btn.active {
+    background-color: #ffffff;
+    color: var(--theme-color, #007AFF);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+}
+
+.timer-tab-btn:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 0.5);
+    color: #333;
+}
+
+/* Tab Content Visibility */
+.td-tab-content {
+    display: none;
+}
+
+.td-tab-content.active {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }

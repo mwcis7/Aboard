@@ -249,6 +249,8 @@ class TimerInstance {
             // Don't start dragging if clicking on interactive elements
             if (e.target.closest('button') || e.target.closest('input')) return;
             
+            e.stopPropagation(); // Prevent drawing on canvas
+
             this.isDragging = true;
             this.displayElement.classList.add('dragging');
             

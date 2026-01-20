@@ -21,6 +21,14 @@ window.translations = {
         reset: 'Réinitialiser'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: 'Restaurer le contenu précédent',
+        message: 'Un contenu de canevas précédent a été détecté. Voulez-vous le restaurer?',
+        restore: 'Restaurer',
+        discard: 'Supprimer'
+    },
+
     // App Title
     app: {
         title: 'Aboard - Tableau Blanc Minimaliste',
@@ -243,6 +251,30 @@ window.translations = {
             },
             edgeSnap: 'Activer l\'alignement des bords',
             edgeSnapHint: 'Aligner automatiquement les panneaux de contrôle sur les bords de l\'écran',
+            // Toolbar customization
+            toolbarCustomization: 'Personnalisation de la barre d\'outils',
+            toolbarCustomizationHint: 'Sélectionnez les outils à afficher, glissez pour réorganiser',
+            toolbarTools: {
+                undo: 'Annuler',
+                redo: 'Rétablir',
+                pen: 'Stylo',
+                move: 'Déplacer',
+                eraser: 'Gomme',
+                clear: 'Effacer',
+                background: 'Arrière-plan',
+                more: 'Plus',
+                settings: 'Paramètres'
+            },
+            // Control button settings
+            controlButtonSettings: 'Paramètres des boutons de contrôle',
+            controlButtonSettingsHint: 'Sélectionnez les boutons de contrôle à afficher',
+            controlButtons: {
+                zoom: 'Boutons de zoom',
+                pagination: 'Boutons de pagination',
+                time: 'Affichage de l\'heure',
+                fullscreen: 'Bouton plein écran',
+                download: 'Bouton de téléchargement'
+            },
             controlPosition: 'Position du bouton de contrôle',
             controlPositionHint: 'Choisir où afficher les contrôles de zoom et de pagination',
             positionTopLeft: 'En haut à gauche',
@@ -346,6 +378,7 @@ window.translations = {
         },
         more: {
             title: 'Plus de paramètres',
+            description: 'Pour les paramètres d\'affichage de l\'heure, cliquez sur la zone de l\'heure en bas à droite',
             showTimeDisplay: 'Afficher l\'heure et la date',
             showTimeDisplayHint: 'Afficher l\'heure et la date actuelles dans le coin supérieur droit'
         },
@@ -431,14 +464,38 @@ window.translations = {
 
     // Time Display
     timeDisplay: {
+        title: 'Affichage de l\'heure',
+        settingsTitle: 'Paramètres d\'affichage de l\'heure',
         options: 'Options d\'affichage de l\'heure',
         showDate: 'Afficher la date',
         showTime: 'Afficher l\'heure',
         settings: 'Paramètres',
+        fullscreenDisplay: 'Plein écran',
         displayOptions: 'Options d\'affichage',
         dateAndTime: 'Date et heure',
         dateOnly: 'Date seulement',
-        timeOnly: 'Heure seulement'
+        timeOnly: 'Heure seulement',
+        timezone: 'Fuseau horaire',
+        timeFormat: 'Format de l\'heure',
+        dateFormat: 'Format de date',
+        colorSettings: 'Paramètres de couleur',
+        textColor: 'Couleur du texte',
+        bgColor: 'Couleur de fond',
+        fontSize: 'Taille de police',
+        fontSizeLabel: 'Taille de police: Actuelle',
+        opacity: 'Opacité',
+        opacityLabel: 'Opacité: Actuelle',
+        fullscreenMode: 'Mode plein écran',
+        fullscreenColorSettings: 'Paramètres de couleur en plein écran',
+        fullscreenFontSize: 'Taille de police en plein écran',
+        fullscreenFontSizeLabel: 'Taille de police en plein écran: Actuelle',
+        fullscreenFontSizeHint: 'Ajuster la taille de police en plein écran (10%-85%)',
+        fullscreenSliderLabel: 'Taille de police (10%-85%)',
+        customColor: 'Couleur personnalisée',
+        transparent: 'Transparent',
+        fullscreenDisabled: 'Désactivé',
+        fullscreenSingle: 'Simple clic',
+        fullscreenDouble: 'Double clic'
     },
 
     // Timer

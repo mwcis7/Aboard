@@ -21,6 +21,14 @@ window.translations = {
         reset: '재설정'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: '이전 콘텐츠 복원',
+        message: '이전 캔버스 콘텐츠가 감지되었습니다. 복원하시겠습니까?',
+        restore: '복원',
+        discard: '삭제'
+    },
+
     // App Title
     app: {
         title: 'Aboard - 미니멀 화이트보드',
@@ -252,6 +260,30 @@ window.translations = {
             },
             edgeSnap: '가장자리 스냅 활성화',
             edgeSnapHint: '드래그 시 컨트롤 패널을 화면 가장자리에 자동 정렬',
+            // Toolbar customization
+            toolbarCustomization: '툴바 사용자 정의',
+            toolbarCustomizationHint: '툴바에 표시할 도구를 선택하고 드래그하여 순서 조정',
+            toolbarTools: {
+                undo: '실행 취소',
+                redo: '다시 실행',
+                pen: '펜',
+                move: '이동',
+                eraser: '지우개',
+                clear: '지우기',
+                background: '배경',
+                more: '더보기',
+                settings: '설정'
+            },
+            // Control button settings
+            controlButtonSettings: '컨트롤 버튼 설정',
+            controlButtonSettingsHint: '표시할 컨트롤 버튼 선택',
+            controlButtons: {
+                zoom: '확대/축소 버튼',
+                pagination: '페이지 매김 버튼',
+                time: '시간 표시',
+                fullscreen: '전체 화면 버튼',
+                download: '다운로드 버튼'
+            },
             controlPosition: '컨트롤 버튼 위치',
             controlPositionHint: '확대/축소 및 페이지 매김 컨트롤 표시 위치 선택',
             positionTopLeft: '왼쪽 위',
@@ -355,6 +387,7 @@ window.translations = {
         },
         more: {
             title: '추가 설정',
+            description: '시간 표시 설정은 오른쪽 하단 시간 영역을 클릭하세요',
             showTimeDisplay: '시간 및 날짜 표시',
             showTimeDisplayHint: '오른쪽 상단에 현재 시간 및 날짜 표시'
         },
@@ -428,6 +461,7 @@ window.translations = {
         showDate: '날짜 표시',
         showTime: '시간 표시',
         settings: '설정',
+        fullscreenDisplay: '전체 화면 표시',
         displayOptions: '표시 옵션',
         dateAndTime: '날짜 및 시간',
         dateOnly: '날짜만',
@@ -449,11 +483,16 @@ window.translations = {
         opacityLabel: '불투명도: 현재',
         fullscreenMode: '전체 화면 모드',
         fullscreenModeHint: '시간 전체 화면 표시 트리거 선택',
+        fullscreenColorSettings: '전체 화면 색상 설정',
         fullscreenFontSize: '전체 화면 글꼴 크기',
         fullscreenFontSizeLabel: '전체 화면 글꼴 크기: 현재',
+        fullscreenFontSizeHint: '전체 화면 글꼴 크기 조정 (10%-85%)',
         fullscreenSliderLabel: '글꼴 크기 조정 (10%-85%)',
         customColor: '사용자 정의 색상',
-        transparent: '투명'
+        transparent: '투명',
+        fullscreenDisabled: '비활성화',
+        fullscreenSingle: '한 번 클릭',
+        fullscreenDouble: '두 번 클릭'
     },
 
     // Timer
