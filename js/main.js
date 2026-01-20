@@ -3617,13 +3617,13 @@ class DrawingBoard {
                 this.pages[this.currentPage - 1] = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
             }
             
-            // Convert canvas to data URL for storage
-            const canvasDataURL = this.canvas.toDataURL('image/png');
+            // Convert canvas to data URL for storage (use JPEG for smaller size)
+            const canvasDataURL = this.canvas.toDataURL('image/jpeg', 0.8);
             localStorage.setItem('savedCanvasData', canvasDataURL);
             localStorage.setItem('savedCanvasTimestamp', Date.now().toString());
             
             // Save background canvas if it has custom content
-            const bgDataURL = this.bgCanvas.toDataURL('image/png');
+            const bgDataURL = this.bgCanvas.toDataURL('image/jpeg', 0.8);
             localStorage.setItem('savedBgCanvasData', bgDataURL);
             
             // Save current page number
@@ -3631,7 +3631,12 @@ class DrawingBoard {
             
             console.log('Canvas data saved to localStorage');
         } catch (e) {
-            console.warn('Failed to save canvas data:', e);
+            // Handle quota exceeded errors gracefully
+            if (e.name === 'QuotaExceededError') {
+                console.warn('localStorage quota exceeded, canvas data not saved');
+            } else {
+                console.warn('Failed to save canvas data:', e);
+            }
         }
     }
     
