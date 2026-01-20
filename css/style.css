@@ -1205,6 +1205,10 @@ button, a, input[type="button"], input[type="submit"] {
 /* Announcement modal styles */
 .announcement-modal-content {
     max-width: 500px;
+    height: auto;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .announcement-content {
@@ -1213,7 +1217,7 @@ button, a, input[type="button"], input[type="submit"] {
     margin-bottom: 24px;
     line-height: 1.8;
     white-space: pre-wrap;
-    max-height: 400px;
+    max-height: 60vh;
     overflow-y: auto;
 }
 
