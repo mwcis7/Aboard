@@ -17,7 +17,7 @@ class ExportManager {
             <div id="export-modal" class="modal">
                 <div class="modal-content export-modal-content">
                     <div class="modal-header">
-                        <h2>导出画布</h2>
+                        <h2>导出 / Export</h2>
                         <button id="export-close-btn" class="modal-close-btn" title="关闭">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -26,34 +26,70 @@ class ExportManager {
                         </button>
                     </div>
                     <div class="modal-body">
-                        <div class="export-options">
-                            <div class="export-group">
-                                <label>导出范围</label>
-                                <div class="button-size-options button-size-options-3">
-                                    <button class="export-scope-btn active" data-scope="current">当前页</button>
-                                    <button class="export-scope-btn" data-scope="all">全部页面</button>
-                                    <button class="export-scope-btn" data-scope="specific">指定页面</button>
+                        <!-- Tabs -->
+                        <div class="export-tab-nav">
+                            <button class="export-tab-btn active" data-tab="image">导出图片</button>
+                            <button class="export-tab-btn" data-tab="project">导出项目 (.aboard)</button>
+                        </div>
+
+                        <!-- Image Export Tab -->
+                        <div id="export-tab-image" class="export-tab-content active">
+                            <div class="export-options">
+                                <div class="export-group">
+                                    <label>导出范围</label>
+                                    <div class="button-size-options button-size-options-3">
+                                        <button class="export-scope-btn active" data-scope="current">当前页</button>
+                                        <button class="export-scope-btn" data-scope="all">全部页面</button>
+                                        <button class="export-scope-btn" data-scope="specific">指定页面</button>
+                                    </div>
+                                </div>
+                                <div class="export-group page-selection-group" style="display: none;">
+                                    <label>选择要导出的页面</label>
+                                    <div class="page-selection-buttons"></div>
+                                </div>
+                                <div class="export-group">
+                                    <label>图片格式</label>
+                                    <div class="button-size-options button-size-options-2">
+                                        <button class="export-format-btn active" data-format="png">PNG</button>
+                                        <button class="export-format-btn" data-format="jpeg">JPEG</button>
+                                    </div>
+                                </div>
+                                <div class="export-group" id="jpeg-quality-group" style="display: none;">
+                                    <label>图片质量 <span id="export-quality-value">90</span>%</label>
+                                    <input type="range" id="export-quality-slider" min="1" max="100" value="90" class="slider">
                                 </div>
                             </div>
-                            <div class="export-group" id="page-selection-group" style="display: none;">
-                                <label>选择要导出的页面</label>
-                                <div id="page-selection-buttons" class="page-selection-buttons"></div>
-                            </div>
-                            <div class="export-group">
-                                <label>图片格式</label>
-                                <div class="button-size-options button-size-options-2">
-                                    <button class="export-format-btn active" data-format="png">PNG</button>
-                                    <button class="export-format-btn" data-format="jpeg">JPEG</button>
+                        </div>
+
+                        <!-- Project Export Tab -->
+                        <div id="export-tab-project" class="export-tab-content">
+                            <div class="export-options">
+                                <div class="export-group">
+                                    <label>导出范围</label>
+                                    <div class="button-size-options button-size-options-3">
+                                        <button class="export-project-scope-btn active" data-scope="current">当前页</button>
+                                        <button class="export-project-scope-btn" data-scope="all">全部页面</button>
+                                        <button class="export-project-scope-btn" data-scope="specific">指定页面</button>
+                                    </div>
+                                </div>
+                                <div class="export-group project-page-selection-group" style="display: none;">
+                                    <label>选择要导出的页面</label>
+                                    <div class="project-page-selection-buttons page-selection-buttons"></div>
+                                </div>
+                                <div class="export-group">
+                                    <p class="export-hint">
+                                        导出为 .aboard 项目文件，包含所有笔迹、背景和图片。此文件可在任意设备上导入并继续编辑。
+                                    </p>
                                 </div>
                             </div>
-                            <div class="export-group" id="jpeg-quality-group" style="display: none;">
-                                <label>图片质量 <span id="export-quality-value">90</span>%</label>
-                                <input type="range" id="export-quality-slider" min="1" max="100" value="90" class="slider">
-                            </div>
+                        </div>
+
+                        <!-- Shared Filename & Actions -->
+                        <div style="margin-top: 20px;">
                             <div class="export-group" id="filename-group">
                                 <label id="filename-label">文件名</label>
                                 <input type="text" id="export-filename" class="export-filename-input" value="aboard-export" placeholder="输入文件名">
-                                <p class="export-hint" id="export-filename-hint" style="display: none;">导出多个页面时，将自动在文件名后添加页码（例如：文件名-1, 文件名-2）</p>
+                                <p class="export-hint" id="export-filename-hint" style="display: none;">导出多个页面时，将自动在文件名后添加页码</p>
                             </div>
                             <div class="export-actions">
                                 <button id="export-cancel-btn" class="button-secondary">取消</button>
@@ -77,14 +113,40 @@ class ExportManager {
     }
     
     setupEventListeners() {
-        // Export scope buttons
+        // Tab Switching
+        document.querySelectorAll('.export-tab-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const tab = e.target.dataset.tab;
+
+                // Update active tab button
+                document.querySelectorAll('.export-tab-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+
+                // Show content
+                document.querySelectorAll('.export-tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(`export-tab-${tab}`).classList.add('active');
+            });
+        });
+
+        // Image Export Scope
         document.querySelectorAll('.export-scope-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.export-scope-btn').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 
                 const scope = e.target.dataset.scope;
-                this.updateUIForScope(scope);
+                this.updateUIForScope(scope, 'image');
+            });
+        });
+
+        // Project Export Scope
+        document.querySelectorAll('.export-project-scope-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.export-project-scope-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+
+                const scope = e.target.dataset.scope;
+                this.updateUIForScope(scope, 'project');
             });
         });
         
@@ -123,7 +185,7 @@ class ExportManager {
         
         // Confirm export
         document.getElementById('export-confirm-btn').addEventListener('click', () => {
-            this.exportCanvas();
+            this.handleExportConfirm();
         });
         
         // Click outside to close
@@ -134,29 +196,40 @@ class ExportManager {
         });
     }
     
-    updateUIForScope(scope) {
-        const pageSelectionGroup = document.getElementById('page-selection-group');
+    updateUIForScope(scope, type) {
+        let selectionGroup, buttonsContainer;
+
+        if (type === 'image') {
+            selectionGroup = document.querySelector('.page-selection-group');
+            buttonsContainer = document.querySelector('.page-selection-buttons');
+        } else {
+            selectionGroup = document.querySelector('.project-page-selection-group');
+            buttonsContainer = document.querySelector('.project-page-selection-buttons');
+        }
+
         const filenameHint = document.getElementById('export-filename-hint');
         const filenameLabel = document.getElementById('filename-label');
         
+        // Update selection UI
         if (scope === 'specific') {
-            pageSelectionGroup.style.display = 'block';
-            filenameHint.style.display = 'block';
-            filenameLabel.textContent = '文件名前缀';
-            this.generatePageSelectionButtons();
-        } else if (scope === 'all') {
-            pageSelectionGroup.style.display = 'none';
+            selectionGroup.style.display = 'block';
+            this.generatePageSelectionButtons(buttonsContainer);
+        } else {
+            selectionGroup.style.display = 'none';
+        }
+
+        // Update filename hint (only relevant for Image export "All/Specific" where it generates multiple files)
+        // For project export, it's always one file
+        if (type === 'image' && (scope === 'all' || scope === 'specific')) {
             filenameHint.style.display = 'block';
             filenameLabel.textContent = '文件名前缀';
         } else {
-            pageSelectionGroup.style.display = 'none';
             filenameHint.style.display = 'none';
             filenameLabel.textContent = '文件名';
         }
     }
     
-    generatePageSelectionButtons() {
-        const container = document.getElementById('page-selection-buttons');
+    generatePageSelectionButtons(container) {
         if (!container) return;
         
         container.innerHTML = '';
@@ -190,6 +263,38 @@ class ExportManager {
             });
             
             container.appendChild(button);
+        }
+    }
+
+    handleExportConfirm() {
+        const activeTab = document.querySelector('.export-tab-btn.active').dataset.tab;
+
+        if (activeTab === 'image') {
+            this.exportCanvas();
+        } else {
+            this.exportProject();
+        }
+    }
+
+    exportProject() {
+        const scope = document.querySelector('.export-project-scope-btn.active').dataset.scope;
+        const filename = document.getElementById('export-filename').value || 'aboard-project';
+
+        let selectedPages = [];
+        if (scope === 'specific') {
+            const selectedButtons = document.querySelectorAll('.project-page-selection-buttons .page-selection-btn.selected');
+            if (selectedButtons.length === 0) {
+                alert('请至少选择一个页面');
+                return;
+            }
+            selectedPages = Array.from(selectedButtons).map(btn => parseInt(btn.dataset.pageNum));
+        }
+
+        if (this.drawingBoard.projectManager) {
+            this.drawingBoard.projectManager.exportProject(scope, filename, selectedPages);
+            this.closeModal();
+        } else {
+            console.error('ProjectManager not found');
         }
     }
     

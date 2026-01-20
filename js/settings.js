@@ -342,4 +342,115 @@ class SettingsManager {
             });
         }
     }
+
+    exportSettings() {
+        const settings = {
+            toolbarSize: this.toolbarSize,
+            configScale: this.configScale,
+            controlPosition: this.controlPosition,
+            edgeSnapEnabled: this.edgeSnapEnabled,
+            touchZoomEnabled: this.touchZoomEnabled,
+            unlimitedZoom: this.unlimitedZoom,
+            showZoomControls: this.showZoomControls,
+            showFullscreenBtn: this.showFullscreenBtn,
+            patternPreferences: this.patternPreferences,
+            canvasWidth: this.canvasWidth,
+            canvasHeight: this.canvasHeight,
+            canvasPreset: this.canvasPreset,
+            themeColor: this.themeColor,
+            globalFont: this.globalFont,
+            // Also include toolbar customization
+            toolbarOrder: localStorage.getItem('toolbarOrder'),
+            toolbarVisibility: localStorage.getItem('toolbarVisibility'),
+            // Control button visibility
+            controlSettings: {
+                zoom: localStorage.getItem('controlShowZoom') !== 'false',
+                pagination: localStorage.getItem('controlShowPagination') !== 'false',
+                time: localStorage.getItem('controlShowTime') !== 'false',
+                fullscreen: localStorage.getItem('controlShowFullscreen') !== 'false',
+                download: localStorage.getItem('controlShowDownload') !== 'false'
+            }
+        };
+
+        const jsonStr = JSON.stringify(settings, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `aboard-config-${Date.now()}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        alert('配置已成功导出！');
+    }
+
+    getSettingsDiff(newSettings) {
+        const diff = [];
+        const simpleKeys = [
+            'toolbarSize', 'configScale', 'controlPosition', 'edgeSnapEnabled',
+            'touchZoomEnabled', 'unlimitedZoom', 'showZoomControls', 'showFullscreenBtn',
+            'canvasWidth', 'canvasHeight', 'canvasPreset', 'themeColor', 'globalFont'
+        ];
+
+        simpleKeys.forEach(key => {
+            if (newSettings[key] !== undefined && newSettings[key] !== this[key]) {
+                diff.push({ key, old: this[key], new: newSettings[key] });
+            }
+        });
+
+        // Complex objects comparison (simplified for UI)
+        if (newSettings.patternPreferences && JSON.stringify(newSettings.patternPreferences) !== JSON.stringify(this.patternPreferences)) {
+            diff.push({ key: 'patternPreferences', old: 'Current', new: 'New' });
+        }
+
+        if (newSettings.toolbarOrder && newSettings.toolbarOrder !== localStorage.getItem('toolbarOrder')) {
+            diff.push({ key: 'toolbarOrder', old: 'Current', new: 'New' });
+        }
+
+        if (newSettings.toolbarVisibility && newSettings.toolbarVisibility !== localStorage.getItem('toolbarVisibility')) {
+            diff.push({ key: 'toolbarVisibility', old: 'Current', new: 'New' });
+        }
+
+        return diff;
+    }
+
+    applySettings(newSettings) {
+        const keys = [
+            'toolbarSize', 'configScale', 'controlPosition', 'edgeSnapEnabled',
+            'touchZoomEnabled', 'unlimitedZoom', 'showZoomControls', 'showFullscreenBtn',
+            'canvasWidth', 'canvasHeight', 'canvasPreset', 'themeColor', 'globalFont',
+            'patternPreferences'
+        ];
+
+        keys.forEach(key => {
+            if (newSettings[key] !== undefined) {
+                this[key] = newSettings[key];
+
+                // Update localStorage
+                if (key === 'patternPreferences') {
+                    localStorage.setItem('patternPreferences', JSON.stringify(this[key]));
+                } else {
+                    localStorage.setItem(key, this[key]);
+                }
+            }
+        });
+
+        // Handle special storage items
+        if (newSettings.toolbarOrder) localStorage.setItem('toolbarOrder', newSettings.toolbarOrder);
+        if (newSettings.toolbarVisibility) localStorage.setItem('toolbarVisibility', newSettings.toolbarVisibility);
+
+        if (newSettings.controlSettings) {
+            localStorage.setItem('controlShowZoom', newSettings.controlSettings.zoom);
+            localStorage.setItem('controlShowPagination', newSettings.controlSettings.pagination);
+            localStorage.setItem('controlShowTime', newSettings.controlSettings.time);
+            localStorage.setItem('controlShowFullscreen', newSettings.controlSettings.fullscreen);
+            localStorage.setItem('controlShowDownload', newSettings.controlSettings.download);
+        }
+
+        // Apply changes visually
+        this.loadSettings();
+    }
 }

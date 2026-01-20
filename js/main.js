@@ -33,6 +33,7 @@ class DrawingBoard {
         this.randomPickerManager = new RandomPickerManager();
         this.scoreboardManager = new ScoreboardManager();
         this.insertImageManager = new InsertImageManager(this.canvas, this.ctx, this.historyManager, this.drawingEngine);
+        this.projectManager = new ProjectManager(this);
         
         // Set callback for teaching tools insertion to auto-switch to pen
         this.teachingToolsManager.onToolsInserted = () => {
@@ -673,6 +674,20 @@ class DrawingBoard {
         // Export button (moved to top controls, always visible)
         document.getElementById('export-btn-top').addEventListener('click', () => this.exportManager.showModal());
         
+        // Import Project Button
+        document.getElementById('import-project-btn').addEventListener('click', () => {
+            // Create a hidden file input
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.aboard,.json';
+            input.onchange = (e) => {
+                if (e.target.files.length > 0) {
+                    this.projectManager.importProject(e.target.files[0]);
+                }
+            };
+            input.click();
+        });
+
         // Pagination controls - merged next and add button
         document.getElementById('prev-page-btn').addEventListener('click', () => this.prevPage());
         document.getElementById('next-or-add-page-btn').addEventListener('click', () => this.nextOrAddPage());
@@ -1483,6 +1498,47 @@ class DrawingBoard {
             });
         });
         
+        // Export Config
+        document.getElementById('export-config-btn').addEventListener('click', () => {
+            this.settingsManager.exportSettings();
+        });
+
+        // Import Config
+        document.getElementById('import-config-btn').addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                if (e.target.files.length > 0) {
+                    const file = e.target.files[0];
+                    const text = await file.text();
+                    try {
+                        const newSettings = JSON.parse(text);
+                        const diff = this.settingsManager.getSettingsDiff(newSettings);
+                        this.showConfigDiffModal(diff, newSettings);
+                    } catch (err) {
+                        alert('配置文件无效');
+                    }
+                }
+            };
+            input.click();
+        });
+
+        // Diff Modal Actions
+        document.getElementById('config-diff-cancel-btn').addEventListener('click', () => {
+            document.getElementById('config-diff-modal').classList.remove('show');
+        });
+
+        document.getElementById('config-diff-close-btn')?.addEventListener('click', () => {
+            document.getElementById('config-diff-modal').classList.remove('show');
+        });
+
+        document.getElementById('config-diff-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'config-diff-modal') {
+                document.getElementById('config-diff-modal').classList.remove('show');
+            }
+        });
+
         document.getElementById('settings-modal').addEventListener('click', (e) => {
             if (e.target.id === 'settings-modal') {
                 this.closeSettings();
@@ -2309,6 +2365,51 @@ class DrawingBoard {
     
     closeSettings() {
         document.getElementById('settings-modal').classList.remove('show');
+    }
+
+    showConfigDiffModal(diff, newSettings) {
+        const modal = document.getElementById('config-diff-modal');
+        const list = document.getElementById('config-diff-list');
+        list.innerHTML = '';
+
+        if (diff.length === 0) {
+            list.innerHTML = '<div style="padding:10px; text-align:center;">没有检测到配置变更</div>';
+        } else {
+            diff.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'diff-item';
+                div.innerHTML = `
+                    <span class="diff-key">${item.key}</span>
+                    <div class="diff-values">
+                        <span class="diff-old">${item.old}</span>
+                        <span class="diff-arrow">→</span>
+                        <span class="diff-new">${item.new}</span>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        const okBtn = document.getElementById('config-diff-ok-btn');
+        // Remove old listener to avoid multiple bindings
+        const newOkBtn = okBtn.cloneNode(true);
+        okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+
+        newOkBtn.addEventListener('click', () => {
+            if (diff.length > 0) {
+                this.settingsManager.applySettings(newSettings);
+                // Also update UI that depends on settings immediately
+                this.recalculateAndRecenterCanvas();
+                this.applyZoom(true);
+                this.updateZoomControlsVisibility();
+                this.updateFullscreenBtnVisibility();
+                this.updatePatternGrid();
+                alert('配置已导入');
+            }
+            modal.classList.remove('show');
+        });
+
+        modal.classList.add('show');
     }
     
     confirmClear() {
@@ -3155,7 +3256,12 @@ class DrawingBoard {
             patternIntensity: this.backgroundManager.patternIntensity,
             patternDensity: this.backgroundManager.patternDensity,
             backgroundImageData: this.backgroundManager.backgroundImageData,
-            imageSize: this.backgroundManager.imageSize
+            imageSize: this.backgroundManager.imageSize,
+            // Enhanced background state
+            coordinateOriginX: this.backgroundManager.coordinateOriginX,
+            coordinateOriginY: this.backgroundManager.coordinateOriginY,
+            imageTransform: this.backgroundManager.imageTransform,
+            gifLoopCount: this.backgroundManager.gifLoopCount
         };
         localStorage.setItem('pageBackgrounds', JSON.stringify(this.pageBackgrounds));
     }
@@ -3172,6 +3278,14 @@ class DrawingBoard {
             this.backgroundManager.backgroundImageData = bg.backgroundImageData;
             this.backgroundManager.imageSize = bg.imageSize;
             
+            // Restore enhanced background state
+            if (typeof bg.coordinateOriginX !== 'undefined') {
+                this.backgroundManager.coordinateOriginX = bg.coordinateOriginX;
+                this.backgroundManager.coordinateOriginY = bg.coordinateOriginY;
+            }
+            if (bg.imageTransform) this.backgroundManager.imageTransform = bg.imageTransform;
+            if (typeof bg.gifLoopCount !== 'undefined') this.backgroundManager.gifLoopCount = bg.gifLoopCount;
+
             // Load image if exists
             if (bg.backgroundImageData && bg.backgroundPattern === 'image') {
                 const img = new Image();
