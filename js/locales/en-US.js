@@ -301,7 +301,17 @@ window.translations = {
             autoSave: 'Auto Save',
             autoSaveHint: 'Periodically save your drawing',
             touchZoom: 'Touch Zoom',
-            touchZoomHint: 'Allow pinch gesture to zoom canvas'
+            touchZoomHint: 'Allow pinch gesture to zoom canvas',
+            exportSuccess: 'Configuration exported successfully',
+            diff: {
+                title: 'Configuration Differences',
+                message: 'Differences detected between import and current settings:',
+                oldValue: 'Current',
+                newValue: 'New',
+                confirm: 'Update Settings',
+                cancel: 'Cancel',
+                noChanges: 'No differences found. Configuration is identical.'
+            }
         },
         canvas: {
             title: 'Canvas Settings',

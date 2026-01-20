@@ -18,6 +18,9 @@ class SettingsManager {
         this.canvasPreset = localStorage.getItem('canvasPreset') || 'custom';
         this.themeColor = localStorage.getItem('themeColor') || '#007AFF';
         this.globalFont = localStorage.getItem('globalFont') || 'system';
+
+        // Initialize Toast Manager
+        this.toastManager = new ToastManager();
     }
     
     loadPatternPreferences() {
@@ -343,8 +346,8 @@ class SettingsManager {
         }
     }
 
-    exportSettings() {
-        const settings = {
+    getCurrentSettingsState() {
+        return {
             toolbarSize: this.toolbarSize,
             configScale: this.configScale,
             controlPosition: this.controlPosition,
@@ -371,6 +374,10 @@ class SettingsManager {
                 download: localStorage.getItem('controlShowDownload') !== 'false'
             }
         };
+    }
+
+    exportSettings() {
+        const settings = this.getCurrentSettingsState();
 
         const jsonStr = JSON.stringify(settings, null, 2);
         const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -384,37 +391,62 @@ class SettingsManager {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
 
-        alert('配置已成功导出！');
+        // Use custom Toast instead of alert
+        const successMsg = window.i18n ? window.i18n.t('settings.exportSuccess') : '配置已成功导出！';
+        this.toastManager.show(successMsg, 'success');
+    }
+
+    deepCompare(obj1, obj2, path = '') {
+        const diffs = [];
+
+        // Handle null/undefined
+        if (obj1 === obj2) return diffs;
+        if (!obj1 || !obj2) {
+            diffs.push({ key: path, old: obj1, new: obj2 });
+            return diffs;
+        }
+
+        // Handle primitives
+        if (typeof obj1 !== 'object' || typeof obj2 !== 'object') {
+            if (obj1 !== obj2) {
+                diffs.push({ key: path, old: obj1, new: obj2 });
+            }
+            return diffs;
+        }
+
+        // Handle JSON strings (like toolbarOrder)
+        try {
+            if (typeof obj1 === 'string' && (obj1.startsWith('[') || obj1.startsWith('{'))) {
+                const parsed1 = JSON.parse(obj1);
+                const parsed2 = JSON.parse(obj2);
+                return this.deepCompare(parsed1, parsed2, path);
+            }
+        } catch (e) {
+            // Not JSON, continue as primitive string comparison
+        }
+
+        // Get all keys
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+        const allKeys = new Set([...keys1, ...keys2]);
+
+        for (const key of allKeys) {
+            const newPath = path ? `${path}.${key}` : key;
+            const subDiffs = this.deepCompare(obj1[key], obj2[key], newPath);
+            diffs.push(...subDiffs);
+        }
+
+        return diffs;
     }
 
     getSettingsDiff(newSettings) {
-        const diff = [];
-        const simpleKeys = [
-            'toolbarSize', 'configScale', 'controlPosition', 'edgeSnapEnabled',
-            'touchZoomEnabled', 'unlimitedZoom', 'showZoomControls', 'showFullscreenBtn',
-            'canvasWidth', 'canvasHeight', 'canvasPreset', 'themeColor', 'globalFont'
-        ];
+        const currentSettings = this.getCurrentSettingsState();
 
-        simpleKeys.forEach(key => {
-            if (newSettings[key] !== undefined && newSettings[key] !== this[key]) {
-                diff.push({ key, old: this[key], new: newSettings[key] });
-            }
-        });
+        // Use deep comparison
+        const diffs = this.deepCompare(currentSettings, newSettings);
 
-        // Complex objects comparison (simplified for UI)
-        if (newSettings.patternPreferences && JSON.stringify(newSettings.patternPreferences) !== JSON.stringify(this.patternPreferences)) {
-            diff.push({ key: 'patternPreferences', old: 'Current', new: 'New' });
-        }
-
-        if (newSettings.toolbarOrder && newSettings.toolbarOrder !== localStorage.getItem('toolbarOrder')) {
-            diff.push({ key: 'toolbarOrder', old: 'Current', new: 'New' });
-        }
-
-        if (newSettings.toolbarVisibility && newSettings.toolbarVisibility !== localStorage.getItem('toolbarVisibility')) {
-            diff.push({ key: 'toolbarVisibility', old: 'Current', new: 'New' });
-        }
-
-        return diff;
+        // Filter out unchanged values explicitly (though deepCompare should handle it)
+        return diffs.filter(d => JSON.stringify(d.old) !== JSON.stringify(d.new));
     }
 
     applySettings(newSettings) {

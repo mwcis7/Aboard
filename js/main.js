@@ -2373,19 +2373,35 @@ class DrawingBoard {
         list.innerHTML = '';
 
         if (diff.length === 0) {
-            list.innerHTML = '<div style="padding:10px; text-align:center;">没有检测到配置变更</div>';
+            const noChangeMsg = window.i18n ? window.i18n.t('settings.importNoChange') : '没有检测到配置变更';
+            list.innerHTML = `<div style="padding:10px; text-align:center;">${noChangeMsg}</div>`;
         } else {
             diff.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'diff-item';
+
+                // Translate values if possible
+                let oldVal = item.old;
+                let newVal = item.new;
+
+                if (typeof oldVal === 'boolean') oldVal = oldVal ? (window.i18n ? window.i18n.t('common.yes') : '是') : (window.i18n ? window.i18n.t('common.no') : '否');
+                if (typeof newVal === 'boolean') newVal = newVal ? (window.i18n ? window.i18n.t('common.yes') : '是') : (window.i18n ? window.i18n.t('common.no') : '否');
+
+                // Translate key if needed (simplified mapping)
+                // This is a basic display, for better UX we might want a full key map
+                let displayKey = item.key;
+
                 div.innerHTML = `
-                    <span class="diff-key">${item.key}</span>
-                    <div class="diff-values">
-                        <span class="diff-old">${item.old}</span>
-                        <span class="diff-arrow">→</span>
-                        <span class="diff-new">${item.new}</span>
+                    <div class="diff-key" style="font-weight: bold; font-size: 13px; color: #333;">${displayKey}</div>
+                    <div class="diff-values" style="display: flex; align-items: center; gap: 8px; font-size: 13px; margin-top: 4px;">
+                        <span class="diff-old" style="color: #999; text-decoration: line-through;">${String(oldVal)}</span>
+                        <span class="diff-arrow" style="color: #666;">→</span>
+                        <span class="diff-new" style="color: var(--theme-color, #007AFF); font-weight: 500;">${String(newVal)}</span>
                     </div>
                 `;
+                div.style.padding = '8px 0';
+                div.style.borderBottom = '1px solid #eee';
+
                 list.appendChild(div);
             });
         }
@@ -2404,7 +2420,13 @@ class DrawingBoard {
                 this.updateZoomControlsVisibility();
                 this.updateFullscreenBtnVisibility();
                 this.updatePatternGrid();
-                alert('配置已导入');
+
+                const successMsg = window.i18n ? window.i18n.t('settings.importSuccess') : '配置已导入';
+                if (this.settingsManager.toastManager) {
+                    this.settingsManager.toastManager.show(successMsg, 'success');
+                } else {
+                    alert(successMsg);
+                }
             }
             modal.classList.remove('show');
         });

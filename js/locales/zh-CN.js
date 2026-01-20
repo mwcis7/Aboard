@@ -349,7 +349,18 @@ window.translations = {
             patternIntensityLabel: '图案透明度：当前',
             patternIntensityHint: '调整背景图案线条的明暗程度',
             preference: '背景图案偏好',
-            preferenceHint: '选择在属性栏中显示的图案'
+            preferenceHint: '选择在属性栏中显示的图案',
+            exportSuccess: '配置已成功导出！',
+            exportFailed: '导出配置失败',
+            importSuccess: '配置已导入',
+            importError: '配置文件无效',
+            importNoChange: '没有检测到配置变更',
+            diff: {
+                current: '当前',
+                new: '新',
+                title: '导入配置确认',
+                message: '检测到以下设置将被更改：'
+            }
         },
         announcement: {
             title: '公告',

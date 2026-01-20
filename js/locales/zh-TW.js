@@ -267,6 +267,16 @@ window.translations = {
             edgeSnapHint: '拖動控制面板時自動吸附到屏幕邊緣',
             touchZoom: '觸控縮放',
             touchZoomHint: '允許雙指捏合縮放畫布',
+            exportSuccess: '配置導出成功',
+            diff: {
+                title: '配置差異',
+                message: '檢測到導入配置與當前配置存在差異：',
+                oldValue: '當前值',
+                newValue: '新值',
+                confirm: '確認更新',
+                cancel: '取消',
+                noChanges: '未檢測到差異，配置完全相同。'
+            },
             // Toolbar customization
             toolbarCustomization: '工具列自訂',
             toolbarCustomizationHint: '選擇要在工具列中顯示的工具，拖動可調整順序',
