@@ -21,6 +21,14 @@ window.translations = {
         reset: 'Restablecer'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: 'Restaurar contenido anterior',
+        message: 'Se detectó contenido de lienzo anterior. ¿Desea restaurarlo?',
+        restore: 'Restaurar',
+        discard: 'Descartar'
+    },
+
     // App Title
     app: {
         title: 'Aboard - Pizarra Minimalista',
@@ -370,6 +378,7 @@ window.translations = {
         },
         more: {
             title: 'Más configuraciones',
+            description: 'Para la configuración de visualización de hora, haga clic en el área de hora en la esquina inferior derecha',
             showTimeDisplay: 'Mostrar hora y fecha',
             showTimeDisplayHint: 'Mostrar la hora y fecha actuales en la esquina superior derecha'
         },

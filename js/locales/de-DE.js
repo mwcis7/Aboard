@@ -21,6 +21,14 @@ window.translations = {
         reset: 'Zurücksetzen'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: 'Vorherigen Inhalt wiederherstellen',
+        message: 'Vorheriger Canvas-Inhalt wurde erkannt. Möchten Sie ihn wiederherstellen?',
+        restore: 'Wiederherstellen',
+        discard: 'Verwerfen'
+    },
+
     // App Title
     app: {
         title: 'Aboard - Minimalistisches Whiteboard',
@@ -376,6 +384,7 @@ window.translations = {
         },
         more: {
             title: 'Weitere Einstellungen',
+            description: 'Für Zeitanzeigeeinstellungen klicken Sie auf den Zeitbereich unten rechts',
             showTimeDisplay: 'Zeit und Datum anzeigen',
             showTimeDisplayHint: 'Aktuelle Zeit und Datum in der oberen rechten Ecke anzeigen'
         },

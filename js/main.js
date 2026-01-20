@@ -143,15 +143,18 @@ class DrawingBoard {
         // Listen for fullscreen changes
         document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
         
-        // Add refresh warning to prevent accidental content loss
+        // Save canvas data before page unload
         window.addEventListener('beforeunload', (e) => {
+            this.saveCanvasData();
             // Show warning message when user tries to refresh or close the page
-            // Use i18n translation if available, otherwise fallback to English
             const message = window.i18n ? window.i18n.t('tools.refresh.warning') : 'Refreshing will clear all canvas content and cannot be recovered. Are you sure you want to refresh?';
             e.preventDefault();
             e.returnValue = message;
             return message;
         });
+        
+        // Check for saved canvas data and show recovery dialog
+        this.checkForRecovery();
     }
     
     
@@ -3557,6 +3560,122 @@ class DrawingBoard {
                 this.canvas.style.cursor = 'crosshair';
             }
         }
+    }
+    
+    // Save canvas data to localStorage
+    saveCanvasData() {
+        try {
+            // Save current page to pages array first
+            if (this.currentPage > 0 && this.currentPage <= this.pages.length) {
+                this.pages[this.currentPage - 1] = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+            }
+            
+            // Convert canvas to data URL for storage
+            const canvasDataURL = this.canvas.toDataURL('image/png');
+            localStorage.setItem('savedCanvasData', canvasDataURL);
+            localStorage.setItem('savedCanvasTimestamp', Date.now().toString());
+            
+            // Save background canvas if it has custom content
+            const bgDataURL = this.bgCanvas.toDataURL('image/png');
+            localStorage.setItem('savedBgCanvasData', bgDataURL);
+            
+            // Save current page number
+            localStorage.setItem('savedCurrentPage', this.currentPage.toString());
+            
+            console.log('Canvas data saved to localStorage');
+        } catch (e) {
+            console.warn('Failed to save canvas data:', e);
+        }
+    }
+    
+    // Check for saved canvas data and show recovery dialog
+    checkForRecovery() {
+        const savedData = localStorage.getItem('savedCanvasData');
+        const savedTimestamp = localStorage.getItem('savedCanvasTimestamp');
+        
+        if (savedData && savedTimestamp) {
+            // Check if data is from last 7 days
+            const timestamp = parseInt(savedTimestamp);
+            const oneWeek = 7 * 24 * 60 * 60 * 1000;
+            
+            if (Date.now() - timestamp < oneWeek) {
+                // Show recovery modal
+                this.showRecoveryModal();
+            } else {
+                // Clear old data
+                this.clearSavedCanvasData();
+            }
+        }
+    }
+    
+    // Show recovery dialog
+    showRecoveryModal() {
+        const modal = document.getElementById('recovery-modal');
+        if (!modal) return;
+        
+        modal.classList.add('active');
+        
+        // Restore button
+        const restoreBtn = document.getElementById('recovery-restore-btn');
+        if (restoreBtn) {
+            restoreBtn.onclick = () => {
+                this.restoreCanvasData();
+                modal.classList.remove('active');
+            };
+        }
+        
+        // Discard button
+        const discardBtn = document.getElementById('recovery-discard-btn');
+        if (discardBtn) {
+            discardBtn.onclick = () => {
+                this.clearSavedCanvasData();
+                modal.classList.remove('active');
+            };
+        }
+    }
+    
+    // Restore canvas data from localStorage
+    restoreCanvasData() {
+        try {
+            const savedCanvasData = localStorage.getItem('savedCanvasData');
+            const savedBgData = localStorage.getItem('savedBgCanvasData');
+            
+            if (savedCanvasData) {
+                const img = new Image();
+                img.onload = () => {
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    this.ctx.drawImage(img, 0, 0);
+                    this.historyManager.saveState();
+                    
+                    // Update pages array
+                    if (this.currentPage > 0 && this.currentPage <= this.pages.length) {
+                        this.pages[this.currentPage - 1] = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                    }
+                    
+                    console.log('Canvas data restored');
+                };
+                img.src = savedCanvasData;
+            }
+            
+            if (savedBgData) {
+                const bgImg = new Image();
+                bgImg.onload = () => {
+                    this.bgCtx.clearRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
+                    this.bgCtx.drawImage(bgImg, 0, 0);
+                };
+                bgImg.src = savedBgData;
+            }
+        } catch (e) {
+            console.warn('Failed to restore canvas data:', e);
+        }
+    }
+    
+    // Clear saved canvas data
+    clearSavedCanvasData() {
+        localStorage.removeItem('savedCanvasData');
+        localStorage.removeItem('savedBgCanvasData');
+        localStorage.removeItem('savedCanvasTimestamp');
+        localStorage.removeItem('savedCurrentPage');
     }
 }
 

@@ -23,6 +23,14 @@ window.translations = {
         stop: 'Stop'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: 'Restore Previous Content',
+        message: 'Previous canvas content was detected. Would you like to restore it?',
+        restore: 'Restore',
+        discard: 'Discard'
+    },
+
     // App Title
     app: {
         title: 'Aboard - Simple Whiteboard',
@@ -391,6 +399,7 @@ window.translations = {
         },
         more: {
             title: 'More Settings',
+            description: 'For time display settings, click the time area in the bottom-right corner',
             showTimeDisplay: 'Show Date & Time',
             showTimeDisplayHint: 'Display current date and time in top-right corner'
         },

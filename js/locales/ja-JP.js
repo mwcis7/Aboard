@@ -21,6 +21,14 @@ window.translations = {
         reset: 'リセット'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: '前回のコンテンツを復元',
+        message: '前回のキャンバスコンテンツが検出されました。復元しますか？',
+        restore: '復元',
+        discard: '破棄'
+    },
+
     // App Title
     app: {
         title: 'Aboard - ミニマリストホワイトボード',
@@ -379,6 +387,7 @@ window.translations = {
         },
         more: {
             title: 'その他の設定',
+            description: '時刻表示の設定は右下の時刻エリアをクリックしてください',
             showTimeDisplay: '時刻と日付を表示',
             showTimeDisplayHint: '右上隅に現在の時刻と日付を表示'
         },

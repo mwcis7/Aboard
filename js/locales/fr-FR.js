@@ -21,6 +21,14 @@ window.translations = {
         reset: 'Réinitialiser'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: 'Restaurer le contenu précédent',
+        message: 'Un contenu de canevas précédent a été détecté. Voulez-vous le restaurer?',
+        restore: 'Restaurer',
+        discard: 'Supprimer'
+    },
+
     // App Title
     app: {
         title: 'Aboard - Tableau Blanc Minimaliste',
@@ -370,6 +378,7 @@ window.translations = {
         },
         more: {
             title: 'Plus de paramètres',
+            description: 'Pour les paramètres d\'affichage de l\'heure, cliquez sur la zone de l\'heure en bas à droite',
             showTimeDisplay: 'Afficher l\'heure et la date',
             showTimeDisplayHint: 'Afficher l\'heure et la date actuelles dans le coin supérieur droit'
         },

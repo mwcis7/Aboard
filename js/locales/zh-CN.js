@@ -23,6 +23,14 @@ window.translations = {
         stop: '停止'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: '恢复上次内容',
+        message: '检测到上次使用时的画布内容，是否恢复？',
+        restore: '恢复',
+        discard: '放弃'
+    },
+
     // App Title
     app: {
         title: 'Aboard - 简约白板',
@@ -391,6 +399,7 @@ window.translations = {
         },
         more: {
             title: '更多设置',
+            description: '时间显示相关设置请点击右下角时间区域进入设置界面',
             showTimeDisplay: '显示时间和日期',
             showTimeDisplayHint: '在右上角显示当前时间和日期'
         },

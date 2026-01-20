@@ -21,6 +21,14 @@ window.translations = {
         reset: '재설정'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: '이전 콘텐츠 복원',
+        message: '이전 캔버스 콘텐츠가 감지되었습니다. 복원하시겠습니까?',
+        restore: '복원',
+        discard: '삭제'
+    },
+
     // App Title
     app: {
         title: 'Aboard - 미니멀 화이트보드',
@@ -379,6 +387,7 @@ window.translations = {
         },
         more: {
             title: '추가 설정',
+            description: '시간 표시 설정은 오른쪽 하단 시간 영역을 클릭하세요',
             showTimeDisplay: '시간 및 날짜 표시',
             showTimeDisplayHint: '오른쪽 상단에 현재 시간 및 날짜 표시'
         },
