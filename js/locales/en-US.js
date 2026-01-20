@@ -23,6 +23,14 @@ window.translations = {
         stop: 'Stop'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: 'Restore Previous Content',
+        message: 'Previous canvas content was detected. Would you like to restore it?',
+        restore: 'Restore',
+        discard: 'Discard'
+    },
+
     // App Title
     app: {
         title: 'Aboard - Simple Whiteboard',
@@ -256,6 +264,30 @@ window.translations = {
             },
             edgeSnap: 'Enable Edge Snap',
             edgeSnapHint: 'Auto-snap panels to screen edges when dragging',
+            // Toolbar customization
+            toolbarCustomization: 'Toolbar Customization',
+            toolbarCustomizationHint: 'Select tools to display in toolbar, drag to reorder',
+            toolbarTools: {
+                undo: 'Undo',
+                redo: 'Redo',
+                pen: 'Pen',
+                move: 'Move',
+                eraser: 'Eraser',
+                clear: 'Clear',
+                background: 'Background',
+                more: 'More',
+                settings: 'Settings'
+            },
+            // Control button settings
+            controlButtonSettings: 'Control Button Settings',
+            controlButtonSettingsHint: 'Select control buttons to display',
+            controlButtons: {
+                zoom: 'Zoom Buttons',
+                pagination: 'Pagination Buttons',
+                time: 'Time Display',
+                fullscreen: 'Fullscreen Button',
+                download: 'Download Button'
+            },
             controlPosition: 'Control Position',
             controlPositionHint: 'Position of zoom and pagination controls',
             positionTopLeft: 'Top Left',
@@ -367,6 +399,7 @@ window.translations = {
         },
         more: {
             title: 'More Settings',
+            description: 'For time display settings, click the time area in the bottom-right corner',
             showTimeDisplay: 'Show Date & Time',
             showTimeDisplayHint: 'Display current date and time in top-right corner'
         },
@@ -500,6 +533,7 @@ window.translations = {
         opacity: 'Opacity',
         opacityLabel: 'Opacity: Current',
         fullscreenMode: 'Fullscreen Mode',
+        fullscreenColorSettings: 'Fullscreen Color Settings',
         fullscreenFontSize: 'Fullscreen Font Size',
         fullscreenFontSizeLabel: 'Fullscreen Font Size: Current',
         fullscreenFontSizeHint: 'Adjust fullscreen font size (10%-85%)',

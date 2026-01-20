@@ -21,6 +21,14 @@ window.translations = {
         reset: 'リセット'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: '前回のコンテンツを復元',
+        message: '前回のキャンバスコンテンツが検出されました。復元しますか？',
+        restore: '復元',
+        discard: '破棄'
+    },
+
     // App Title
     app: {
         title: 'Aboard - ミニマリストホワイトボード',
@@ -252,6 +260,30 @@ window.translations = {
             },
             edgeSnap: 'エッジスナップを有効化',
             edgeSnapHint: 'ドラッグ時にコントロールパネルを画面端に自動配置',
+            // Toolbar customization
+            toolbarCustomization: 'ツールバーのカスタマイズ',
+            toolbarCustomizationHint: 'ツールバーに表示するツールを選択し、ドラッグで順序を変更',
+            toolbarTools: {
+                undo: '元に戻す',
+                redo: 'やり直し',
+                pen: 'ペン',
+                move: '移動',
+                eraser: '消しゴム',
+                clear: 'クリア',
+                background: '背景',
+                more: 'その他',
+                settings: '設定'
+            },
+            // Control button settings
+            controlButtonSettings: 'コントロールボタン設定',
+            controlButtonSettingsHint: '表示するコントロールボタンを選択',
+            controlButtons: {
+                zoom: 'ズームボタン',
+                pagination: 'ページネーションボタン',
+                time: '時刻表示',
+                fullscreen: 'フルスクリーンボタン',
+                download: 'ダウンロードボタン'
+            },
             controlPosition: 'コントロールボタンの位置',
             controlPositionHint: 'ズームとページネーションコントロールの表示位置を選択',
             positionTopLeft: '左上',
@@ -355,6 +387,7 @@ window.translations = {
         },
         more: {
             title: 'その他の設定',
+            description: '時刻表示の設定は右下の時刻エリアをクリックしてください',
             showTimeDisplay: '時刻と日付を表示',
             showTimeDisplayHint: '右上隅に現在の時刻と日付を表示'
         },
@@ -428,6 +461,7 @@ window.translations = {
         showDate: '日付を表示',
         showTime: '時刻を表示',
         settings: '設定',
+        fullscreenDisplay: 'フルスクリーン表示',
         displayOptions: '表示オプション',
         dateAndTime: '日付と時刻',
         dateOnly: '日付のみ',
@@ -449,11 +483,16 @@ window.translations = {
         opacityLabel: '不透明度：現在',
         fullscreenMode: 'フルスクリーンモード',
         fullscreenModeHint: '時刻をフルスクリーン表示するトリガーを選択',
+        fullscreenColorSettings: 'フルスクリーン色設定',
         fullscreenFontSize: 'フルスクリーンフォントサイズ',
         fullscreenFontSizeLabel: 'フルスクリーンフォントサイズ：現在',
+        fullscreenFontSizeHint: 'フルスクリーンフォントサイズを調整 (10%-85%)',
         fullscreenSliderLabel: 'フォントサイズ調整 (10%-85%)',
         customColor: 'カスタムカラー',
-        transparent: '透明'
+        transparent: '透明',
+        fullscreenDisabled: '無効',
+        fullscreenSingle: 'シングルクリック',
+        fullscreenDouble: 'ダブルクリック'
     },
 
     // Timer

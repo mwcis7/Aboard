@@ -23,6 +23,14 @@ window.translations = {
         stop: '停止'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: '恢复上次内容',
+        message: '检测到上次使用时的画布内容，是否恢复？',
+        restore: '恢复',
+        discard: '放弃'
+    },
+
     // App Title
     app: {
         title: 'Aboard - 简约白板',
@@ -36,7 +44,7 @@ window.translations = {
         pen: '笔',
         shape: '形状',
         move: '移动',
-        eraser: '橡皮',
+        eraser: '擦除',
         clear: '清空',
         background: '背景',
         teachingTools: '教具',
@@ -80,12 +88,12 @@ window.translations = {
             lineProperties: '线条属性'
         },
         eraser: {
-            title: '橡皮',
-            type: '橡皮类型',
-            normal: '普通橡皮',
-            pixel: '像素橡皮',
-            size: '橡皮大小',
-            sizeLabel: '橡皮擦大小：当前',
+            title: '擦除',
+            type: '擦除类型',
+            normal: '普通擦除',
+            pixel: '像素擦除',
+            size: '擦除大小',
+            sizeLabel: '擦除大小：当前',
             shape: '形状',
             shapeCircle: '圆形',
             shapeRectangle: '方形'
@@ -258,6 +266,30 @@ window.translations = {
             edgeSnapHint: '拖动控制面板时自动吸附到屏幕边缘',
             touchZoom: '触控缩放',
             touchZoomHint: '允许双指捏合缩放画布',
+            // Toolbar customization
+            toolbarCustomization: '工具栏自定义',
+            toolbarCustomizationHint: '选择要在工具栏中显示的工具，拖动可调整顺序',
+            toolbarTools: {
+                undo: '撤销',
+                redo: '重做',
+                pen: '笔',
+                move: '移动',
+                eraser: '擦除',
+                clear: '清空',
+                background: '背景',
+                more: '更多',
+                settings: '设置'
+            },
+            // Control button settings
+            controlButtonSettings: '控制按钮设置',
+            controlButtonSettingsHint: '选择要显示的控制按钮',
+            controlButtons: {
+                zoom: '缩放按钮',
+                pagination: '分页按钮',
+                time: '时间显示',
+                fullscreen: '全屏按钮',
+                download: '下载按钮'
+            },
             controlPosition: '控制按钮位置',
             controlPositionHint: '选择缩放和分页控件在屏幕上的显示位置',
             positionTopLeft: '左上角',
@@ -367,6 +399,7 @@ window.translations = {
         },
         more: {
             title: '更多设置',
+            description: '时间显示相关设置请点击右下角时间区域进入设置界面',
             showTimeDisplay: '显示时间和日期',
             showTimeDisplayHint: '在右上角显示当前时间和日期'
         },

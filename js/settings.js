@@ -334,12 +334,11 @@ class SettingsManager {
             // Set current language
             languageSelect.value = window.i18n.getCurrentLocale();
             
-            // Handle language change
+            // Handle language change without page reload
             languageSelect.addEventListener('change', async (e) => {
                 const newLocale = e.target.value;
                 await window.i18n.changeLocale(newLocale);
-                // Reload the page to apply all translations properly
-                window.location.reload();
+                // No reload - translations are applied dynamically
             });
         }
     }

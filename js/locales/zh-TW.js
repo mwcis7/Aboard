@@ -23,6 +23,14 @@ window.translations = {
         stop: '停止'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: '恢復上次內容',
+        message: '檢測到上次使用時的畫布內容，是否恢復？',
+        restore: '恢復',
+        discard: '放棄'
+    },
+
     // App Title
     app: {
         title: 'Aboard - 簡約白板',
@@ -36,7 +44,7 @@ window.translations = {
         pen: '筆',
         shape: '形狀',
         move: '移動',
-        eraser: '橡皮',
+        eraser: '擦除',
         clear: '清空',
         background: '背景',
         teachingTools: '教具',
@@ -80,12 +88,12 @@ window.translations = {
             lineProperties: '線條屬性'
         },
         eraser: {
-            title: '橡皮',
-            type: '橡皮類型',
-            normal: '普通橡皮',
-            pixel: '像素橡皮',
-            size: '橡皮大小',
-            sizeLabel: '橡皮擦大小：目前',
+            title: '擦除',
+            type: '擦除類型',
+            normal: '普通擦除',
+            pixel: '像素擦除',
+            size: '擦除大小',
+            sizeLabel: '擦除大小：目前',
             shape: '形狀',
             shapeCircle: '圓形',
             shapeRectangle: '方形'
@@ -259,6 +267,30 @@ window.translations = {
             edgeSnapHint: '拖動控制面板時自動吸附到屏幕邊緣',
             touchZoom: '觸控縮放',
             touchZoomHint: '允許雙指捏合縮放畫布',
+            // Toolbar customization
+            toolbarCustomization: '工具列自訂',
+            toolbarCustomizationHint: '選擇要在工具列中顯示的工具，拖動可調整順序',
+            toolbarTools: {
+                undo: '復原',
+                redo: '重做',
+                pen: '筆',
+                move: '移動',
+                eraser: '擦除',
+                clear: '清空',
+                background: '背景',
+                more: '更多',
+                settings: '設定'
+            },
+            // Control button settings
+            controlButtonSettings: '控制按鈕設置',
+            controlButtonSettingsHint: '選擇要顯示的控制按鈕',
+            controlButtons: {
+                zoom: '縮放按鈕',
+                pagination: '分頁按鈕',
+                time: '時間顯示',
+                fullscreen: '全螢幕按鈕',
+                download: '下載按鈕'
+            },
             controlPosition: '控制按鈕位置',
             controlPositionHint: '選擇縮放和分頁控件在屏幕上的顯示位置',
             positionTopLeft: '左上角',
@@ -368,6 +400,7 @@ window.translations = {
         },
         more: {
             title: '更多設置',
+            description: '時間顯示相關設置請點擊右下角時間區域進入設置界面',
             showTimeDisplay: '顯示時間和日期',
             showTimeDisplayHint: '在右上角顯示目前時間和日期'
         },
@@ -449,6 +482,7 @@ window.translations = {
         showDate: '顯示日期',
         showTime: '顯示時間',
         settings: '設置',
+        fullscreenDisplay: '全螢幕顯示',
         displayOptions: '顯示選項',
         dateAndTime: '日期和時間',
         dateOnly: '僅日期',
@@ -464,11 +498,16 @@ window.translations = {
         opacity: '透明度',
         opacityLabel: '透明度：目前',
         fullscreenMode: '全螢幕模式',
+        fullscreenColorSettings: '全螢幕顏色設置',
         fullscreenFontSize: '全螢幕字體大小',
         fullscreenFontSizeLabel: '全螢幕字體大小：目前',
+        fullscreenFontSizeHint: '調整全螢幕時間顯示的字體大小，範圍10%-85%',
         fullscreenSliderLabel: '字體大小調節 (10%-85%)',
         customColor: '自定義顏色',
-        transparent: '透明'
+        transparent: '透明',
+        fullscreenDisabled: '關閉',
+        fullscreenSingle: '單擊',
+        fullscreenDouble: '雙擊'
     },
 
     // Timer

@@ -21,6 +21,14 @@ window.translations = {
         reset: 'Zurücksetzen'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: 'Vorherigen Inhalt wiederherstellen',
+        message: 'Vorheriger Canvas-Inhalt wurde erkannt. Möchten Sie ihn wiederherstellen?',
+        restore: 'Wiederherstellen',
+        discard: 'Verwerfen'
+    },
+
     // App Title
     app: {
         title: 'Aboard - Minimalistisches Whiteboard',
@@ -245,6 +253,30 @@ window.translations = {
             },
             edgeSnap: 'Randausrichtung aktivieren',
             edgeSnapHint: 'Bedienfelder automatisch am Bildschirmrand ausrichten',
+            // Toolbar customization
+            toolbarCustomization: 'Symbolleisten-Anpassung',
+            toolbarCustomizationHint: 'Wählen Sie Werkzeuge für die Symbolleiste, ziehen Sie zum Neuordnen',
+            toolbarTools: {
+                undo: 'Rückgängig',
+                redo: 'Wiederholen',
+                pen: 'Stift',
+                move: 'Verschieben',
+                eraser: 'Radierer',
+                clear: 'Löschen',
+                background: 'Hintergrund',
+                more: 'Mehr',
+                settings: 'Einstellungen'
+            },
+            // Control button settings
+            controlButtonSettings: 'Steuerungstasten-Einstellungen',
+            controlButtonSettingsHint: 'Wählen Sie die anzuzeigenden Steuerungstasten',
+            controlButtons: {
+                zoom: 'Zoom-Tasten',
+                pagination: 'Seitennummerierung-Tasten',
+                time: 'Zeitanzeige',
+                fullscreen: 'Vollbild-Taste',
+                download: 'Download-Taste'
+            },
             controlPosition: 'Position der Steuerungstasten',
             controlPositionHint: 'Wählen Sie die Position der Zoom- und Seitensteuerung',
             positionTopLeft: 'Oben links',
@@ -352,6 +384,7 @@ window.translations = {
         },
         more: {
             title: 'Weitere Einstellungen',
+            description: 'Für Zeitanzeigeeinstellungen klicken Sie auf den Zeitbereich unten rechts',
             showTimeDisplay: 'Zeit und Datum anzeigen',
             showTimeDisplayHint: 'Aktuelle Zeit und Datum in der oberen rechten Ecke anzeigen'
         },
@@ -448,10 +481,32 @@ window.translations = {
         showDate: 'Datum anzeigen',
         showTime: 'Uhrzeit anzeigen',
         settings: 'Einstellungen',
+        fullscreenDisplay: 'Vollbild',
         displayOptions: 'Anzeigeoptionen',
         dateAndTime: 'Datum und Uhrzeit',
         dateOnly: 'Nur Datum',
-        timeOnly: 'Nur Uhrzeit'
+        timeOnly: 'Nur Uhrzeit',
+        timezone: 'Zeitzone',
+        timeFormat: 'Zeitformat',
+        dateFormat: 'Datumsformat',
+        colorSettings: 'Farbeinstellungen',
+        textColor: 'Textfarbe',
+        bgColor: 'Hintergrundfarbe',
+        fontSize: 'Schriftgröße',
+        fontSizeLabel: 'Schriftgröße: Aktuell',
+        opacity: 'Deckkraft',
+        opacityLabel: 'Deckkraft: Aktuell',
+        fullscreenMode: 'Vollbildmodus',
+        fullscreenColorSettings: 'Vollbild-Farbeinstellungen',
+        fullscreenFontSize: 'Vollbild-Schriftgröße',
+        fullscreenFontSizeLabel: 'Vollbild-Schriftgröße: Aktuell',
+        fullscreenFontSizeHint: 'Vollbild-Schriftgröße anpassen (10%-85%)',
+        fullscreenSliderLabel: 'Schriftgröße (10%-85%)',
+        customColor: 'Benutzerdefinierte Farbe',
+        transparent: 'Transparent',
+        fullscreenDisabled: 'Deaktiviert',
+        fullscreenSingle: 'Einzelklick',
+        fullscreenDouble: 'Doppelklick'
     },
 
     // Timer
