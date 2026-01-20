@@ -117,6 +117,18 @@ class DrawingBoard {
         // Connect edge drawing manager to drawing engine
         this.drawingEngine.setEdgeDrawingManager(this.edgeDrawingManager);
         
+        // Initialize StorageManager
+        this.storageManager = new StorageManager();
+
+        // Debounced save function
+        this.saveTimeout = null;
+        this.saveSessionDebounced = () => {
+            if (this.saveTimeout) clearTimeout(this.saveTimeout);
+            this.saveTimeout = setTimeout(() => {
+                this.saveSession();
+            }, 1000); // 1 second delay
+        };
+
         // Initialize
         this.resizeCanvas();
         this.setupEventListeners();
@@ -143,9 +155,9 @@ class DrawingBoard {
         // Listen for fullscreen changes
         document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
         
-        // Save canvas data before page unload
+        // Save canvas data before page unload (Attempt synchronous save, though IndexedDB is async)
         window.addEventListener('beforeunload', (e) => {
-            this.saveCanvasData();
+            this.saveSession();
             // Show warning message when user tries to refresh or close the page
             const message = window.i18n ? window.i18n.t('tools.refresh.warning') : 'Refreshing will clear all canvas content and cannot be recovered. Are you sure you want to refresh?';
             e.preventDefault();
@@ -632,6 +644,7 @@ class DrawingBoard {
                 // Clear stroke selection as strokes are no longer valid
                 this.drawingEngine.clearStrokes();
                 this.updateUI();
+                this.saveSessionDebounced();
             }
         });
         
@@ -640,6 +653,7 @@ class DrawingBoard {
                 // Clear stroke selection as strokes are no longer valid
                 this.drawingEngine.clearStrokes();
                 this.updateUI();
+                this.saveSessionDebounced();
             }
         });
         
@@ -2170,6 +2184,7 @@ class DrawingBoard {
         
         if (this.drawingEngine.stopDrawing()) {
             this.historyManager.saveState();
+            this.saveSessionDebounced();
             this.closeConfigPanel();
             this.closeFeaturePanel();
         }
@@ -2305,6 +2320,7 @@ class DrawingBoard {
         if (saveToHistory) {
             this.historyManager.saveState();
         }
+        this.saveSessionDebounced();
     }
     
     updateUI() {
@@ -3125,6 +3141,9 @@ class DrawingBoard {
         
         // Restore page-specific background if exists
         this.restorePageBackground(pageNumber);
+
+        // Save session state (current page change)
+        this.saveSessionDebounced();
     }
     
     savePageBackground(pageNumber) {
@@ -3609,54 +3628,66 @@ class DrawingBoard {
         }
     }
     
-    // Save canvas data to localStorage
-    saveCanvasData() {
+    // Save session data to IndexedDB via StorageManager
+    async saveSession() {
         try {
             // Save current page to pages array first
             if (this.currentPage > 0 && this.currentPage <= this.pages.length) {
                 this.pages[this.currentPage - 1] = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
             }
             
-            // Convert canvas to data URL for storage (use JPEG for smaller size)
-            const canvasDataURL = this.canvas.toDataURL('image/jpeg', 0.8);
-            localStorage.setItem('savedCanvasData', canvasDataURL);
-            localStorage.setItem('savedCanvasTimestamp', Date.now().toString());
-            
-            // Save background canvas if it has custom content
-            const bgDataURL = this.bgCanvas.toDataURL('image/jpeg', 0.8);
-            localStorage.setItem('savedBgCanvasData', bgDataURL);
-            
-            // Save current page number
-            localStorage.setItem('savedCurrentPage', this.currentPage.toString());
-            
-            console.log('Canvas data saved to localStorage');
+            // Save background settings for current page to ensure they are up to date
+            this.savePageBackground(this.currentPage);
+
+            // Convert all pages to Blobs
+            const pagesBlobs = await Promise.all(this.pages.map(page => StorageManager.imageDataToBlob(page)));
+
+            // Collect settings
+            const settings = {
+                currentTool: this.drawingEngine.currentTool,
+                penSize: this.drawingEngine.penSize,
+                penColor: this.drawingEngine.currentColor,
+                penType: this.drawingEngine.penType,
+                eraserSize: this.drawingEngine.eraserSize,
+                eraserShape: this.drawingEngine.eraserShape,
+                currentPage: this.currentPage,
+                canvasScale: this.drawingEngine.canvasScale,
+                panOffset: this.drawingEngine.panOffset,
+                pageBackgrounds: this.pageBackgrounds,
+                // Global background settings
+                backgroundColor: this.backgroundManager.backgroundColor,
+                backgroundPattern: this.backgroundManager.backgroundPattern,
+                bgOpacity: this.backgroundManager.bgOpacity,
+                patternIntensity: this.backgroundManager.patternIntensity,
+                patternDensity: this.backgroundManager.patternDensity,
+                imageSize: this.backgroundManager.imageSize,
+                backgroundImageData: this.backgroundManager.backgroundImageData,
+                uploadedImages: this.uploadedImages
+            };
+
+            const data = {
+                pages: pagesBlobs,
+                settings: settings,
+                canvasWidth: this.canvas.width,
+                canvasHeight: this.canvas.height
+            };
+
+            await this.storageManager.saveSession(data);
+            console.log('Session saved to IndexedDB');
         } catch (e) {
-            // Handle quota exceeded errors gracefully
-            if (e.name === 'QuotaExceededError') {
-                console.warn('localStorage quota exceeded, canvas data not saved');
-            } else {
-                console.warn('Failed to save canvas data:', e);
-            }
+            console.warn('Failed to save session:', e);
         }
     }
     
-    // Check for saved canvas data and show recovery dialog
-    checkForRecovery() {
-        const savedData = localStorage.getItem('savedCanvasData');
-        const savedTimestamp = localStorage.getItem('savedCanvasTimestamp');
-        
-        if (savedData && savedTimestamp) {
-            // Check if data is from last 7 days
-            const timestamp = parseInt(savedTimestamp);
-            const oneWeek = 7 * 24 * 60 * 60 * 1000;
-            
-            if (Date.now() - timestamp < oneWeek) {
-                // Show recovery modal
+    // Check for saved session and show recovery dialog
+    async checkForRecovery() {
+        try {
+            const hasSession = await this.storageManager.hasSession();
+            if (hasSession) {
                 this.showRecoveryModal();
-            } else {
-                // Clear old data
-                this.clearSavedCanvasData();
             }
+        } catch (e) {
+            console.warn('Error checking for recovery:', e);
         }
     }
     
@@ -3665,14 +3696,14 @@ class DrawingBoard {
         const modal = document.getElementById('recovery-modal');
         if (!modal) return;
         
-        modal.classList.add('active');
+        modal.classList.add('show');
         
         // Restore button
         const restoreBtn = document.getElementById('recovery-restore-btn');
         if (restoreBtn) {
             restoreBtn.onclick = () => {
-                this.restoreCanvasData();
-                modal.classList.remove('active');
+                this.restoreSession();
+                modal.classList.remove('show');
             };
         }
         
@@ -3680,54 +3711,120 @@ class DrawingBoard {
         const discardBtn = document.getElementById('recovery-discard-btn');
         if (discardBtn) {
             discardBtn.onclick = () => {
-                this.clearSavedCanvasData();
-                modal.classList.remove('active');
+                this.clearSessionData();
+                modal.classList.remove('show');
             };
         }
     }
     
-    // Restore canvas data from localStorage
-    restoreCanvasData() {
+    // Restore session data from IndexedDB
+    async restoreSession() {
         try {
-            const savedCanvasData = localStorage.getItem('savedCanvasData');
-            const savedBgData = localStorage.getItem('savedBgCanvasData');
-            
-            if (savedCanvasData) {
-                const img = new Image();
-                img.onload = () => {
-                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    this.ctx.drawImage(img, 0, 0);
-                    this.historyManager.saveState();
-                    
-                    // Update pages array
-                    if (this.currentPage > 0 && this.currentPage <= this.pages.length) {
-                        this.pages[this.currentPage - 1] = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-                    }
-                    
-                    console.log('Canvas data restored');
-                };
-                img.src = savedCanvasData;
+            const sessionData = await this.storageManager.loadSession();
+            if (!sessionData) return;
+
+            const { pages, settings } = sessionData;
+
+            // Restore settings
+            if (settings) {
+                // Restore drawing tools
+                if (settings.penSize) this.drawingEngine.setPenSize(settings.penSize);
+                if (settings.penColor) this.drawingEngine.setColor(settings.penColor);
+                if (settings.penType) this.drawingEngine.setPenType(settings.penType);
+                if (settings.eraserSize) this.drawingEngine.setEraserSize(settings.eraserSize);
+                if (settings.eraserShape) this.drawingEngine.setEraserShape(settings.eraserShape);
+                if (settings.currentTool) this.setTool(settings.currentTool, false);
+
+                // Restore View
+                if (settings.canvasScale) this.drawingEngine.canvasScale = settings.canvasScale;
+                if (settings.panOffset) this.drawingEngine.panOffset = settings.panOffset;
+
+                // Restore Backgrounds
+                if (settings.pageBackgrounds) this.pageBackgrounds = settings.pageBackgrounds;
+                if (settings.backgroundColor) this.backgroundManager.backgroundColor = settings.backgroundColor;
+                if (settings.backgroundPattern) this.backgroundManager.backgroundPattern = settings.backgroundPattern;
+                if (settings.bgOpacity) this.backgroundManager.bgOpacity = settings.bgOpacity;
+                if (settings.patternIntensity) this.backgroundManager.patternIntensity = settings.patternIntensity;
+                if (settings.patternDensity) this.backgroundManager.patternDensity = settings.patternDensity;
+                if (settings.imageSize) this.backgroundManager.imageSize = settings.imageSize;
+                if (settings.backgroundImageData) this.backgroundManager.backgroundImageData = settings.backgroundImageData;
+
+                if (settings.uploadedImages) {
+                    this.uploadedImages = settings.uploadedImages;
+                    this.updateUploadedImagesButtons();
+                }
+
+                // Restore current page index
+                if (settings.currentPage) this.currentPage = settings.currentPage;
             }
-            
-            if (savedBgData) {
-                const bgImg = new Image();
-                bgImg.onload = () => {
-                    this.bgCtx.clearRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
-                    this.bgCtx.drawImage(bgImg, 0, 0);
-                };
-                bgImg.src = savedBgData;
+
+            // Restore pages
+            if (pages && Array.isArray(pages)) {
+                this.pages = await Promise.all(pages.map(blob => StorageManager.blobToImageData(blob)));
             }
+
+            // Apply restored state
+            this.loadPage(this.currentPage);
+            this.updateUI();
+            this.updateZoomUI();
+            this.applyZoom(false);
+            this.updatePaginationUI();
+
+            // Sync UI controls
+            this.syncSettingsUI(settings);
+
+            console.log('Session restored');
         } catch (e) {
-            console.warn('Failed to restore canvas data:', e);
+            console.warn('Failed to restore session:', e);
         }
     }
     
-    // Clear saved canvas data
-    clearSavedCanvasData() {
-        localStorage.removeItem('savedCanvasData');
-        localStorage.removeItem('savedBgCanvasData');
-        localStorage.removeItem('savedCanvasTimestamp');
-        localStorage.removeItem('savedCurrentPage');
+    // Helper to sync UI elements with restored settings
+    syncSettingsUI(settings) {
+        if (!settings) return;
+
+        // Sync Pen Size Slider
+        const penSizeSlider = document.getElementById('pen-size-slider');
+        const penSizeValue = document.getElementById('pen-size-value');
+        if (penSizeSlider && settings.penSize) {
+            penSizeSlider.value = settings.penSize;
+            penSizeValue.textContent = settings.penSize;
+        }
+
+        // Sync Eraser Size Slider
+        const eraserSizeSlider = document.getElementById('eraser-size-slider');
+        const eraserSizeValue = document.getElementById('eraser-size-value');
+        if (eraserSizeSlider && settings.eraserSize) {
+            eraserSizeSlider.value = settings.eraserSize;
+            eraserSizeValue.textContent = settings.eraserSize;
+        }
+
+        // Sync active color buttons
+        if (settings.penColor) {
+            document.querySelectorAll('.color-btn[data-color]').forEach(btn => {
+                if (btn.dataset.color === settings.penColor) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            const customPicker = document.getElementById('custom-color-picker');
+            if (customPicker) customPicker.value = settings.penColor;
+        }
+    }
+
+    // Clear saved session data
+    async clearSessionData() {
+        try {
+            await this.storageManager.clearSession();
+            // Also clear legacy localStorage data to be clean
+            localStorage.removeItem('savedCanvasData');
+            localStorage.removeItem('savedBgCanvasData');
+            localStorage.removeItem('savedCanvasTimestamp');
+            localStorage.removeItem('savedCurrentPage');
+        } catch (e) {
+            console.warn('Failed to clear session:', e);
+        }
     }
 }
 
