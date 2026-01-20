@@ -252,6 +252,30 @@ window.translations = {
             },
             edgeSnap: 'エッジスナップを有効化',
             edgeSnapHint: 'ドラッグ時にコントロールパネルを画面端に自動配置',
+            // Toolbar customization
+            toolbarCustomization: 'ツールバーのカスタマイズ',
+            toolbarCustomizationHint: 'ツールバーに表示するツールを選択し、ドラッグで順序を変更',
+            toolbarTools: {
+                undo: '元に戻す',
+                redo: 'やり直し',
+                pen: 'ペン',
+                move: '移動',
+                eraser: '消しゴム',
+                clear: 'クリア',
+                background: '背景',
+                more: 'その他',
+                settings: '設定'
+            },
+            // Control button settings
+            controlButtonSettings: 'コントロールボタン設定',
+            controlButtonSettingsHint: '表示するコントロールボタンを選択',
+            controlButtons: {
+                zoom: 'ズームボタン',
+                pagination: 'ページネーションボタン',
+                time: '時刻表示',
+                fullscreen: 'フルスクリーンボタン',
+                download: 'ダウンロードボタン'
+            },
             controlPosition: 'コントロールボタンの位置',
             controlPositionHint: 'ズームとページネーションコントロールの表示位置を選択',
             positionTopLeft: '左上',

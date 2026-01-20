@@ -185,8 +185,10 @@ class DrawingEngine {
             this.ctx.setLineDash([]); // Always solid for eraser
             
             // Set line cap/join based on eraser shape
+            // Use 'square' for rectangle to match the visual cursor behavior
+            // 'square' extends line by half lineWidth, matching the eraser border edge
             if (this.eraserShape === 'rectangle') {
-                this.ctx.lineCap = 'butt';
+                this.ctx.lineCap = 'square';
                 this.ctx.lineJoin = 'miter';
             } else {
                 this.ctx.lineCap = 'round';

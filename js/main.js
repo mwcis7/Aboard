@@ -1424,6 +1424,12 @@ class DrawingBoard {
             this.updateFullscreenBtnVisibility();
         });
         
+        // Toolbar customization handlers
+        this.initToolbarCustomization();
+        
+        // Control button settings handlers
+        this.initControlButtonSettings();
+        
         // Theme color buttons
         document.querySelectorAll('.color-btn[data-theme-color]').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -2575,6 +2581,255 @@ class DrawingBoard {
         } else {
             fullscreenBtn.style.display = 'none';
         }
+    }
+    
+    // Initialize toolbar customization
+    initToolbarCustomization() {
+        const toolbarList = document.getElementById('toolbar-customization-list');
+        if (!toolbarList) return;
+        
+        // Load saved settings
+        const savedToolbarOrder = localStorage.getItem('toolbarOrder');
+        const savedToolbarVisibility = localStorage.getItem('toolbarVisibility');
+        
+        if (savedToolbarOrder) {
+            try {
+                const order = JSON.parse(savedToolbarOrder);
+                this.reorderToolbarItems(toolbarList, order);
+            } catch (e) {
+                console.error('Error loading toolbar order:', e);
+            }
+        }
+        
+        if (savedToolbarVisibility) {
+            try {
+                const visibility = JSON.parse(savedToolbarVisibility);
+                Object.keys(visibility).forEach(tool => {
+                    const checkbox = document.getElementById(`toolbar-show-${tool}`);
+                    if (checkbox) {
+                        checkbox.checked = visibility[tool];
+                    }
+                });
+                this.applyToolbarVisibility(visibility);
+            } catch (e) {
+                console.error('Error loading toolbar visibility:', e);
+            }
+        }
+        
+        // Add drag and drop handlers
+        const items = toolbarList.querySelectorAll('.toolbar-item');
+        items.forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                item.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', item.dataset.tool);
+            });
+            
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+                this.saveToolbarOrder();
+                this.applyToolbarOrder();
+            });
+            
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const dragging = toolbarList.querySelector('.dragging');
+                if (dragging && dragging !== item) {
+                    const rect = item.getBoundingClientRect();
+                    const midY = rect.top + rect.height / 2;
+                    if (e.clientY < midY) {
+                        toolbarList.insertBefore(dragging, item);
+                    } else {
+                        toolbarList.insertBefore(dragging, item.nextSibling);
+                    }
+                }
+            });
+            
+            // Checkbox change handler
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.addEventListener('change', () => {
+                    this.saveToolbarVisibility();
+                    this.applyToolbarVisibility();
+                });
+            }
+        });
+    }
+    
+    reorderToolbarItems(container, order) {
+        order.forEach(tool => {
+            const item = container.querySelector(`[data-tool="${tool}"]`);
+            if (item) {
+                container.appendChild(item);
+            }
+        });
+    }
+    
+    saveToolbarOrder() {
+        const items = document.querySelectorAll('#toolbar-customization-list .toolbar-item');
+        const order = Array.from(items).map(item => item.dataset.tool);
+        localStorage.setItem('toolbarOrder', JSON.stringify(order));
+    }
+    
+    saveToolbarVisibility() {
+        const items = document.querySelectorAll('#toolbar-customization-list .toolbar-item');
+        const visibility = {};
+        items.forEach(item => {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                visibility[item.dataset.tool] = checkbox.checked;
+            }
+        });
+        localStorage.setItem('toolbarVisibility', JSON.stringify(visibility));
+    }
+    
+    applyToolbarOrder() {
+        const savedOrder = localStorage.getItem('toolbarOrder');
+        if (!savedOrder) return;
+        
+        try {
+            const order = JSON.parse(savedOrder);
+            const toolbar = document.getElementById('toolbar');
+            if (!toolbar) return;
+            
+            // Map tool names to button IDs
+            const toolToButtonId = {
+                'undo': 'undo-btn',
+                'redo': 'redo-btn',
+                'pen': 'pen-btn',
+                'pan': 'pan-btn',
+                'eraser': 'eraser-btn',
+                'clear': 'clear-btn',
+                'background': 'background-btn',
+                'more': 'more-btn',
+                'settings': 'settings-btn'
+            };
+            
+            order.forEach(tool => {
+                const btnId = toolToButtonId[tool];
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    toolbar.appendChild(btn);
+                }
+            });
+        } catch (e) {
+            console.error('Error applying toolbar order:', e);
+        }
+    }
+    
+    applyToolbarVisibility(visibility) {
+        if (!visibility) {
+            const savedVisibility = localStorage.getItem('toolbarVisibility');
+            if (!savedVisibility) return;
+            try {
+                visibility = JSON.parse(savedVisibility);
+            } catch (e) {
+                return;
+            }
+        }
+        
+        const toolToButtonId = {
+            'undo': 'undo-btn',
+            'redo': 'redo-btn',
+            'pen': 'pen-btn',
+            'pan': 'pan-btn',
+            'eraser': 'eraser-btn',
+            'clear': 'clear-btn',
+            'background': 'background-btn',
+            'more': 'more-btn',
+            'settings': 'settings-btn'
+        };
+        
+        Object.keys(visibility).forEach(tool => {
+            const btnId = toolToButtonId[tool];
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.style.display = visibility[tool] ? 'flex' : 'none';
+            }
+        });
+    }
+    
+    // Initialize control button settings
+    initControlButtonSettings() {
+        // Load saved settings
+        const controlSettings = {
+            zoom: localStorage.getItem('controlShowZoom') !== 'false',
+            pagination: localStorage.getItem('controlShowPagination') !== 'false',
+            time: localStorage.getItem('controlShowTime') !== 'false',
+            fullscreen: localStorage.getItem('controlShowFullscreen') !== 'false',
+            download: localStorage.getItem('controlShowDownload') !== 'false'
+        };
+        
+        // Set checkbox states
+        document.getElementById('control-show-zoom').checked = controlSettings.zoom;
+        document.getElementById('control-show-pagination').checked = controlSettings.pagination;
+        document.getElementById('control-show-time').checked = controlSettings.time;
+        document.getElementById('control-show-fullscreen').checked = controlSettings.fullscreen;
+        document.getElementById('control-show-download').checked = controlSettings.download;
+        
+        // Apply initial visibility
+        this.applyControlButtonVisibility(controlSettings);
+        
+        // Add event listeners
+        document.getElementById('control-show-zoom').addEventListener('change', (e) => {
+            localStorage.setItem('controlShowZoom', e.target.checked);
+            this.applyControlButtonVisibility();
+        });
+        
+        document.getElementById('control-show-pagination').addEventListener('change', (e) => {
+            localStorage.setItem('controlShowPagination', e.target.checked);
+            this.applyControlButtonVisibility();
+        });
+        
+        document.getElementById('control-show-time').addEventListener('change', (e) => {
+            localStorage.setItem('controlShowTime', e.target.checked);
+            this.applyControlButtonVisibility();
+        });
+        
+        document.getElementById('control-show-fullscreen').addEventListener('change', (e) => {
+            localStorage.setItem('controlShowFullscreen', e.target.checked);
+            this.applyControlButtonVisibility();
+        });
+        
+        document.getElementById('control-show-download').addEventListener('change', (e) => {
+            localStorage.setItem('controlShowDownload', e.target.checked);
+            this.applyControlButtonVisibility();
+        });
+    }
+    
+    applyControlButtonVisibility(settings) {
+        if (!settings) {
+            settings = {
+                zoom: localStorage.getItem('controlShowZoom') !== 'false',
+                pagination: localStorage.getItem('controlShowPagination') !== 'false',
+                time: localStorage.getItem('controlShowTime') !== 'false',
+                fullscreen: localStorage.getItem('controlShowFullscreen') !== 'false',
+                download: localStorage.getItem('controlShowDownload') !== 'false'
+            };
+        }
+        
+        // Zoom buttons (zoom-out, zoom-input, zoom-in)
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+        const zoomInput = document.getElementById('zoom-input');
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+        if (zoomOutBtn) zoomOutBtn.style.display = settings.zoom ? 'flex' : 'none';
+        if (zoomInput) zoomInput.style.display = settings.zoom ? 'block' : 'none';
+        if (zoomInBtn) zoomInBtn.style.display = settings.zoom ? 'flex' : 'none';
+        
+        // Pagination controls
+        const pageControls = document.getElementById('page-controls');
+        if (pageControls) pageControls.style.display = settings.pagination ? 'flex' : 'none';
+        
+        // Time display
+        const timeDisplay = document.getElementById('time-display');
+        if (timeDisplay) timeDisplay.style.display = settings.time ? 'flex' : 'none';
+        
+        // Fullscreen button
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        if (fullscreenBtn) fullscreenBtn.style.display = settings.fullscreen ? 'flex' : 'none';
+        
+        // Download button
+        const downloadBtn = document.getElementById('download-btn');
+        if (downloadBtn) downloadBtn.style.display = settings.download ? 'flex' : 'none';
     }
     
     toggleFullscreen() {

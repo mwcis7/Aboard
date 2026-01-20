@@ -243,6 +243,30 @@ window.translations = {
             },
             edgeSnap: 'Activer l\'alignement des bords',
             edgeSnapHint: 'Aligner automatiquement les panneaux de contrôle sur les bords de l\'écran',
+            // Toolbar customization
+            toolbarCustomization: 'Personnalisation de la barre d\'outils',
+            toolbarCustomizationHint: 'Sélectionnez les outils à afficher, glissez pour réorganiser',
+            toolbarTools: {
+                undo: 'Annuler',
+                redo: 'Rétablir',
+                pen: 'Stylo',
+                move: 'Déplacer',
+                eraser: 'Gomme',
+                clear: 'Effacer',
+                background: 'Arrière-plan',
+                more: 'Plus',
+                settings: 'Paramètres'
+            },
+            // Control button settings
+            controlButtonSettings: 'Paramètres des boutons de contrôle',
+            controlButtonSettingsHint: 'Sélectionnez les boutons de contrôle à afficher',
+            controlButtons: {
+                zoom: 'Boutons de zoom',
+                pagination: 'Boutons de pagination',
+                time: 'Affichage de l\'heure',
+                fullscreen: 'Bouton plein écran',
+                download: 'Bouton de téléchargement'
+            },
             controlPosition: 'Position du bouton de contrôle',
             controlPositionHint: 'Choisir où afficher les contrôles de zoom et de pagination',
             positionTopLeft: 'En haut à gauche',

@@ -259,6 +259,30 @@ window.translations = {
             edgeSnapHint: '拖動控制面板時自動吸附到屏幕邊緣',
             touchZoom: '觸控縮放',
             touchZoomHint: '允許雙指捏合縮放畫布',
+            // Toolbar customization
+            toolbarCustomization: '工具列自訂',
+            toolbarCustomizationHint: '選擇要在工具列中顯示的工具，拖動可調整順序',
+            toolbarTools: {
+                undo: '復原',
+                redo: '重做',
+                pen: '筆',
+                move: '移動',
+                eraser: '擦除',
+                clear: '清空',
+                background: '背景',
+                more: '更多',
+                settings: '設定'
+            },
+            // Control button settings
+            controlButtonSettings: '控制按鈕設置',
+            controlButtonSettingsHint: '選擇要顯示的控制按鈕',
+            controlButtons: {
+                zoom: '縮放按鈕',
+                pagination: '分頁按鈕',
+                time: '時間顯示',
+                fullscreen: '全螢幕按鈕',
+                download: '下載按鈕'
+            },
             controlPosition: '控制按鈕位置',
             controlPositionHint: '選擇縮放和分頁控件在屏幕上的顯示位置',
             positionTopLeft: '左上角',

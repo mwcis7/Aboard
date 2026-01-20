@@ -245,6 +245,30 @@ window.translations = {
             },
             edgeSnap: 'Randausrichtung aktivieren',
             edgeSnapHint: 'Bedienfelder automatisch am Bildschirmrand ausrichten',
+            // Toolbar customization
+            toolbarCustomization: 'Symbolleisten-Anpassung',
+            toolbarCustomizationHint: 'Wählen Sie Werkzeuge für die Symbolleiste, ziehen Sie zum Neuordnen',
+            toolbarTools: {
+                undo: 'Rückgängig',
+                redo: 'Wiederholen',
+                pen: 'Stift',
+                move: 'Verschieben',
+                eraser: 'Radierer',
+                clear: 'Löschen',
+                background: 'Hintergrund',
+                more: 'Mehr',
+                settings: 'Einstellungen'
+            },
+            // Control button settings
+            controlButtonSettings: 'Steuerungstasten-Einstellungen',
+            controlButtonSettingsHint: 'Wählen Sie die anzuzeigenden Steuerungstasten',
+            controlButtons: {
+                zoom: 'Zoom-Tasten',
+                pagination: 'Seitennummerierung-Tasten',
+                time: 'Zeitanzeige',
+                fullscreen: 'Vollbild-Taste',
+                download: 'Download-Taste'
+            },
             controlPosition: 'Position der Steuerungstasten',
             controlPositionHint: 'Wählen Sie die Position der Zoom- und Seitensteuerung',
             positionTopLeft: 'Oben links',

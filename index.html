@@ -582,6 +582,88 @@
                             </label>
                             <p class="settings-hint" data-i18n="settings.general.touchZoomHint">允许使用双指捏合手势缩放画布</p>
                         </div>
+                        
+                        <!-- Toolbar customization -->
+                        <div class="settings-group">
+                            <label data-i18n="settings.general.toolbarCustomization">工具栏自定义</label>
+                            <p class="settings-hint" data-i18n="settings.general.toolbarCustomizationHint">选择要在工具栏中显示的工具，拖动可调整顺序</p>
+                            <div id="toolbar-customization-list" class="toolbar-customization-list">
+                                <div class="toolbar-item" data-tool="undo" draggable="true">
+                                    <input type="checkbox" id="toolbar-show-undo" checked>
+                                    <span class="drag-handle">☰</span>
+                                    <span data-i18n="settings.general.toolbarTools.undo">撤销</span>
+                                </div>
+                                <div class="toolbar-item" data-tool="redo" draggable="true">
+                                    <input type="checkbox" id="toolbar-show-redo" checked>
+                                    <span class="drag-handle">☰</span>
+                                    <span data-i18n="settings.general.toolbarTools.redo">重做</span>
+                                </div>
+                                <div class="toolbar-item" data-tool="pen" draggable="true">
+                                    <input type="checkbox" id="toolbar-show-pen" checked>
+                                    <span class="drag-handle">☰</span>
+                                    <span data-i18n="settings.general.toolbarTools.pen">笔</span>
+                                </div>
+                                <div class="toolbar-item" data-tool="pan" draggable="true">
+                                    <input type="checkbox" id="toolbar-show-pan" checked>
+                                    <span class="drag-handle">☰</span>
+                                    <span data-i18n="settings.general.toolbarTools.move">移动</span>
+                                </div>
+                                <div class="toolbar-item" data-tool="eraser" draggable="true">
+                                    <input type="checkbox" id="toolbar-show-eraser" checked>
+                                    <span class="drag-handle">☰</span>
+                                    <span data-i18n="settings.general.toolbarTools.eraser">擦除</span>
+                                </div>
+                                <div class="toolbar-item" data-tool="clear" draggable="true">
+                                    <input type="checkbox" id="toolbar-show-clear" checked>
+                                    <span class="drag-handle">☰</span>
+                                    <span data-i18n="settings.general.toolbarTools.clear">清空</span>
+                                </div>
+                                <div class="toolbar-item" data-tool="background" draggable="true">
+                                    <input type="checkbox" id="toolbar-show-background" checked>
+                                    <span class="drag-handle">☰</span>
+                                    <span data-i18n="settings.general.toolbarTools.background">背景</span>
+                                </div>
+                                <div class="toolbar-item" data-tool="more" draggable="true">
+                                    <input type="checkbox" id="toolbar-show-more" checked>
+                                    <span class="drag-handle">☰</span>
+                                    <span data-i18n="settings.general.toolbarTools.more">更多</span>
+                                </div>
+                                <div class="toolbar-item" data-tool="settings" draggable="true">
+                                    <input type="checkbox" id="toolbar-show-settings" checked>
+                                    <span class="drag-handle">☰</span>
+                                    <span data-i18n="settings.general.toolbarTools.settings">设置</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Control button settings -->
+                        <div class="settings-group">
+                            <label data-i18n="settings.general.controlButtonSettings">控制按钮设置</label>
+                            <p class="settings-hint" data-i18n="settings.general.controlButtonSettingsHint">选择要显示的控制按钮</p>
+                            <div class="control-button-settings">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="control-show-zoom" checked>
+                                    <span data-i18n="settings.general.controlButtons.zoom">缩放按钮</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="control-show-pagination" checked>
+                                    <span data-i18n="settings.general.controlButtons.pagination">分页按钮</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="control-show-time" checked>
+                                    <span data-i18n="settings.general.controlButtons.time">时间显示</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="control-show-fullscreen" checked>
+                                    <span data-i18n="settings.general.controlButtons.fullscreen">全屏按钮</span>
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="control-show-download" checked>
+                                    <span data-i18n="settings.general.controlButtons.download">下载按钮</span>
+                                </label>
+                            </div>
+                        </div>
+                        
                         <div class="settings-group">
                             <label data-i18n="settings.general.controlPosition">控制按钮位置</label>
                             <p class="settings-hint" data-i18n="settings.general.controlPositionHint">选择缩放和分页控件在屏幕上的显示位置</p>

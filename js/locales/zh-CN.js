@@ -258,6 +258,30 @@ window.translations = {
             edgeSnapHint: '拖动控制面板时自动吸附到屏幕边缘',
             touchZoom: '触控缩放',
             touchZoomHint: '允许双指捏合缩放画布',
+            // Toolbar customization
+            toolbarCustomization: '工具栏自定义',
+            toolbarCustomizationHint: '选择要在工具栏中显示的工具，拖动可调整顺序',
+            toolbarTools: {
+                undo: '撤销',
+                redo: '重做',
+                pen: '笔',
+                move: '移动',
+                eraser: '擦除',
+                clear: '清空',
+                background: '背景',
+                more: '更多',
+                settings: '设置'
+            },
+            // Control button settings
+            controlButtonSettings: '控制按钮设置',
+            controlButtonSettingsHint: '选择要显示的控制按钮',
+            controlButtons: {
+                zoom: '缩放按钮',
+                pagination: '分页按钮',
+                time: '时间显示',
+                fullscreen: '全屏按钮',
+                download: '下载按钮'
+            },
             controlPosition: '控制按钮位置',
             controlPositionHint: '选择缩放和分页控件在屏幕上的显示位置',
             positionTopLeft: '左上角',

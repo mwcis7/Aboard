@@ -252,6 +252,30 @@ window.translations = {
             },
             edgeSnap: '가장자리 스냅 활성화',
             edgeSnapHint: '드래그 시 컨트롤 패널을 화면 가장자리에 자동 정렬',
+            // Toolbar customization
+            toolbarCustomization: '툴바 사용자 정의',
+            toolbarCustomizationHint: '툴바에 표시할 도구를 선택하고 드래그하여 순서 조정',
+            toolbarTools: {
+                undo: '실행 취소',
+                redo: '다시 실행',
+                pen: '펜',
+                move: '이동',
+                eraser: '지우개',
+                clear: '지우기',
+                background: '배경',
+                more: '더보기',
+                settings: '설정'
+            },
+            // Control button settings
+            controlButtonSettings: '컨트롤 버튼 설정',
+            controlButtonSettingsHint: '표시할 컨트롤 버튼 선택',
+            controlButtons: {
+                zoom: '확대/축소 버튼',
+                pagination: '페이지 매김 버튼',
+                time: '시간 표시',
+                fullscreen: '전체 화면 버튼',
+                download: '다운로드 버튼'
+            },
             controlPosition: '컨트롤 버튼 위치',
             controlPositionHint: '확대/축소 및 페이지 매김 컨트롤 표시 위치 선택',
             positionTopLeft: '왼쪽 위',

@@ -256,6 +256,30 @@ window.translations = {
             },
             edgeSnap: 'Enable Edge Snap',
             edgeSnapHint: 'Auto-snap panels to screen edges when dragging',
+            // Toolbar customization
+            toolbarCustomization: 'Toolbar Customization',
+            toolbarCustomizationHint: 'Select tools to display in toolbar, drag to reorder',
+            toolbarTools: {
+                undo: 'Undo',
+                redo: 'Redo',
+                pen: 'Pen',
+                move: 'Move',
+                eraser: 'Eraser',
+                clear: 'Clear',
+                background: 'Background',
+                more: 'More',
+                settings: 'Settings'
+            },
+            // Control button settings
+            controlButtonSettings: 'Control Button Settings',
+            controlButtonSettingsHint: 'Select control buttons to display',
+            controlButtons: {
+                zoom: 'Zoom Buttons',
+                pagination: 'Pagination Buttons',
+                time: 'Time Display',
+                fullscreen: 'Fullscreen Button',
+                download: 'Download Button'
+            },
             controlPosition: 'Control Position',
             controlPositionHint: 'Position of zoom and pagination controls',
             positionTopLeft: 'Top Left',

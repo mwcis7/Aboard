@@ -935,6 +935,69 @@ button, a, input[type="button"], input[type="submit"] {
     border-color: var(--theme-color);
 }
 
+/* Toolbar customization list */
+.toolbar-customization-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.toolbar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: grab;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.toolbar-item:hover {
+    background: #f0f0f0;
+}
+
+.toolbar-item.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.toolbar-item .drag-handle {
+    color: #999;
+    cursor: grab;
+    font-size: 14px;
+    user-select: none;
+}
+
+.toolbar-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.toolbar-item span:last-child {
+    flex: 1;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Control button settings */
+.control-button-settings {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.control-button-settings .checkbox-label {
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+}
+
 .pattern-option-btn {
     flex: 1;
     padding: 8px 12px;
