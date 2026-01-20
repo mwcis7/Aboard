@@ -97,7 +97,12 @@ class ProjectManager {
                 patternIntensity: this.drawingBoard.backgroundManager.patternIntensity,
                 patternDensity: this.drawingBoard.backgroundManager.patternDensity,
                 imageSize: this.drawingBoard.backgroundManager.imageSize,
-                backgroundImageData: this.drawingBoard.backgroundManager.backgroundImageData
+                backgroundImageData: this.drawingBoard.backgroundManager.backgroundImageData,
+                // Enhanced background state
+                coordinateOriginX: this.drawingBoard.backgroundManager.coordinateOriginX,
+                coordinateOriginY: this.drawingBoard.backgroundManager.coordinateOriginY,
+                imageTransform: this.drawingBoard.backgroundManager.imageTransform,
+                gifLoopCount: this.drawingBoard.backgroundManager.gifLoopCount
             };
 
             // 3. Gather Settings (Canvas size, etc.)
@@ -194,6 +199,12 @@ class ProjectManager {
                 if (typeof bg.patternIntensity !== 'undefined') bm.patternIntensity = bg.patternIntensity;
                 if (typeof bg.patternDensity !== 'undefined') bm.patternDensity = bg.patternDensity;
                 if (typeof bg.imageSize !== 'undefined') bm.imageSize = bg.imageSize;
+
+                // Restore enhanced background state
+                if (typeof bg.coordinateOriginX !== 'undefined') bm.setCoordinateOrigin(bg.coordinateOriginX, bg.coordinateOriginY);
+                if (bg.imageTransform) bm.updateImageTransform(bg.imageTransform);
+                if (typeof bg.gifLoopCount !== 'undefined') bm.setGifLoopCount(bg.gifLoopCount);
+
                 if (bg.backgroundImageData) {
                     bm.backgroundImageData = bg.backgroundImageData;
                     // Load image

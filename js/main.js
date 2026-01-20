@@ -3256,7 +3256,12 @@ class DrawingBoard {
             patternIntensity: this.backgroundManager.patternIntensity,
             patternDensity: this.backgroundManager.patternDensity,
             backgroundImageData: this.backgroundManager.backgroundImageData,
-            imageSize: this.backgroundManager.imageSize
+            imageSize: this.backgroundManager.imageSize,
+            // Enhanced background state
+            coordinateOriginX: this.backgroundManager.coordinateOriginX,
+            coordinateOriginY: this.backgroundManager.coordinateOriginY,
+            imageTransform: this.backgroundManager.imageTransform,
+            gifLoopCount: this.backgroundManager.gifLoopCount
         };
         localStorage.setItem('pageBackgrounds', JSON.stringify(this.pageBackgrounds));
     }
@@ -3273,6 +3278,14 @@ class DrawingBoard {
             this.backgroundManager.backgroundImageData = bg.backgroundImageData;
             this.backgroundManager.imageSize = bg.imageSize;
             
+            // Restore enhanced background state
+            if (typeof bg.coordinateOriginX !== 'undefined') {
+                this.backgroundManager.coordinateOriginX = bg.coordinateOriginX;
+                this.backgroundManager.coordinateOriginY = bg.coordinateOriginY;
+            }
+            if (bg.imageTransform) this.backgroundManager.imageTransform = bg.imageTransform;
+            if (typeof bg.gifLoopCount !== 'undefined') this.backgroundManager.gifLoopCount = bg.gifLoopCount;
+
             // Load image if exists
             if (bg.backgroundImageData && bg.backgroundPattern === 'image') {
                 const img = new Image();

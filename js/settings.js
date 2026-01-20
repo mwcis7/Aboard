@@ -383,6 +383,8 @@ class SettingsManager {
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
+
+        alert('配置已成功导出！');
     }
 
     getSettingsDiff(newSettings) {
