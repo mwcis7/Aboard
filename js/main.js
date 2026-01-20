@@ -2682,6 +2682,21 @@ class DrawingBoard {
         localStorage.setItem('toolbarVisibility', JSON.stringify(visibility));
     }
     
+    // Tool to button ID mapping (shared constant)
+    getToolToButtonIdMap() {
+        return {
+            'undo': 'undo-btn',
+            'redo': 'redo-btn',
+            'pen': 'pen-btn',
+            'pan': 'pan-btn',
+            'eraser': 'eraser-btn',
+            'clear': 'clear-btn',
+            'background': 'background-btn',
+            'more': 'more-btn',
+            'settings': 'settings-btn'
+        };
+    }
+    
     applyToolbarOrder() {
         const savedOrder = localStorage.getItem('toolbarOrder');
         if (!savedOrder) return;
@@ -2691,18 +2706,7 @@ class DrawingBoard {
             const toolbar = document.getElementById('toolbar');
             if (!toolbar) return;
             
-            // Map tool names to button IDs
-            const toolToButtonId = {
-                'undo': 'undo-btn',
-                'redo': 'redo-btn',
-                'pen': 'pen-btn',
-                'pan': 'pan-btn',
-                'eraser': 'eraser-btn',
-                'clear': 'clear-btn',
-                'background': 'background-btn',
-                'more': 'more-btn',
-                'settings': 'settings-btn'
-            };
+            const toolToButtonId = this.getToolToButtonIdMap();
             
             order.forEach(tool => {
                 const btnId = toolToButtonId[tool];
@@ -2727,17 +2731,7 @@ class DrawingBoard {
             }
         }
         
-        const toolToButtonId = {
-            'undo': 'undo-btn',
-            'redo': 'redo-btn',
-            'pen': 'pen-btn',
-            'pan': 'pan-btn',
-            'eraser': 'eraser-btn',
-            'clear': 'clear-btn',
-            'background': 'background-btn',
-            'more': 'more-btn',
-            'settings': 'settings-btn'
-        };
+        const toolToButtonId = this.getToolToButtonIdMap();
         
         Object.keys(visibility).forEach(tool => {
             const btnId = toolToButtonId[tool];
@@ -2759,41 +2753,57 @@ class DrawingBoard {
             download: localStorage.getItem('controlShowDownload') !== 'false'
         };
         
-        // Set checkbox states
-        document.getElementById('control-show-zoom').checked = controlSettings.zoom;
-        document.getElementById('control-show-pagination').checked = controlSettings.pagination;
-        document.getElementById('control-show-time').checked = controlSettings.time;
-        document.getElementById('control-show-fullscreen').checked = controlSettings.fullscreen;
-        document.getElementById('control-show-download').checked = controlSettings.download;
+        // Set checkbox states with null checks
+        const zoomCheckbox = document.getElementById('control-show-zoom');
+        const paginationCheckbox = document.getElementById('control-show-pagination');
+        const timeCheckbox = document.getElementById('control-show-time');
+        const fullscreenCheckbox = document.getElementById('control-show-fullscreen');
+        const downloadCheckbox = document.getElementById('control-show-download');
+        
+        if (zoomCheckbox) zoomCheckbox.checked = controlSettings.zoom;
+        if (paginationCheckbox) paginationCheckbox.checked = controlSettings.pagination;
+        if (timeCheckbox) timeCheckbox.checked = controlSettings.time;
+        if (fullscreenCheckbox) fullscreenCheckbox.checked = controlSettings.fullscreen;
+        if (downloadCheckbox) downloadCheckbox.checked = controlSettings.download;
         
         // Apply initial visibility
         this.applyControlButtonVisibility(controlSettings);
         
-        // Add event listeners
-        document.getElementById('control-show-zoom').addEventListener('change', (e) => {
-            localStorage.setItem('controlShowZoom', e.target.checked);
-            this.applyControlButtonVisibility();
-        });
+        // Add event listeners with null checks
+        if (zoomCheckbox) {
+            zoomCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowZoom', e.target.checked);
+                this.applyControlButtonVisibility();
+            });
+        }
         
-        document.getElementById('control-show-pagination').addEventListener('change', (e) => {
-            localStorage.setItem('controlShowPagination', e.target.checked);
-            this.applyControlButtonVisibility();
-        });
+        if (paginationCheckbox) {
+            paginationCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowPagination', e.target.checked);
+                this.applyControlButtonVisibility();
+            });
+        }
         
-        document.getElementById('control-show-time').addEventListener('change', (e) => {
-            localStorage.setItem('controlShowTime', e.target.checked);
-            this.applyControlButtonVisibility();
-        });
+        if (timeCheckbox) {
+            timeCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowTime', e.target.checked);
+                this.applyControlButtonVisibility();
+            });
+        }
         
-        document.getElementById('control-show-fullscreen').addEventListener('change', (e) => {
-            localStorage.setItem('controlShowFullscreen', e.target.checked);
-            this.applyControlButtonVisibility();
-        });
+        if (fullscreenCheckbox) {
+            fullscreenCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowFullscreen', e.target.checked);
+                this.applyControlButtonVisibility();
+            });
+        }
         
-        document.getElementById('control-show-download').addEventListener('change', (e) => {
-            localStorage.setItem('controlShowDownload', e.target.checked);
-            this.applyControlButtonVisibility();
-        });
+        if (downloadCheckbox) {
+            downloadCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowDownload', e.target.checked);
+                this.applyControlButtonVisibility();
+            });
+        }
     }
     
     applyControlButtonVisibility(settings) {
