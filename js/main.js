@@ -3696,14 +3696,14 @@ class DrawingBoard {
         const modal = document.getElementById('recovery-modal');
         if (!modal) return;
         
-        modal.classList.add('active');
+        modal.classList.add('show');
         
         // Restore button
         const restoreBtn = document.getElementById('recovery-restore-btn');
         if (restoreBtn) {
             restoreBtn.onclick = () => {
                 this.restoreSession();
-                modal.classList.remove('active');
+                modal.classList.remove('show');
             };
         }
         
@@ -3712,7 +3712,7 @@ class DrawingBoard {
         if (discardBtn) {
             discardBtn.onclick = () => {
                 this.clearSessionData();
-                modal.classList.remove('active');
+                modal.classList.remove('show');
             };
         }
     }
