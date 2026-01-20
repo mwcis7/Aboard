@@ -24,6 +24,7 @@
 }
 
 .export-scope-btn,
+.export-project-scope-btn,
 .export-format-btn {
     padding: 10px 20px;
     border: 2px solid #ddd;
@@ -37,12 +38,14 @@
 }
 
 .export-scope-btn:hover,
+.export-project-scope-btn:hover,
 .export-format-btn:hover {
     background-color: #f0f0f0;
     border-color: var(--theme-color);
 }
 
 .export-scope-btn.active,
+.export-project-scope-btn.active,
 .export-format-btn.active {
     background-color: var(--theme-color);
     color: #ffffff;

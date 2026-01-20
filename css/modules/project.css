@@ -1,37 +1,39 @@
 /* Project Module Styles */
 
-/* Export Modal Tabs */
+/* Export Modal Tabs - Button Group Style */
 .export-tab-nav {
-    display: flex;
-    border-bottom: 2px solid #eee;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
     margin-bottom: 20px;
 }
 
 .export-tab-btn {
-    flex: 1;
-    padding: 12px;
-    background: none;
-    border: none;
-    font-size: 15px;
-    font-weight: 600;
-    color: #999;
+    padding: 10px 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background-color: #ffffff;
     cursor: pointer;
-    position: relative;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    text-align: center;
+}
+
+.export-tab-btn:hover {
+    background-color: #f0f0f0;
+    border-color: var(--theme-color);
 }
 
 .export-tab-btn.active {
-    color: var(--theme-color);
+    background-color: var(--theme-color);
+    color: #ffffff;
+    border-color: var(--theme-color);
 }
 
 .export-tab-btn.active::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: var(--theme-color);
+    display: none; /* Remove underline style */
 }
 
 .export-tab-content {
