@@ -424,11 +424,20 @@ class SettingsManager {
         try {
             if (typeof obj1 === 'string' && (obj1.startsWith('[') || obj1.startsWith('{'))) {
                 const parsed1 = JSON.parse(obj1);
-                const parsed2 = JSON.parse(obj2);
+                // Try to parse obj2 if it's a string, otherwise use it as is
+                const parsed2 = typeof obj2 === 'string' ? JSON.parse(obj2) : obj2;
                 return this.deepCompare(parsed1, parsed2, path);
             }
         } catch (e) {
             // Not JSON, continue as primitive string comparison
+        }
+
+        // Handle case where obj1 is object/array but obj2 is stringified JSON
+        if (typeof obj1 === 'object' && typeof obj2 === 'string' && (obj2.startsWith('[') || obj2.startsWith('{'))) {
+            try {
+                const parsed2 = JSON.parse(obj2);
+                return this.deepCompare(obj1, parsed2, path);
+            } catch (e) {}
         }
 
         // Get all keys

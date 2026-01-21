@@ -25,15 +25,17 @@ class DrawingBoard {
         this.timeDisplayManager = new TimeDisplayManager(this.settingsManager);
         this.timeDisplayControls = new TimeDisplayControls(this.timeDisplayManager);
         this.timeDisplaySettingsModal = new TimeDisplaySettingsModal(this.timeDisplayManager);
-        this.timerManager = new TimerManager();
+        // Lazy loaded managers
+        this.timerManager = null;
+        this.randomPickerManager = null;
+        this.scoreboardManager = null;
+        this.insertImageManager = null;
+        this.projectManager = null;
+        this.exportManager = null;
+
         this.collapsibleManager = new CollapsibleManager();
         this.announcementManager = new AnnouncementManager();
-        this.exportManager = new ExportManager(this.canvas, this.bgCanvas, this);
         this.teachingToolsManager = new TeachingToolsManager(this.canvas, this.ctx, this.historyManager);
-        this.randomPickerManager = new RandomPickerManager();
-        this.scoreboardManager = new ScoreboardManager();
-        this.insertImageManager = new InsertImageManager(this.canvas, this.ctx, this.historyManager, this.drawingEngine);
-        this.projectManager = new ProjectManager(this);
         
         // Set callback for teaching tools insertion to auto-switch to pen
         this.teachingToolsManager.onToolsInserted = () => {
@@ -297,6 +299,8 @@ class DrawingBoard {
                     e.target.closest('.canvas-image-selection') ||
                     e.target.closest('.time-fullscreen-modal') ||
                     e.target.closest('.timer-fullscreen-modal') ||
+                    e.target.closest('#time-display-settings-modal') ||
+                    e.target.closest('#timer-settings-modal') ||
                     e.target.closest('input[type="range"]')) {
                     return;
                 }
@@ -673,10 +677,18 @@ class DrawingBoard {
         document.getElementById('fullscreen-btn').addEventListener('click', () => this.toggleFullscreen());
         
         // Export button (moved to top controls, always visible)
-        document.getElementById('export-btn-top').addEventListener('click', () => this.exportManager.showModal());
+        document.getElementById('export-btn-top').addEventListener('click', () => {
+            if (!this.exportManager) {
+                this.exportManager = new ExportManager(this.canvas, this.bgCanvas, this);
+            }
+            this.exportManager.showModal();
+        });
         
         // Import Project Button
         document.getElementById('import-project-btn').addEventListener('click', () => {
+            if (!this.projectManager) {
+                this.projectManager = new ProjectManager(this);
+            }
             // Create a hidden file input
             const input = document.createElement('input');
             input.type = 'file';
@@ -1191,6 +1203,9 @@ class DrawingBoard {
         const timerFeatureBtn = document.getElementById('timer-feature-btn');
         if (timerFeatureBtn) {
             timerFeatureBtn.addEventListener('click', () => {
+                if (!this.timerManager) {
+                    this.timerManager = new TimerManager();
+                }
                 this.timerManager.showSettingsModal();
                 this.closeFeaturePanel();
             });
@@ -1200,6 +1215,9 @@ class DrawingBoard {
         const randomPickerBtn = document.getElementById('random-picker-feature-btn');
         if (randomPickerBtn) {
             randomPickerBtn.addEventListener('click', () => {
+                if (!this.randomPickerManager) {
+                    this.randomPickerManager = new RandomPickerManager();
+                }
                 this.randomPickerManager.create();
                 this.closeFeaturePanel();
             });
@@ -1209,6 +1227,9 @@ class DrawingBoard {
         const scoreboardBtn = document.getElementById('scoreboard-feature-btn');
         if (scoreboardBtn) {
             scoreboardBtn.addEventListener('click', () => {
+                if (!this.scoreboardManager) {
+                    this.scoreboardManager = new ScoreboardManager();
+                }
                 this.scoreboardManager.create();
                 this.closeFeaturePanel();
             });
@@ -1218,6 +1239,9 @@ class DrawingBoard {
         const insertImageBtn = document.getElementById('insert-image-feature-btn');
         if (insertImageBtn) {
             insertImageBtn.addEventListener('click', () => {
+                if (!this.insertImageManager) {
+                    this.insertImageManager = new InsertImageManager(this.canvas, this.ctx, this.historyManager, this.drawingEngine);
+                }
                 this.insertImageManager.triggerSelect();
                 this.closeFeaturePanel();
             });
@@ -1227,7 +1251,9 @@ class DrawingBoard {
         const timerSettingsCloseBtn = document.getElementById('timer-settings-close-btn');
         if (timerSettingsCloseBtn) {
             timerSettingsCloseBtn.addEventListener('click', () => {
-                this.timerManager.hideSettingsModal();
+                if (this.timerManager) {
+                    this.timerManager.hideSettingsModal();
+                }
             });
         }
         
