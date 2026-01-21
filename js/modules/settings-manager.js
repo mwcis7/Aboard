@@ -412,15 +412,7 @@ class SettingsManager {
             return diffs;
         }
 
-        // Handle primitives
-        if (typeof obj1 !== 'object' || typeof obj2 !== 'object') {
-            if (obj1 !== obj2) {
-                diffs.push({ key: path, old: obj1, new: obj2 });
-            }
-            return diffs;
-        }
-
-        // Handle JSON strings (like toolbarOrder)
+        // Handle JSON strings (like toolbarOrder) - Check BEFORE primitives because strings are primitives
         try {
             if (typeof obj1 === 'string' && (obj1.startsWith('[') || obj1.startsWith('{'))) {
                 const parsed1 = JSON.parse(obj1);
@@ -429,7 +421,7 @@ class SettingsManager {
                 return this.deepCompare(parsed1, parsed2, path);
             }
         } catch (e) {
-            // Not JSON, continue as primitive string comparison
+            // Not JSON, continue
         }
 
         // Handle case where obj1 is object/array but obj2 is stringified JSON
@@ -438,6 +430,14 @@ class SettingsManager {
                 const parsed2 = JSON.parse(obj2);
                 return this.deepCompare(obj1, parsed2, path);
             } catch (e) {}
+        }
+
+        // Handle primitives
+        if (typeof obj1 !== 'object' || typeof obj2 !== 'object') {
+            if (obj1 !== obj2) {
+                diffs.push({ key: path, old: obj1, new: obj2 });
+            }
+            return diffs;
         }
 
         // Get all keys

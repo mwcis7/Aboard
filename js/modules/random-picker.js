@@ -516,10 +516,19 @@ class RandomPickerManager {
         }
     }
 
-    importFile(file) {
+    async importFile(file) {
         if (!window.XLSX) {
-            alert('Excel import library not loaded. Please check your internet connection or try refreshing.');
-            return;
+            try {
+                if (window.ScriptLoader) {
+                    await ScriptLoader.load('js/libs/xlsx.full.min.js');
+                } else {
+                    throw new Error('ScriptLoader not found');
+                }
+            } catch (e) {
+                console.error(e);
+                alert('Excel import library load failed.');
+                return;
+            }
         }
 
         const reader = new FileReader();

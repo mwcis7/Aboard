@@ -547,9 +547,18 @@ class LineStyleModal {
     
     // Check if preview content overflows and show expand button if needed
     checkPreviewOverflow() {
+        // Fix for "label not updating" issue:
+        // Ensure we don't accidentally rely on or modify global DOM elements that might be used by main.js
+        // The checkPreviewOverflow function reads global values, which is fine as long as we don't break them.
+
         const lineStyle = this.getCurrentLineStyle();
-        const lineCount = parseInt(document.getElementById('modal-line-count-slider').value);
-        const lineSpacing = parseInt(document.getElementById('modal-line-spacing-slider').value);
+        // Use safer way to get values, fallback if modal elements are missing (defensive coding)
+        const lineCountEl = document.getElementById('modal-line-count-slider');
+        const lineSpacingEl = document.getElementById('modal-line-spacing-slider');
+
+        const lineCount = lineCountEl ? parseInt(lineCountEl.value) : 2;
+        const lineSpacing = lineSpacingEl ? parseInt(lineSpacingEl.value) : 10;
+
         const penSize = this.currentMode === 'pen' 
             ? (this.drawingEngine.penSize || 5)
             : (this.shapeDrawingManager.drawingEngine.penSize || 5);

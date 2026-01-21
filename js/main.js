@@ -1031,7 +1031,10 @@ class DrawingBoard {
         penSizeSlider.addEventListener('input', (e) => {
             const size = parseInt(e.target.value);
             this.drawingEngine.setPenSize(size);
-            penSizeValue.textContent = size;
+            // Ensure penSizeValue element exists and update text content
+            if (penSizeValue) {
+                penSizeValue.textContent = size;
+            }
             // Sync shape slider
             if (shapeSizeSlider) {
                 shapeSizeSlider.value = size;
@@ -1554,7 +1557,11 @@ class DrawingBoard {
                         const diff = this.settingsManager.getSettingsDiff(newSettings);
                         this.showConfigDiffModal(diff, newSettings);
                     } catch (err) {
-                        alert('配置文件无效');
+                        if (this.settingsManager.toastManager) {
+                            this.settingsManager.toastManager.show('配置文件无效', 'error');
+                        } else {
+                            alert('配置文件无效');
+                        }
                     }
                 }
             };
@@ -3876,7 +3883,12 @@ class DrawingBoard {
         
         // Limit to approximately 4MB total to avoid hitting localStorage limits
         if (currentSize + imageSize > 4 * 1024 * 1024) {
-            alert('存储空间不足，无法保存更多图片。请清除一些旧图片。');
+            const msg = window.i18n ? window.i18n.t('background.storageFull') : '存储空间不足，无法保存更多图片。请清除一些旧图片。';
+            if (this.settingsManager.toastManager) {
+                this.settingsManager.toastManager.show(msg, 'warning');
+            } else {
+                alert(msg);
+            }
             return;
         }
         
@@ -3892,7 +3904,12 @@ class DrawingBoard {
             this.updateUploadedImagesButtons();
         } catch (e) {
             console.error('Failed to save image to localStorage:', e);
-            alert('保存图片失败，存储空间可能不足。');
+            const msg = window.i18n ? window.i18n.t('background.saveError') : '保存图片失败，存储空间可能不足。';
+            if (this.settingsManager.toastManager) {
+                this.settingsManager.toastManager.show(msg, 'error');
+            } else {
+                alert(msg);
+            }
             this.uploadedImages.pop(); // Remove the image we just added
         }
     }

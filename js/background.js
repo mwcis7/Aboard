@@ -244,7 +244,22 @@ class BackgroundManager {
         return dataUrl && dataUrl.startsWith('data:image/gif');
     }
 
-    initGif(imgElement) {
+    async initGif(imgElement) {
+        // Ensure SuperGif is loaded
+        if (!window.SuperGif) {
+            try {
+                if (window.ScriptLoader) {
+                    await ScriptLoader.load('js/modules/libgif.js');
+                } else {
+                    console.error('ScriptLoader not found');
+                    return;
+                }
+            } catch (e) {
+                console.error('Failed to load libgif.js', e);
+                return;
+            }
+        }
+
         // Clear previous instance if exists (remove jsgif wrapper if any)
         const container = document.getElementById('background-image-container');
         // If there is already a jsgif div, remove it and restore img
