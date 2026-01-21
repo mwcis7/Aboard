@@ -368,21 +368,21 @@ window.translations = {
             title: '公告',
             welcome: '欢迎使用 Aboard！',
             content: [
-                '欢迎使用 Aboard 白板应用！',
+            '**欢迎使用 Aboard 白板应用！**',
                 '',
-                '使用提示：',
+            '[color=#007AFF]使用提示：[/color]',
                 '• 点击底部工具栏选择不同工具进行绘画',
-                '• 使用 Ctrl+Z 撤销，Ctrl+Y 重做',
+            '• 使用 **Ctrl+Z** 撤销，**Ctrl+Y** 重做',
                 '• 点击右上角缩放按钮或使用鼠标滚轮缩放画布',
                 '• 点击背景按钮可以选择不同的背景图案',
                 '• 在设置中可以切换无限画布或分页模式',
                 '• 支持触控和鼠标操作',
                 '',
-                '链接：',
+            '[color=#007AFF]链接：[/color]',
                 '• GitHub 项目：https://github.com/lifeafter619/Aboard',
                 '• 作者博客：https://66619.eu.org',
                 '',
-                '祝您使用愉快！'
+            '[size=16px]**祝您使用愉快！**[/size]'
             ]
         },
         about: {

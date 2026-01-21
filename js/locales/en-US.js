@@ -370,21 +370,21 @@ window.translations = {
             title: 'Announcements',
             welcome: 'Welcome to Aboard!',
             content: [
-                'Welcome to Aboard Whiteboard Application!',
+            '**Welcome to Aboard Whiteboard Application!**',
                 '',
-                'Tips:',
+            '[color=#007AFF]Tips:[/color]',
                 '• Click bottom toolbar to select different tools',
-                '• Use Ctrl+Z to Undo, Ctrl+Y to Redo',
+            '• Use **Ctrl+Z** to Undo, **Ctrl+Y** to Redo',
                 '• Click top-right zoom buttons or use mouse wheel to zoom',
                 '• Click Background button to choose different patterns',
                 '• Switch between Infinite Canvas or Pagination Mode in Settings',
                 '• Supports both touch and mouse interactions',
                 '',
-                'Links:',
+            '[color=#007AFF]Links:[/color]',
                 '• GitHub Project: https://github.com/lifeafter619/Aboard',
                 '• Author Blog: https://66619.eu.org',
                 '',
-                'Enjoy using Aboard!'
+            '[size=16px]**Enjoy using Aboard!**[/size]'
             ]
         },
         about: {
