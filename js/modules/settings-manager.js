@@ -11,6 +11,7 @@ class SettingsManager {
         this.unlimitedZoom = localStorage.getItem('unlimitedZoom') === 'true';
         this.infiniteCanvas = false; // Always use pagination mode
         this.showZoomControls = localStorage.getItem('showZoomControls') !== 'false';
+        this.showImportExportBtn = localStorage.getItem('showImportExportBtn') !== 'false';
         this.showFullscreenBtn = localStorage.getItem('showFullscreenBtn') !== 'false';
         this.patternPreferences = this.loadPatternPreferences();
         this.canvasWidth = parseInt(localStorage.getItem('canvasWidth')) || 1920;
@@ -211,6 +212,10 @@ class SettingsManager {
         document.getElementById('touch-zoom-checkbox').checked = this.touchZoomEnabled;
         document.getElementById('unlimited-zoom-checkbox').checked = this.unlimitedZoom;
         document.getElementById('show-zoom-controls-checkbox').checked = this.showZoomControls;
+        const showImportExportBtnCheckbox = document.getElementById('show-import-export-btn-checkbox');
+        if (showImportExportBtnCheckbox) {
+            showImportExportBtnCheckbox.checked = this.showImportExportBtn;
+        }
         
         // Canvas is always in pagination mode now
         
@@ -355,6 +360,7 @@ class SettingsManager {
             touchZoomEnabled: this.touchZoomEnabled,
             unlimitedZoom: this.unlimitedZoom,
             showZoomControls: this.showZoomControls,
+            showImportExportBtn: this.showImportExportBtn,
             showFullscreenBtn: this.showFullscreenBtn,
             patternPreferences: this.patternPreferences,
             canvasWidth: this.canvasWidth,
@@ -490,6 +496,7 @@ class SettingsManager {
             'touchZoomEnabled': 'settings.general.touchZoom',
             'unlimitedZoom': 'settings.canvas.unlimitedZoom',
             'showZoomControls': 'settings.display.showZoomControls',
+            'showImportExportBtn': 'settings.display.showImportExportBtn',
             'showFullscreenBtn': 'settings.display.showFullscreenBtn',
             'canvasWidth': 'settings.canvas.customSize.width',
             'canvasHeight': 'settings.canvas.customSize.height',
@@ -512,7 +519,7 @@ class SettingsManager {
     applySettings(newSettings) {
         const keys = [
             'toolbarSize', 'configScale', 'controlPosition', 'edgeSnapEnabled',
-            'touchZoomEnabled', 'unlimitedZoom', 'showZoomControls', 'showFullscreenBtn',
+            'touchZoomEnabled', 'unlimitedZoom', 'showZoomControls', 'showImportExportBtn', 'showFullscreenBtn',
             'canvasWidth', 'canvasHeight', 'canvasPreset', 'themeColor', 'globalFont',
             'patternPreferences'
         ];

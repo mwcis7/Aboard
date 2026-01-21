@@ -226,6 +226,8 @@ window.translations = {
             themeColor: 'Theme Color',
             showZoomControls: 'Show Zoom Controls',
             showZoomControlsHint: 'Show zoom controls above canvas',
+            showImportExportBtn: 'Show Import/Export Buttons',
+            showImportExportBtnHint: 'Show import and export buttons next to zoom controls',
             showFullscreenBtn: 'Show Fullscreen Button',
             showFullscreenBtnHint: 'Show fullscreen button next to zoom controls',
             toolbarSize: 'Toolbar Size',

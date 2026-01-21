@@ -224,6 +224,8 @@ window.translations = {
             themeColor: '主题色',
             showZoomControls: '显示缩放控件',
             showZoomControlsHint: '勾选后，在画布上方显示缩放控件',
+            showImportExportBtn: '显示导入导出按钮',
+            showImportExportBtnHint: '勾选后，在缩放控件旁显示导入导出按钮',
             showFullscreenBtn: '显示全屏按钮',
             showFullscreenBtnHint: '勾选后，在缩放控件旁显示全屏按钮',
             toolbarSize: '工具栏大小',

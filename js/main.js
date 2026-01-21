@@ -149,6 +149,7 @@ class DrawingBoard {
         this.updateZoomUI();
         this.applyZoom(false); // Don't update config-area scale on refresh
         this.updateZoomControlsVisibility();
+        this.updateImportExportBtnVisibility();
         this.updateFullscreenBtnVisibility();
         this.updatePatternGrid();
         this.updateUploadedImagesButtons();
@@ -1448,6 +1449,16 @@ class DrawingBoard {
             localStorage.setItem('showZoomControls', e.target.checked);
             this.updateZoomControlsVisibility();
         });
+
+        // Show/hide import/export buttons
+        const showImportExportBtnCheckbox = document.getElementById('show-import-export-btn-checkbox');
+        if (showImportExportBtnCheckbox) {
+            showImportExportBtnCheckbox.addEventListener('change', (e) => {
+                this.settingsManager.showImportExportBtn = e.target.checked;
+                localStorage.setItem('showImportExportBtn', e.target.checked);
+                this.updateImportExportBtnVisibility();
+            });
+        }
         
         // Show/hide fullscreen button
         document.getElementById('show-fullscreen-btn-checkbox').addEventListener('change', (e) => {
@@ -2529,6 +2540,7 @@ class DrawingBoard {
                 this.recalculateAndRecenterCanvas();
                 this.applyZoom(true);
                 this.updateZoomControlsVisibility();
+                this.updateImportExportBtnVisibility();
                 this.updateFullscreenBtnVisibility();
                 this.updatePatternGrid();
 
@@ -2866,12 +2878,30 @@ class DrawingBoard {
     }
     
     updateZoomControlsVisibility() {
-        const historyControls = document.getElementById('history-controls');
-        if (this.settingsManager.showZoomControls) {
-            historyControls.style.display = 'flex';
-        } else {
-            historyControls.style.display = 'none';
-        }
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+        const zoomInput = document.getElementById('zoom-input');
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+
+        const display = this.settingsManager.showZoomControls ? 'flex' : 'none';
+        const inputDisplay = this.settingsManager.showZoomControls ? 'block' : 'none';
+
+        if (zoomOutBtn) zoomOutBtn.style.display = display;
+        if (zoomInput) zoomInput.style.display = inputDisplay;
+        if (zoomInBtn) zoomInBtn.style.display = display;
+
+        this.updateHistoryControlsContainerVisibility();
+    }
+
+    updateImportExportBtnVisibility() {
+        const importBtn = document.getElementById('import-project-btn');
+        const exportBtn = document.getElementById('export-btn-top');
+
+        const display = this.settingsManager.showImportExportBtn ? 'flex' : 'none';
+
+        if (importBtn) importBtn.style.display = display;
+        if (exportBtn) exportBtn.style.display = display;
+
+        this.updateHistoryControlsContainerVisibility();
     }
     
     updateFullscreenBtnVisibility() {
@@ -2880,6 +2910,24 @@ class DrawingBoard {
             fullscreenBtn.style.display = 'flex';
         } else {
             fullscreenBtn.style.display = 'none';
+        }
+
+        this.updateHistoryControlsContainerVisibility();
+    }
+
+    updateHistoryControlsContainerVisibility() {
+        const historyControls = document.getElementById('history-controls');
+        if (!historyControls) return;
+
+        // Check if any child is visible
+        const hasVisibleChild = Array.from(historyControls.children).some(child => {
+            return window.getComputedStyle(child).display !== 'none';
+        });
+
+        if (hasVisibleChild) {
+            historyControls.style.display = 'flex';
+        } else {
+            historyControls.style.display = 'none';
         }
     }
     
