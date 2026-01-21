@@ -92,8 +92,8 @@ class LineStyleModal {
                         <div class="line-style-modal-settings" id="modal-line-style-settings">
                             <!-- Dash Density Setting -->
                             <div class="line-style-modal-setting" id="modal-dash-density-setting" style="display: none;">
-                                <label><span data-i18n="tools.lineStyle.dashDensity">Dash Density</span>: <span id="modal-dash-density-value">10</span></label>
-                                <input type="range" id="modal-dash-density-slider" min="5" max="40" value="10" class="slider">
+                                <label><span data-i18n="tools.lineStyle.dashDensity">Dash Density</span>: <span id="modal-dash-density-value">50</span></label>
+                                <input type="range" id="modal-dash-density-slider" min="1" max="100" value="50" class="slider">
                             </div>
                             
                             <!-- Wave Density Setting -->
@@ -232,13 +232,13 @@ class LineStyleModal {
         
         if (this.currentMode === 'pen') {
             lineStyle = this.drawingEngine.penLineStyle || 'solid';
-            dashDensity = this.drawingEngine.penDashDensity || 10;
+            dashDensity = this.drawingEngine.penDashDensity || 50;
             waveDensity = 10;
             lineSpacing = this.drawingEngine.penMultiLineSpacing || 10;
             lineCount = this.drawingEngine.penMultiLineCount || 2;
         } else {
             lineStyle = this.shapeDrawingManager.lineStyle || 'solid';
-            dashDensity = this.shapeDrawingManager.dashDensity || 10;
+            dashDensity = this.shapeDrawingManager.dashDensity || 50;
             waveDensity = this.shapeDrawingManager.waveDensity || 10;
             lineSpacing = this.shapeDrawingManager.multiLineSpacing || 10;
             lineCount = this.shapeDrawingManager.multiLineCount || 2;
@@ -357,6 +357,10 @@ class LineStyleModal {
         // Draw based on style
         ctx.setLineDash([]);
         
+        // Calculate visual spacing based on density value
+        // Higher density value (1-100) -> Smaller spacing
+        const spacing = Math.max(2, 400 / Math.max(1, dashDensity));
+
         switch (lineStyle) {
             case 'solid':
                 ctx.beginPath();
@@ -366,7 +370,7 @@ class LineStyleModal {
                 break;
                 
             case 'dashed':
-                ctx.setLineDash([dashDensity, dashDensity / 2]);
+                ctx.setLineDash([spacing, spacing * 0.6]);
                 ctx.beginPath();
                 ctx.moveTo(startX, centerY);
                 ctx.lineTo(endX, centerY);
@@ -375,7 +379,7 @@ class LineStyleModal {
                 break;
                 
             case 'dotted':
-                ctx.setLineDash([3, dashDensity / 2]);
+                ctx.setLineDash([3, spacing * 0.6]);
                 ctx.beginPath();
                 ctx.moveTo(startX, centerY);
                 ctx.lineTo(endX, centerY);
@@ -654,6 +658,9 @@ class LineStyleModal {
         
         ctx.setLineDash([]);
         
+        // Calculate visual spacing based on density value
+        const spacing = Math.max(2, 400 / Math.max(1, dashDensity));
+
         switch (lineStyle) {
             case 'solid':
                 ctx.beginPath();
@@ -662,14 +669,14 @@ class LineStyleModal {
                 ctx.stroke();
                 break;
             case 'dashed':
-                ctx.setLineDash([dashDensity, dashDensity / 2]);
+                ctx.setLineDash([spacing, spacing * 0.6]);
                 ctx.beginPath();
                 ctx.moveTo(startX, centerY);
                 ctx.lineTo(endX, centerY);
                 ctx.stroke();
                 break;
             case 'dotted':
-                ctx.setLineDash([3, dashDensity / 2]);
+                ctx.setLineDash([3, spacing * 0.6]);
                 ctx.beginPath();
                 ctx.moveTo(startX, centerY);
                 ctx.lineTo(endX, centerY);

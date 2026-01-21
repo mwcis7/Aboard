@@ -74,7 +74,7 @@ class DrawingEngine {
     }
     
     setPenDashDensity(density) {
-        this.penDashDensity = Math.max(3, Math.min(30, density));
+        this.penDashDensity = Math.max(1, Math.min(100, density));
         localStorage.setItem('penDashDensity', this.penDashDensity);
     }
     
@@ -107,13 +107,15 @@ class DrawingEngine {
     
     applyLineStyle() {
         if (this.penLineStyle === 'dashed') {
-            const dashLen = this.penDashDensity;
-            const gapLen = this.penDashDensity * 0.6;
+            const spacing = Math.max(2, 400 / Math.max(1, this.penDashDensity));
+            const dashLen = spacing;
+            const gapLen = spacing * 0.6;
             this.ctx.setLineDash([dashLen, gapLen]);
             this.ctx.lineDashOffset = -this.accumulatedDistance;
         } else if (this.penLineStyle === 'dotted') {
+            const spacing = Math.max(2, 400 / Math.max(1, this.penDashDensity));
             const dotLen = this.penSize * 0.1; // Almost circular dots (with round caps)
-            const gapLen = this.penDashDensity * 0.8 + this.penSize; // Gap needs to account for cap width
+            const gapLen = spacing * 0.6 + this.penSize; // Gap needs to account for cap width
             this.ctx.setLineDash([dotLen, gapLen]);
             this.ctx.lineDashOffset = -this.accumulatedDistance;
         } else {
