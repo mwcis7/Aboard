@@ -71,6 +71,7 @@ window.translations = {
             colorAndSize: 'Color & Size',
             colorPicker: 'Color Picker',
             size: 'Line Thickness',
+            thickness: 'Pen Thickness',
             sizeLabel: 'Thickness: Current',
             sizePx: 'px'
         },

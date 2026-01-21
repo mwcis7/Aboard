@@ -272,12 +272,21 @@ class LineStyleModal {
     }
     
     updateSettingsVisibility(lineStyle) {
+        const settingsContainer = document.getElementById('modal-line-style-settings');
         const dashSetting = document.getElementById('modal-dash-density-setting');
         const waveSetting = document.getElementById('modal-wave-density-setting');
         const countSetting = document.getElementById('modal-line-count-setting');
         const spacingSetting = document.getElementById('modal-line-spacing-setting');
         
-        // Hide all first
+        // Hide container if solid
+        if (lineStyle === 'solid') {
+            settingsContainer.style.display = 'none';
+            return;
+        } else {
+            settingsContainer.style.display = 'flex';
+        }
+
+        // Hide all settings first
         dashSetting.style.display = 'none';
         waveSetting.style.display = 'none';
         countSetting.style.display = 'none';

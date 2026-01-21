@@ -71,6 +71,7 @@ window.translations = {
             colorAndSize: '颜色与粗细',
             colorPicker: '取色器',
             size: '线条粗细',
+            thickness: '笔粗细',
             sizeLabel: '线条粗细：当前',
             sizePx: 'px'
         },
