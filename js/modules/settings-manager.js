@@ -449,6 +449,66 @@ class SettingsManager {
         return diffs.filter(d => JSON.stringify(d.old) !== JSON.stringify(d.new));
     }
 
+    getSettingLabel(key) {
+        const i18n = window.i18n;
+        if (!i18n) return key;
+
+        // Handle nested keys
+        if (key.startsWith('patternPreferences.')) {
+            // Pattern preferences don't have individual labels in locale files usually,
+            // but we can look up the pattern name in background settings
+            const pattern = key.split('.')[1];
+            // Try to find specific pattern name
+            const patternName = i18n.t(`background.${pattern}`);
+            if (patternName !== `background.${pattern}`) {
+                return `${i18n.t('settings.background.preference')} - ${patternName}`;
+            }
+        }
+
+        if (key.startsWith('controlSettings.')) {
+            const control = key.split('.')[1];
+            return `${i18n.t('settings.general.controlButtonSettings')} - ${i18n.t(`settings.general.controlButtons.${control}`)}`;
+        }
+
+        if (key.startsWith('toolbarVisibility.')) {
+            const tool = key.split('.')[1];
+            // tool might be 'pen', 'eraser' etc.
+            // mapping: settings.general.toolbarTools.pen
+            return `${i18n.t('settings.general.toolbarCustomization')} - ${i18n.t(`settings.general.toolbarTools.${tool}`) || tool}`;
+        }
+
+        if (key.startsWith('toolbarOrder')) {
+            return i18n.t('settings.general.toolbarCustomization');
+        }
+
+        // Map internal keys to translation keys
+        const map = {
+            'toolbarSize': 'settings.display.toolbarSize',
+            'configScale': 'settings.display.configScale',
+            'controlPosition': 'settings.general.controlPosition',
+            'edgeSnapEnabled': 'settings.general.edgeSnap',
+            'touchZoomEnabled': 'settings.general.touchZoom',
+            'unlimitedZoom': 'settings.canvas.unlimitedZoom',
+            'showZoomControls': 'settings.display.showZoomControls',
+            'showFullscreenBtn': 'settings.display.showFullscreenBtn',
+            'canvasWidth': 'settings.canvas.customSize.width',
+            'canvasHeight': 'settings.canvas.customSize.height',
+            'canvasPreset': 'settings.canvas.size',
+            'themeColor': 'settings.display.themeColor',
+            'globalFont': 'settings.general.globalFont',
+            'patternPreferences': 'settings.background.preference',
+            'toolbarOrder': 'settings.general.toolbarCustomization',
+            'toolbarVisibility': 'settings.general.toolbarCustomization',
+            'controlSettings': 'settings.general.controlButtonSettings'
+        };
+
+        if (map[key]) {
+            return i18n.t(map[key]);
+        }
+
+        return key;
+    }
+
     applySettings(newSettings) {
         const keys = [
             'toolbarSize', 'configScale', 'controlPosition', 'edgeSnapEnabled',

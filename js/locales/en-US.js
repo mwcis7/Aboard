@@ -195,6 +195,19 @@ window.translations = {
     // Settings
     settings: {
         title: 'Settings',
+        exportSuccess: 'Configuration exported successfully',
+        importSuccess: 'Configuration imported successfully',
+        importError: 'Invalid configuration file',
+        importNoChange: 'No configuration changes detected',
+        diff: {
+            title: 'Configuration Differences',
+            message: 'Differences detected between import and current settings:',
+            oldValue: 'Current',
+            newValue: 'New',
+            confirm: 'Update Settings',
+            cancel: 'Cancel',
+            noChanges: 'No differences found. Configuration is identical.'
+        },
         tabs: {
             general: 'General',
             display: 'Display',
@@ -301,17 +314,7 @@ window.translations = {
             autoSave: 'Auto Save',
             autoSaveHint: 'Periodically save your drawing',
             touchZoom: 'Touch Zoom',
-            touchZoomHint: 'Allow pinch gesture to zoom canvas',
-            exportSuccess: 'Configuration exported successfully',
-            diff: {
-                title: 'Configuration Differences',
-                message: 'Differences detected between import and current settings:',
-                oldValue: 'Current',
-                newValue: 'New',
-                confirm: 'Update Settings',
-                cancel: 'Cancel',
-                noChanges: 'No differences found. Configuration is identical.'
-            }
+            touchZoomHint: 'Allow pinch gesture to zoom canvas'
         },
         canvas: {
             title: 'Canvas Settings',
