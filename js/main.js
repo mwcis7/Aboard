@@ -7,8 +7,7 @@ class DrawingBoard {
         this.canvas = document.getElementById('canvas');
         this.ctx = this.canvas.getContext('2d', { 
             desynchronized: true,
-            alpha: true,
-            willReadFrequently: true
+            alpha: true
         });
         
         this.bgCanvas = document.getElementById('background-canvas');
