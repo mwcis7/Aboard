@@ -809,6 +809,26 @@ class TimerManager {
         }
     }
 
+    updateMoreSettingsState() {
+        const moreSettingsBtn = document.getElementById('timer-more-settings-btn');
+        if (!moreSettingsBtn) return;
+
+        const loopCheckbox = document.getElementById('timer-loop-checkbox');
+        const speedSlider = document.getElementById('timer-playback-speed');
+        const intervalInput = document.getElementById('timer-loop-interval');
+
+        const isLoop = loopCheckbox && loopCheckbox.checked;
+        const isSpeedChanged = speedSlider && parseFloat(speedSlider.value) !== 1.0;
+        const isIntervalSet = intervalInput && parseInt(intervalInput.value) > 0;
+
+        // Active if any setting is non-default
+        if (isLoop || isSpeedChanged || (isLoop && isIntervalSet)) {
+            moreSettingsBtn.classList.add('active-settings');
+        } else {
+            moreSettingsBtn.classList.remove('active-settings');
+        }
+    }
+
     preloadSounds() {
         // Preload all preset sounds for immediate playback
         Object.keys(this.sounds).forEach(key => {
@@ -1039,15 +1059,28 @@ class TimerManager {
                 } else {
                     loopCountGroup.style.display = 'none';
                 }
+                this.updateMoreSettingsState();
             });
         }
-        
+
+        // Loop interval input
+        const loopIntervalInput = document.getElementById('timer-loop-interval');
+        if (loopIntervalInput) {
+            loopIntervalInput.addEventListener('change', () => {
+                this.updateMoreSettingsState();
+            });
+            loopIntervalInput.addEventListener('input', () => {
+                this.updateMoreSettingsState();
+            });
+        }
+
         // Speed slider
         const speedSlider = document.getElementById('timer-playback-speed');
         const speedValue = document.getElementById('timer-playback-speed-value');
         if (speedSlider && speedValue) {
             speedSlider.addEventListener('input', (e) => {
                 speedValue.textContent = `${e.target.value}x`;
+                this.updateMoreSettingsState();
             });
         }
 
@@ -1242,6 +1275,7 @@ class TimerManager {
             if (moreSettingsContent) moreSettingsContent.style.display = 'none';
 
             this.updateMainPreviewButtonState();
+            this.updateMoreSettingsState();
         }
     }
     
@@ -1302,21 +1336,20 @@ class TimerManager {
             const intervalInput = document.getElementById('timer-loop-interval');
             if (intervalInput) intervalInput.value = timer.loopInterval || 0;
 
-            // Expand More Settings if loop is enabled or speed/interval changed from default
-            const isNonDefault = (timer.loopSound) || (timer.playbackSpeed !== 1.0) || (timer.loopInterval > 0 && timer.loopSound);
-
+            // Update More Settings State
             const moreSettingsBtn = document.getElementById('timer-more-settings-btn');
             const moreSettingsContent = document.getElementById('timer-more-settings-content');
 
-            if (moreSettingsBtn && moreSettingsContent) {
-                if (isNonDefault) {
-                    moreSettingsBtn.classList.add('expanded');
-                    moreSettingsContent.style.display = 'block';
-                } else {
-                    moreSettingsBtn.classList.remove('expanded');
-                    moreSettingsContent.style.display = 'none';
-                }
+            // Always collapse by default when opening settings for a timer, user can expand if they want to see details
+            // OR: keep expanded if it has active settings?
+            // Let's reset expansion but set active state correctly
+
+            if (moreSettingsBtn) {
+                moreSettingsBtn.classList.remove('expanded');
+                if (moreSettingsContent) moreSettingsContent.style.display = 'none';
             }
+
+            this.updateMoreSettingsState();
 
             if (timer.selectedSound) {
                 document.querySelectorAll('.sound-preset-btn').forEach(b => b.classList.remove('active'));
