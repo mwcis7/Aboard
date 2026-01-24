@@ -764,6 +764,20 @@ class TimerManager {
         this.renderCustomSounds();
     }
     
+    updateMainPreviewButtonState() {
+        const previewBtn = document.getElementById('timer-sound-preview-btn');
+        if (!previewBtn) return;
+
+        const soundCheckbox = document.getElementById('timer-sound-checkbox');
+        const activeSoundBtn = document.querySelector('.sound-preset-btn.active');
+
+        if (soundCheckbox && soundCheckbox.checked && activeSoundBtn) {
+            previewBtn.disabled = false;
+        } else {
+            previewBtn.disabled = true;
+        }
+    }
+
     preloadSounds() {
         // Preload all preset sounds for immediate playback
         Object.keys(this.sounds).forEach(key => {
@@ -902,6 +916,26 @@ class TimerManager {
                 } else {
                     soundSettingsContent.style.display = 'none';
                 }
+                this.updateMainPreviewButtonState();
+            });
+        }
+
+        // Main preview button
+        const mainPreviewBtn = document.getElementById('timer-sound-preview-btn');
+        if (mainPreviewBtn) {
+            mainPreviewBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Find active preset
+                const activeSoundBtn = document.querySelector('.sound-preset-btn.active');
+                if (activeSoundBtn) {
+                    const soundUrl = activeSoundBtn.dataset.url;
+                    const soundKey = activeSoundBtn.dataset.sound;
+                    if (soundUrl) {
+                        this.previewSoundByUrl(soundUrl, mainPreviewBtn);
+                    } else if (soundKey && this.sounds[soundKey]) {
+                        this.previewSound(soundKey, mainPreviewBtn);
+                    }
+                }
             });
         }
         
@@ -917,6 +951,7 @@ class TimerManager {
                 if (button.dataset.sound) {
                     document.querySelectorAll('.sound-preset-btn').forEach(b => b.classList.remove('active'));
                     button.classList.add('active');
+                    this.updateMainPreviewButtonState();
                 }
             });
         });
@@ -1144,6 +1179,8 @@ class TimerManager {
                 loopCountGroup.style.display = 'none';
             }
             document.getElementById('timer-loop-count').value = '3';
+
+            this.updateMainPreviewButtonState();
         }
     }
     
@@ -1202,6 +1239,8 @@ class TimerManager {
                     soundBtn.classList.add('active');
                 }
             }
+
+            this.updateMainPreviewButtonState();
         }
     }
     
@@ -1300,12 +1339,16 @@ class TimerManager {
         
         // Reset all preview button states
         if (this.currentPreviewButton) {
-            this.currentPreviewButton.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                </svg>
-            `;
-            this.currentPreviewButton.title = '试听';
+            if (this.currentPreviewButton.id === 'timer-sound-preview-btn') {
+                this.currentPreviewButton.textContent = window.i18n.t('timer.preview') || '试听';
+            } else {
+                this.currentPreviewButton.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                `;
+                this.currentPreviewButton.title = '试听';
+            }
             this.currentPreviewButton = null;
         }
     }
@@ -1328,13 +1371,17 @@ class TimerManager {
             this.currentPreviewButton = previewButton;
             
             // Update button to show pause icon
-            previewButton.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="6" y="4" width="4" height="16"></rect>
-                    <rect x="14" y="4" width="4" height="16"></rect>
-                </svg>
-            `;
-            previewButton.title = '暂停';
+            if (previewButton.id === 'timer-sound-preview-btn') {
+                previewButton.textContent = window.i18n.t('common.stop') || '停止';
+            } else {
+                previewButton.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                `;
+                previewButton.title = '暂停';
+            }
             
             // Reset button when audio ends
             this.previewAudio.addEventListener('ended', () => {
@@ -1364,13 +1411,17 @@ class TimerManager {
             this.currentPreviewButton = previewButton;
             
             // Update button to show pause icon
-            previewButton.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="6" y="4" width="4" height="16"></rect>
-                    <rect x="14" y="4" width="4" height="16"></rect>
-                </svg>
-            `;
-            previewButton.title = '暂停';
+            if (previewButton.id === 'timer-sound-preview-btn') {
+                previewButton.textContent = window.i18n.t('common.stop') || '停止';
+            } else {
+                previewButton.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                `;
+                previewButton.title = '暂停';
+            }
             
             // Reset button when audio ends
             this.previewAudio.addEventListener('ended', () => {

@@ -590,6 +590,7 @@ window.translations = {
         fullscreenFontSizeLabel: '全屏字体大小：当前',
         soundSettings: '声音设置',
         playSound: '倒计时结束时播放提示音',
+        preview: '试听',
         loopPlayback: '循环播放',
         loopCount: '循环次数',
         uploadCustomAudio: '上传自定义音频',

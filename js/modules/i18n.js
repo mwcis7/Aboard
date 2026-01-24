@@ -1028,15 +1028,6 @@ class I18n {
             loopCountLabel.textContent = this.t('timer.loopCount');
         }
         
-        // Upload custom audio button
-        const uploadAudioLabel = document.querySelector('label[for="timer-sound-upload"]');
-        if (uploadAudioLabel) {
-            const textNode = Array.from(uploadAudioLabel.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
-            if (textNode) {
-                textNode.textContent = '\n                                ' + this.t('timer.uploadCustomAudio') + '\n                            ';
-            }
-        }
-        
         // Timer color button titles
         document.querySelectorAll('#timer-settings-modal .color-btn').forEach(btn => {
             const colorValue = btn.getAttribute('data-timer-text-color') || btn.getAttribute('data-timer-bg-color');

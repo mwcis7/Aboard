@@ -592,6 +592,7 @@ window.translations = {
         fullscreenFontSizeLabel: 'Fullscreen Font Size: Current',
         soundSettings: 'Sound Settings',
         playSound: 'Play sound when timer ends',
+        preview: 'Preview',
         loopPlayback: 'Loop Playback',
         loopCount: 'Loop Count',
         uploadCustomAudio: 'Upload Custom Audio',
