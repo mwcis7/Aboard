@@ -11,6 +11,7 @@ class SettingsManager {
         this.unlimitedZoom = localStorage.getItem('unlimitedZoom') === 'true';
         this.infiniteCanvas = false; // Always use pagination mode
         this.showZoomControls = localStorage.getItem('showZoomControls') !== 'false';
+        this.showImportExportBtn = localStorage.getItem('showImportExportBtn') !== 'false';
         this.showFullscreenBtn = localStorage.getItem('showFullscreenBtn') !== 'false';
         this.patternPreferences = this.loadPatternPreferences();
         this.canvasWidth = parseInt(localStorage.getItem('canvasWidth')) || 1920;
@@ -18,6 +19,9 @@ class SettingsManager {
         this.canvasPreset = localStorage.getItem('canvasPreset') || 'custom';
         this.themeColor = localStorage.getItem('themeColor') || '#007AFF';
         this.globalFont = localStorage.getItem('globalFont') || 'system';
+
+        // Initialize Toast Manager
+        this.toastManager = new ToastManager();
     }
     
     loadPatternPreferences() {
@@ -208,6 +212,10 @@ class SettingsManager {
         document.getElementById('touch-zoom-checkbox').checked = this.touchZoomEnabled;
         document.getElementById('unlimited-zoom-checkbox').checked = this.unlimitedZoom;
         document.getElementById('show-zoom-controls-checkbox').checked = this.showZoomControls;
+        const showImportExportBtnCheckbox = document.getElementById('show-import-export-btn-checkbox');
+        if (showImportExportBtnCheckbox) {
+            showImportExportBtnCheckbox.checked = this.showImportExportBtn;
+        }
         
         // Canvas is always in pagination mode now
         
@@ -343,8 +351,8 @@ class SettingsManager {
         }
     }
 
-    exportSettings() {
-        const settings = {
+    getCurrentSettingsState() {
+        return {
             toolbarSize: this.toolbarSize,
             configScale: this.configScale,
             controlPosition: this.controlPosition,
@@ -352,6 +360,7 @@ class SettingsManager {
             touchZoomEnabled: this.touchZoomEnabled,
             unlimitedZoom: this.unlimitedZoom,
             showZoomControls: this.showZoomControls,
+            showImportExportBtn: this.showImportExportBtn,
             showFullscreenBtn: this.showFullscreenBtn,
             patternPreferences: this.patternPreferences,
             canvasWidth: this.canvasWidth,
@@ -371,6 +380,10 @@ class SettingsManager {
                 download: localStorage.getItem('controlShowDownload') !== 'false'
             }
         };
+    }
+
+    exportSettings() {
+        const settings = this.getCurrentSettingsState();
 
         const jsonStr = JSON.stringify(settings, null, 2);
         const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -384,43 +397,138 @@ class SettingsManager {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
 
-        alert('配置已成功导出！');
+        // Use custom Toast instead of alert
+        const successMsg = window.i18n ? window.i18n.t('settings.exportSuccess') : '配置已成功导出！';
+        this.toastManager.show(successMsg, 'success');
+    }
+
+    deepCompare(obj1, obj2, path = '') {
+        const diffs = [];
+
+        // Handle null/undefined
+        if (obj1 === obj2) return diffs;
+        if (!obj1 || !obj2) {
+            diffs.push({ key: path, old: obj1, new: obj2 });
+            return diffs;
+        }
+
+        // Handle JSON strings (like toolbarOrder) - Check BEFORE primitives because strings are primitives
+        try {
+            if (typeof obj1 === 'string' && (obj1.startsWith('[') || obj1.startsWith('{'))) {
+                const parsed1 = JSON.parse(obj1);
+                // Try to parse obj2 if it's a string, otherwise use it as is
+                const parsed2 = typeof obj2 === 'string' ? JSON.parse(obj2) : obj2;
+                return this.deepCompare(parsed1, parsed2, path);
+            }
+        } catch (e) {
+            // Not JSON, continue
+        }
+
+        // Handle case where obj1 is object/array but obj2 is stringified JSON
+        if (typeof obj1 === 'object' && typeof obj2 === 'string' && (obj2.startsWith('[') || obj2.startsWith('{'))) {
+            try {
+                const parsed2 = JSON.parse(obj2);
+                return this.deepCompare(obj1, parsed2, path);
+            } catch (e) {}
+        }
+
+        // Handle primitives
+        if (typeof obj1 !== 'object' || typeof obj2 !== 'object') {
+            if (obj1 !== obj2) {
+                diffs.push({ key: path, old: obj1, new: obj2 });
+            }
+            return diffs;
+        }
+
+        // Get all keys
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+        const allKeys = new Set([...keys1, ...keys2]);
+
+        for (const key of allKeys) {
+            const newPath = path ? `${path}.${key}` : key;
+            const subDiffs = this.deepCompare(obj1[key], obj2[key], newPath);
+            diffs.push(...subDiffs);
+        }
+
+        return diffs;
     }
 
     getSettingsDiff(newSettings) {
-        const diff = [];
-        const simpleKeys = [
-            'toolbarSize', 'configScale', 'controlPosition', 'edgeSnapEnabled',
-            'touchZoomEnabled', 'unlimitedZoom', 'showZoomControls', 'showFullscreenBtn',
-            'canvasWidth', 'canvasHeight', 'canvasPreset', 'themeColor', 'globalFont'
-        ];
+        const currentSettings = this.getCurrentSettingsState();
 
-        simpleKeys.forEach(key => {
-            if (newSettings[key] !== undefined && newSettings[key] !== this[key]) {
-                diff.push({ key, old: this[key], new: newSettings[key] });
+        // Use deep comparison
+        const diffs = this.deepCompare(currentSettings, newSettings);
+
+        // Filter out unchanged values explicitly (though deepCompare should handle it)
+        return diffs.filter(d => JSON.stringify(d.old) !== JSON.stringify(d.new));
+    }
+
+    getSettingLabel(key) {
+        const i18n = window.i18n;
+        if (!i18n) return key;
+
+        // Handle nested keys
+        if (key.startsWith('patternPreferences.')) {
+            // Pattern preferences don't have individual labels in locale files usually,
+            // but we can look up the pattern name in background settings
+            const pattern = key.split('.')[1];
+            // Try to find specific pattern name
+            const patternName = i18n.t(`background.${pattern}`);
+            if (patternName !== `background.${pattern}`) {
+                return `${i18n.t('settings.background.preference')} - ${patternName}`;
             }
-        });
-
-        // Complex objects comparison (simplified for UI)
-        if (newSettings.patternPreferences && JSON.stringify(newSettings.patternPreferences) !== JSON.stringify(this.patternPreferences)) {
-            diff.push({ key: 'patternPreferences', old: 'Current', new: 'New' });
         }
 
-        if (newSettings.toolbarOrder && newSettings.toolbarOrder !== localStorage.getItem('toolbarOrder')) {
-            diff.push({ key: 'toolbarOrder', old: 'Current', new: 'New' });
+        if (key.startsWith('controlSettings.')) {
+            const control = key.split('.')[1];
+            return `${i18n.t('settings.general.controlButtonSettings')} - ${i18n.t(`settings.general.controlButtons.${control}`)}`;
         }
 
-        if (newSettings.toolbarVisibility && newSettings.toolbarVisibility !== localStorage.getItem('toolbarVisibility')) {
-            diff.push({ key: 'toolbarVisibility', old: 'Current', new: 'New' });
+        if (key.startsWith('toolbarVisibility.')) {
+            const tool = key.split('.')[1];
+            // tool might be 'pen', 'eraser' etc.
+            // mapping: settings.general.toolbarTools.pen
+            return `${i18n.t('settings.general.toolbarCustomization')} - ${i18n.t(`settings.general.toolbarTools.${tool}`) || tool}`;
         }
 
-        return diff;
+        if (key.startsWith('toolbarOrder')) {
+            return i18n.t('settings.general.toolbarCustomization');
+        }
+
+        // Map internal keys to translation keys
+        const map = {
+            'toolbarSize': 'settings.display.toolbarSize',
+            'configScale': 'settings.display.configScale',
+            'controlPosition': 'settings.general.controlPosition',
+            'edgeSnapEnabled': 'settings.general.edgeSnap',
+            'touchZoomEnabled': 'settings.general.touchZoom',
+            'unlimitedZoom': 'settings.canvas.unlimitedZoom',
+            'showZoomControls': 'settings.display.showZoomControls',
+            'showImportExportBtn': 'settings.display.showImportExportBtn',
+            'showFullscreenBtn': 'settings.display.showFullscreenBtn',
+            'canvasWidth': 'settings.canvas.customSize.width',
+            'canvasHeight': 'settings.canvas.customSize.height',
+            'canvasPreset': 'settings.canvas.size',
+            'themeColor': 'settings.display.themeColor',
+            'globalFont': 'settings.general.globalFont',
+            'patternPreferences': 'settings.background.preference',
+            'toolbarOrder': 'settings.general.toolbarCustomization',
+            'toolbarVisibility': 'settings.general.toolbarCustomization',
+            'controlSettings': 'settings.general.controlButtonSettings'
+        };
+
+        if (map[key]) {
+            return i18n.t(map[key]);
+        }
+
+        return key;
     }
 
     applySettings(newSettings) {
         const keys = [
             'toolbarSize', 'configScale', 'controlPosition', 'edgeSnapEnabled',
-            'touchZoomEnabled', 'unlimitedZoom', 'showZoomControls', 'showFullscreenBtn',
+            'touchZoomEnabled', 'unlimitedZoom', 'showZoomControls', 'showImportExportBtn', 'showFullscreenBtn',
             'canvasWidth', 'canvasHeight', 'canvasPreset', 'themeColor', 'globalFont',
             'patternPreferences'
         ];

@@ -71,6 +71,7 @@ window.translations = {
             colorAndSize: 'Color & Size',
             colorPicker: 'Color Picker',
             size: 'Line Thickness',
+            thickness: 'Pen Thickness',
             sizeLabel: 'Thickness: Current',
             sizePx: 'px'
         },
@@ -195,6 +196,19 @@ window.translations = {
     // Settings
     settings: {
         title: 'Settings',
+        exportSuccess: 'Configuration exported successfully',
+        importSuccess: 'Configuration imported successfully',
+        importError: 'Invalid configuration file',
+        importNoChange: 'No configuration changes detected',
+        diff: {
+            title: 'Configuration Differences',
+            message: 'Differences detected between import and current settings:',
+            oldValue: 'Current',
+            newValue: 'New',
+            confirm: 'Update Settings',
+            cancel: 'Cancel',
+            noChanges: 'No differences found. Configuration is identical.'
+        },
         tabs: {
             general: 'General',
             display: 'Display',
@@ -213,6 +227,8 @@ window.translations = {
             themeColor: 'Theme Color',
             showZoomControls: 'Show Zoom Controls',
             showZoomControlsHint: 'Show zoom controls above canvas',
+            showImportExportBtn: 'Show Import/Export Buttons',
+            showImportExportBtnHint: 'Show import and export buttons next to zoom controls',
             showFullscreenBtn: 'Show Fullscreen Button',
             showFullscreenBtnHint: 'Show fullscreen button next to zoom controls',
             toolbarSize: 'Toolbar Size',
@@ -355,21 +371,21 @@ window.translations = {
             title: 'Announcements',
             welcome: 'Welcome to Aboard!',
             content: [
-                'Welcome to Aboard Whiteboard Application!',
+            '**Welcome to Aboard Whiteboard Application!**',
                 '',
-                'Tips:',
+            '[color=#007AFF]Tips:[/color]',
                 '• Click bottom toolbar to select different tools',
-                '• Use Ctrl+Z to Undo, Ctrl+Y to Redo',
+            '• Use **Ctrl+Z** to Undo, **Ctrl+Y** to Redo',
                 '• Click top-right zoom buttons or use mouse wheel to zoom',
                 '• Click Background button to choose different patterns',
                 '• Switch between Infinite Canvas or Pagination Mode in Settings',
                 '• Supports both touch and mouse interactions',
                 '',
-                'Links:',
+            '[color=#007AFF]Links:[/color]',
                 '• GitHub Project: https://github.com/lifeafter619/Aboard',
                 '• Author Blog: https://66619.eu.org',
                 '',
-                'Enjoy using Aboard!'
+            '[size=16px]**Enjoy using Aboard!**[/size]'
             ]
         },
         about: {

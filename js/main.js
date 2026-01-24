@@ -25,15 +25,17 @@ class DrawingBoard {
         this.timeDisplayManager = new TimeDisplayManager(this.settingsManager);
         this.timeDisplayControls = new TimeDisplayControls(this.timeDisplayManager);
         this.timeDisplaySettingsModal = new TimeDisplaySettingsModal(this.timeDisplayManager);
-        this.timerManager = new TimerManager();
+        // Lazy loaded managers
+        this.timerManager = null;
+        this.randomPickerManager = null;
+        this.scoreboardManager = null;
+        this.insertImageManager = null;
+        this.projectManager = null;
+        this.exportManager = null;
+
         this.collapsibleManager = new CollapsibleManager();
         this.announcementManager = new AnnouncementManager();
-        this.exportManager = new ExportManager(this.canvas, this.bgCanvas, this);
         this.teachingToolsManager = new TeachingToolsManager(this.canvas, this.ctx, this.historyManager);
-        this.randomPickerManager = new RandomPickerManager();
-        this.scoreboardManager = new ScoreboardManager();
-        this.insertImageManager = new InsertImageManager(this.canvas, this.ctx, this.historyManager, this.drawingEngine);
-        this.projectManager = new ProjectManager(this);
         
         // Set callback for teaching tools insertion to auto-switch to pen
         this.teachingToolsManager.onToolsInserted = () => {
@@ -149,6 +151,7 @@ class DrawingBoard {
         this.updateZoomUI();
         this.applyZoom(false); // Don't update config-area scale on refresh
         this.updateZoomControlsVisibility();
+        this.updateImportExportBtnVisibility();
         this.updateFullscreenBtnVisibility();
         this.updatePatternGrid();
         this.updateUploadedImagesButtons();
@@ -296,6 +299,8 @@ class DrawingBoard {
                     e.target.closest('.canvas-image-selection') ||
                     e.target.closest('.time-fullscreen-modal') ||
                     e.target.closest('.timer-fullscreen-modal') ||
+                    e.target.closest('#time-display-settings-modal') ||
+                    e.target.closest('#timer-settings-modal') ||
                     e.target.closest('input[type="range"]')) {
                     return;
                 }
@@ -672,10 +677,18 @@ class DrawingBoard {
         document.getElementById('fullscreen-btn').addEventListener('click', () => this.toggleFullscreen());
         
         // Export button (moved to top controls, always visible)
-        document.getElementById('export-btn-top').addEventListener('click', () => this.exportManager.showModal());
+        document.getElementById('export-btn-top').addEventListener('click', () => {
+            if (!this.exportManager) {
+                this.exportManager = new ExportManager(this.canvas, this.bgCanvas, this);
+            }
+            this.exportManager.showModal();
+        });
         
         // Import Project Button
         document.getElementById('import-project-btn').addEventListener('click', () => {
+            if (!this.projectManager) {
+                this.projectManager = new ProjectManager(this);
+            }
             // Create a hidden file input
             const input = document.createElement('input');
             input.type = 'file';
@@ -1018,7 +1031,10 @@ class DrawingBoard {
         penSizeSlider.addEventListener('input', (e) => {
             const size = parseInt(e.target.value);
             this.drawingEngine.setPenSize(size);
-            penSizeValue.textContent = size;
+            // Ensure penSizeValue element exists and update text content
+            if (penSizeValue) {
+                penSizeValue.textContent = size;
+            }
             // Sync shape slider
             if (shapeSizeSlider) {
                 shapeSizeSlider.value = size;
@@ -1190,6 +1206,9 @@ class DrawingBoard {
         const timerFeatureBtn = document.getElementById('timer-feature-btn');
         if (timerFeatureBtn) {
             timerFeatureBtn.addEventListener('click', () => {
+                if (!this.timerManager) {
+                    this.timerManager = new TimerManager();
+                }
                 this.timerManager.showSettingsModal();
                 this.closeFeaturePanel();
             });
@@ -1199,6 +1218,9 @@ class DrawingBoard {
         const randomPickerBtn = document.getElementById('random-picker-feature-btn');
         if (randomPickerBtn) {
             randomPickerBtn.addEventListener('click', () => {
+                if (!this.randomPickerManager) {
+                    this.randomPickerManager = new RandomPickerManager();
+                }
                 this.randomPickerManager.create();
                 this.closeFeaturePanel();
             });
@@ -1208,6 +1230,9 @@ class DrawingBoard {
         const scoreboardBtn = document.getElementById('scoreboard-feature-btn');
         if (scoreboardBtn) {
             scoreboardBtn.addEventListener('click', () => {
+                if (!this.scoreboardManager) {
+                    this.scoreboardManager = new ScoreboardManager();
+                }
                 this.scoreboardManager.create();
                 this.closeFeaturePanel();
             });
@@ -1217,6 +1242,9 @@ class DrawingBoard {
         const insertImageBtn = document.getElementById('insert-image-feature-btn');
         if (insertImageBtn) {
             insertImageBtn.addEventListener('click', () => {
+                if (!this.insertImageManager) {
+                    this.insertImageManager = new InsertImageManager(this.canvas, this.ctx, this.historyManager, this.drawingEngine);
+                }
                 this.insertImageManager.triggerSelect();
                 this.closeFeaturePanel();
             });
@@ -1226,7 +1254,9 @@ class DrawingBoard {
         const timerSettingsCloseBtn = document.getElementById('timer-settings-close-btn');
         if (timerSettingsCloseBtn) {
             timerSettingsCloseBtn.addEventListener('click', () => {
-                this.timerManager.hideSettingsModal();
+                if (this.timerManager) {
+                    this.timerManager.hideSettingsModal();
+                }
             });
         }
         
@@ -1448,6 +1478,16 @@ class DrawingBoard {
             localStorage.setItem('showZoomControls', e.target.checked);
             this.updateZoomControlsVisibility();
         });
+
+        // Show/hide import/export buttons
+        const showImportExportBtnCheckbox = document.getElementById('show-import-export-btn-checkbox');
+        if (showImportExportBtnCheckbox) {
+            showImportExportBtnCheckbox.addEventListener('change', (e) => {
+                this.settingsManager.showImportExportBtn = e.target.checked;
+                localStorage.setItem('showImportExportBtn', e.target.checked);
+                this.updateImportExportBtnVisibility();
+            });
+        }
         
         // Show/hide fullscreen button
         document.getElementById('show-fullscreen-btn-checkbox').addEventListener('change', (e) => {
@@ -1517,7 +1557,11 @@ class DrawingBoard {
                         const diff = this.settingsManager.getSettingsDiff(newSettings);
                         this.showConfigDiffModal(diff, newSettings);
                     } catch (err) {
-                        alert('配置文件无效');
+                        if (this.settingsManager.toastManager) {
+                            this.settingsManager.toastManager.show('配置文件无效', 'error');
+                        } else {
+                            alert('配置文件无效');
+                        }
                     }
                 }
             };
@@ -2373,19 +2417,104 @@ class DrawingBoard {
         list.innerHTML = '';
 
         if (diff.length === 0) {
-            list.innerHTML = '<div style="padding:10px; text-align:center;">没有检测到配置变更</div>';
+            const noChangeMsg = window.i18n ? window.i18n.t('settings.importNoChange') : '没有检测到配置变更';
+            list.innerHTML = `<div style="padding:10px; text-align:center;">${noChangeMsg}</div>`;
         } else {
-            diff.forEach(item => {
+            diff.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'diff-item';
-                div.innerHTML = `
-                    <span class="diff-key">${item.key}</span>
-                    <div class="diff-values">
-                        <span class="diff-old">${item.old}</span>
-                        <span class="diff-arrow">→</span>
-                        <span class="diff-new">${item.new}</span>
-                    </div>
-                `;
+
+                // Get localized label
+                let displayKey = this.settingsManager.getSettingLabel(item.key);
+
+                // Format old value for display
+                let oldValDisplay = item.old;
+                if (typeof oldValDisplay === 'boolean') {
+                    oldValDisplay = oldValDisplay ? (window.i18n ? window.i18n.t('common.yes') : 'Yes') : (window.i18n ? window.i18n.t('common.no') : 'No');
+                }
+
+                // Use DOM creation instead of innerHTML for security (XSS prevention)
+                const keyDiv = document.createElement('div');
+                keyDiv.className = 'diff-key';
+                keyDiv.style.fontWeight = 'bold';
+                keyDiv.style.fontSize = '13px';
+                keyDiv.style.color = '#333';
+                keyDiv.textContent = displayKey;
+
+                const valuesDiv = document.createElement('div');
+                valuesDiv.className = 'diff-values';
+                valuesDiv.style.display = 'flex';
+                valuesDiv.style.alignItems = 'center';
+                valuesDiv.style.gap = '8px';
+                valuesDiv.style.fontSize = '13px';
+                valuesDiv.style.marginTop = '4px';
+
+                const oldSpan = document.createElement('span');
+                oldSpan.className = 'diff-old';
+                oldSpan.style.color = '#999';
+                oldSpan.style.textDecoration = 'line-through';
+                oldSpan.textContent = String(oldValDisplay ?? '');
+
+                const arrowSpan = document.createElement('span');
+                arrowSpan.className = 'diff-arrow';
+                arrowSpan.style.color = '#666';
+                arrowSpan.textContent = '→';
+
+                const inputContainer = document.createElement('div');
+                inputContainer.className = 'diff-new-input-container';
+
+                valuesDiv.appendChild(oldSpan);
+                valuesDiv.appendChild(arrowSpan);
+                valuesDiv.appendChild(inputContainer);
+
+                div.appendChild(keyDiv);
+                div.appendChild(valuesDiv);
+
+                div.style.padding = '8px 0';
+                div.style.borderBottom = '1px solid #eee';
+
+                // Create input based on type
+                let input;
+
+                if (typeof item.new === 'boolean') {
+                    input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.checked = item.new;
+                    // Add label for checkbox
+                    const label = document.createElement('label');
+                    label.style.marginLeft = '4px';
+                    label.textContent = item.new ? (window.i18n ? window.i18n.t('common.yes') : 'Yes') : (window.i18n ? window.i18n.t('common.no') : 'No');
+                    input.addEventListener('change', () => {
+                        label.textContent = input.checked ? (window.i18n ? window.i18n.t('common.yes') : 'Yes') : (window.i18n ? window.i18n.t('common.no') : 'No');
+                    });
+                    inputContainer.appendChild(input);
+                    inputContainer.appendChild(label);
+                } else if (typeof item.new === 'number') {
+                    input = document.createElement('input');
+                    input.type = 'number';
+                    input.value = item.new;
+                    input.style.width = '80px';
+                    inputContainer.appendChild(input);
+                } else {
+                    // String or other
+                    input = document.createElement('input');
+                    input.type = 'text';
+                    // Handle null/undefined values to prevent "undefined" string
+                    const safeValue = (item.new === null || item.new === undefined) ? '' : String(item.new);
+                    input.value = safeValue;
+                    input.style.width = '120px';
+                    // Disable editing for complex JSON strings if displayed raw
+                    if (item.key === 'toolbarOrder' || item.key === 'toolbarVisibility') {
+                        // These are usually handled by sub-keys in diff if parsed,
+                        // but if deepCompare returned the string itself (unlikely if parsed), disable it.
+                        // deepCompare parses strings, so we likely get 'toolbarOrder.0'.
+                    }
+                    inputContainer.appendChild(input);
+                }
+
+                input.dataset.key = item.key;
+                input.dataset.type = typeof item.new;
+
                 list.appendChild(div);
             });
         }
@@ -2397,14 +2526,63 @@ class DrawingBoard {
 
         newOkBtn.addEventListener('click', () => {
             if (diff.length > 0) {
-                this.settingsManager.applySettings(newSettings);
+                // Clone and parse stringified JSONs in newSettings to allow deep setting
+                const pendingSettings = JSON.parse(JSON.stringify(newSettings));
+                ['toolbarOrder', 'toolbarVisibility'].forEach(key => {
+                    if (typeof pendingSettings[key] === 'string') {
+                        try {
+                            pendingSettings[key] = JSON.parse(pendingSettings[key]);
+                        } catch (e) {}
+                    }
+                });
+
+                // Apply changes from inputs
+                const inputs = list.querySelectorAll('input[data-key]');
+                inputs.forEach(input => {
+                    const key = input.dataset.key;
+                    const type = input.dataset.type;
+                    let value;
+
+                    if (input.type === 'checkbox') {
+                        value = input.checked;
+                    } else if (type === 'number') {
+                        value = parseFloat(input.value);
+                    } else {
+                        value = input.value;
+                    }
+
+                    // Set deep value
+                    const parts = key.split('.');
+                    let current = pendingSettings;
+                    for (let i = 0; i < parts.length - 1; i++) {
+                        if (!current[parts[i]]) current[parts[i]] = {};
+                        current = current[parts[i]];
+                    }
+                    current[parts[parts.length - 1]] = value;
+                });
+
+                // Stringify back special keys
+                ['toolbarOrder', 'toolbarVisibility'].forEach(key => {
+                    if (typeof pendingSettings[key] === 'object') {
+                        pendingSettings[key] = JSON.stringify(pendingSettings[key]);
+                    }
+                });
+
+                this.settingsManager.applySettings(pendingSettings);
                 // Also update UI that depends on settings immediately
                 this.recalculateAndRecenterCanvas();
                 this.applyZoom(true);
                 this.updateZoomControlsVisibility();
+                this.updateImportExportBtnVisibility();
                 this.updateFullscreenBtnVisibility();
                 this.updatePatternGrid();
-                alert('配置已导入');
+
+                const successMsg = window.i18n ? window.i18n.t('settings.importSuccess') : '配置已导入';
+                if (this.settingsManager.toastManager) {
+                    this.settingsManager.toastManager.show(successMsg, 'success');
+                } else {
+                    alert(successMsg);
+                }
             }
             modal.classList.remove('show');
         });
@@ -2733,12 +2911,30 @@ class DrawingBoard {
     }
     
     updateZoomControlsVisibility() {
-        const historyControls = document.getElementById('history-controls');
-        if (this.settingsManager.showZoomControls) {
-            historyControls.style.display = 'flex';
-        } else {
-            historyControls.style.display = 'none';
-        }
+        const zoomOutBtn = document.getElementById('zoom-out-btn');
+        const zoomInput = document.getElementById('zoom-input');
+        const zoomInBtn = document.getElementById('zoom-in-btn');
+
+        const display = this.settingsManager.showZoomControls ? 'flex' : 'none';
+        const inputDisplay = this.settingsManager.showZoomControls ? 'block' : 'none';
+
+        if (zoomOutBtn) zoomOutBtn.style.display = display;
+        if (zoomInput) zoomInput.style.display = inputDisplay;
+        if (zoomInBtn) zoomInBtn.style.display = display;
+
+        this.updateHistoryControlsContainerVisibility();
+    }
+
+    updateImportExportBtnVisibility() {
+        const importBtn = document.getElementById('import-project-btn');
+        const exportBtn = document.getElementById('export-btn-top');
+
+        const display = this.settingsManager.showImportExportBtn ? 'flex' : 'none';
+
+        if (importBtn) importBtn.style.display = display;
+        if (exportBtn) exportBtn.style.display = display;
+
+        this.updateHistoryControlsContainerVisibility();
     }
     
     updateFullscreenBtnVisibility() {
@@ -2747,6 +2943,24 @@ class DrawingBoard {
             fullscreenBtn.style.display = 'flex';
         } else {
             fullscreenBtn.style.display = 'none';
+        }
+
+        this.updateHistoryControlsContainerVisibility();
+    }
+
+    updateHistoryControlsContainerVisibility() {
+        const historyControls = document.getElementById('history-controls');
+        if (!historyControls) return;
+
+        // Check if any child is visible
+        const hasVisibleChild = Array.from(historyControls.children).some(child => {
+            return window.getComputedStyle(child).display !== 'none';
+        });
+
+        if (hasVisibleChild) {
+            historyControls.style.display = 'flex';
+        } else {
+            historyControls.style.display = 'none';
         }
     }
     
@@ -3669,7 +3883,12 @@ class DrawingBoard {
         
         // Limit to approximately 4MB total to avoid hitting localStorage limits
         if (currentSize + imageSize > 4 * 1024 * 1024) {
-            alert('存储空间不足，无法保存更多图片。请清除一些旧图片。');
+            const msg = window.i18n ? window.i18n.t('background.storageFull') : '存储空间不足，无法保存更多图片。请清除一些旧图片。';
+            if (this.settingsManager.toastManager) {
+                this.settingsManager.toastManager.show(msg, 'warning');
+            } else {
+                alert(msg);
+            }
             return;
         }
         
@@ -3685,7 +3904,12 @@ class DrawingBoard {
             this.updateUploadedImagesButtons();
         } catch (e) {
             console.error('Failed to save image to localStorage:', e);
-            alert('保存图片失败，存储空间可能不足。');
+            const msg = window.i18n ? window.i18n.t('background.saveError') : '保存图片失败，存储空间可能不足。';
+            if (this.settingsManager.toastManager) {
+                this.settingsManager.toastManager.show(msg, 'error');
+            } else {
+                alert(msg);
+            }
             this.uploadedImages.pop(); // Remove the image we just added
         }
     }

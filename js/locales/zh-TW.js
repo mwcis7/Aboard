@@ -49,7 +49,7 @@ window.translations = {
         background: '背景',
         teachingTools: '教具',
         more: '更多',
-        settings: '設置',
+        settings: '設定',
         export: '匯出畫布',
         zoomOut: '縮小 (-)',
         zoomIn: '放大 (+)',
@@ -71,6 +71,7 @@ window.translations = {
             colorAndSize: '顏色與粗細',
             colorPicker: '取色器',
             size: '線條粗細',
+            thickness: '筆粗細',
             sizeLabel: '線條粗細：目前',
             sizePx: 'px'
         },
@@ -195,7 +196,21 @@ window.translations = {
 
     // Settings
     settings: {
-        title: '設置',
+        title: '設定',
+        exportSuccess: '設定匯出成功！',
+        exportFailed: '匯出設定失敗',
+        importSuccess: '設定已匯入',
+        importError: '設定檔無效',
+        importNoChange: '未偵測到設定變更',
+        diff: {
+            title: '設定差異',
+            message: '偵測到匯入設定與目前設定存在差異：',
+            oldValue: '目前值',
+            newValue: '新值',
+            confirm: '確認更新',
+            cancel: '取消',
+            noChanges: '未偵測到差異，設定完全相同。'
+        },
         tabs: {
             general: '通用',
             display: '顯示',
@@ -208,12 +223,14 @@ window.translations = {
             more: '更多'
         },
         display: {
-            title: '顯示設置',
+            title: '顯示設定',
             theme: '主題',
             themeHint: '選擇套用主題',
             themeColor: '主題色',
             showZoomControls: '顯示縮放控件',
             showZoomControlsHint: '勾選後，在畫布上方顯示縮放控件',
+            showImportExportBtn: '顯示匯入匯出按鈕',
+            showImportExportBtnHint: '勾選後，在縮放控件旁顯示匯入匯出按鈕',
             showFullscreenBtn: '顯示全螢幕按鈕',
             showFullscreenBtnHint: '勾選後，在縮放控件旁顯示全螢幕按鈕',
             toolbarSize: '工具欄大小',
@@ -236,7 +253,7 @@ window.translations = {
             colorPicker: '取色器'
         },
         general: {
-            title: '通用設置',
+            title: '通用設定',
             language: '語言',
             languageHint: '選擇界面語言 / Choose interface language',
             globalFont: '全局字體',
@@ -246,7 +263,7 @@ window.translations = {
                 serif: '宋體（襯線體）',
                 sansSerif: '黑體（無襯線體）',
                 monospace: '等寬字體',
-                cursive: '手寫體',
+                cursive: '手寫体',
                 // 中文字体
                 yahei: '微軟雅黑',
                 simsun: '宋體',
@@ -282,7 +299,7 @@ window.translations = {
                 settings: '設定'
             },
             // Control button settings
-            controlButtonSettings: '控制按鈕設置',
+            controlButtonSettings: '控制按鈕設定',
             controlButtonSettingsHint: '選擇要顯示的控制按鈕',
             controlButtons: {
                 zoom: '縮放按鈕',
@@ -305,7 +322,7 @@ window.translations = {
             autoSaveHint: '定期儲存您的繪圖內容'
         },
         canvas: {
-            title: '畫布設置',
+            title: '畫布設定',
             mode: '畫布模式',
             modeHint: '選擇畫布的顯示模式',
             size: '畫布尺寸',
@@ -342,7 +359,7 @@ window.translations = {
             }
         },
         background: {
-            title: '背景設置',
+            title: '背景設定',
             opacity: '背景透明度',
             opacityLabel: '背景透明度：目前',
             opacityHint: '調整背景的透明度,100%為完全不透明',
@@ -363,7 +380,7 @@ window.translations = {
                 '• 使用 Ctrl+Z 撤銷，Ctrl+Y 重做',
                 '• 點擊右上角縮放按鈕或使用滑鼠滾輪縮放畫布',
                 '• 點擊背景按鈕可以選擇不同的背景圖案',
-                '• 在設置中可以切換無限畫布或分頁模式',
+                '• 在設定中可以切換無限畫布或分頁模式',
                 '• 支持觸控和滑鼠操作',
                 '',
                 '鏈接：',
@@ -399,13 +416,13 @@ window.translations = {
             version: '版本'
         },
         more: {
-            title: '更多設置',
-            description: '時間顯示相關設置請點擊右下角時間區域進入設置界面',
+            title: '更多設定',
+            description: '時間顯示相關設定請點擊右下角時間區域進入設定界面',
             showTimeDisplay: '顯示時間和日期',
             showTimeDisplayHint: '在右上角顯示目前時間和日期'
         },
         time: {
-            title: '時間顯示設置',
+            title: '時間顯示設定',
             showDate: '顯示日期',
             showTime: '顯示時間',
             timezone: '時區',
@@ -420,9 +437,9 @@ window.translations = {
             dateFormatMDY: '月-日-年 (01-01-2024)',
             dateFormatDMY: '日-月-年 (01-01-2024)',
             dateFormatChinese: '中文 (2024年1月1日)',
-            colorSettings: '顏色設置',
-            colorSettingsHint: '設置時間顯示的字體和背景顏色',
-            colorHint: '設置時間顯示的字體和背景顏色',
+            colorSettings: '顏色設定',
+            colorSettingsHint: '設定時間顯示的字體和背景顏色',
+            colorHint: '設定時間顯示的字體和背景顏色',
             textColor: '字體顏色',
             bgColor: '背景顏色',
             fontSize: '字體大小',
@@ -455,6 +472,41 @@ window.translations = {
         insertImage: '插入圖片'
     },
 
+    // Random Picker
+    randomPicker: {
+        namePicker: '姓名點名器',
+        numberPicker: '數字點名器',
+        noNames: '請添加名單',
+        settingsTitle: '點名器設定',
+        modeName: '姓名模式',
+        modeNumber: '數字模式',
+        titleLabel: '標題',
+        titlePlaceholder: '自定義標題（可選）',
+        namesLabel: '名單列表（每行一個）',
+        namesPlaceholder: '張三\n李四\n王五',
+        defaultNames: '張三\n李四\n王五\n趙六\n孫七',
+        allowRepeats: '允許重複抽取',
+        rangeLabel: '數字範圍',
+        importLabel: '匯入名單 (Excel/CSV)',
+        defaultColumnName: '姓名',
+        importBtn: '選擇檔案匯入',
+        importHint: '提示：自動讀取表格中對應列名的內容',
+        importSuccess: '成功匯入 {count} 個名字',
+        importNoData: '未找到指定列的數據，請檢查列名設定',
+        importError: '檔案解析失敗'
+    },
+
+    // Scoreboard
+    scoreboard: {
+        title: '計分板',
+        addTeam: '添加隊伍',
+        reset: '重置分數',
+        confirmRemoveTeam: '確定要移除這個隊伍嗎？',
+        teamDefault: '隊伍',
+        removeTeam: '刪除隊伍',
+        confirmReset: '確定要重置所有分數嗎？'
+    },
+
     // Teaching Tools
     teachingTools: {
         title: '教具',
@@ -477,11 +529,11 @@ window.translations = {
     // Time Display
     timeDisplay: {
         title: '時間顯示',
-        settingsTitle: '時間顯示設置',
+        settingsTitle: '時間顯示設定',
         options: '時間顯示選項',
         showDate: '顯示日期',
         showTime: '顯示時間',
-        settings: '設置',
+        settings: '設定',
         fullscreenDisplay: '全螢幕顯示',
         displayOptions: '顯示選項',
         dateAndTime: '日期和時間',
@@ -490,7 +542,7 @@ window.translations = {
         timezone: '時區',
         timeFormat: '時間格式',
         dateFormat: '日期格式',
-        colorSettings: '顏色設置',
+        colorSettings: '顏色設定',
         textColor: '字體顏色',
         bgColor: '背景顏色',
         fontSize: '字體大小',
@@ -498,7 +550,7 @@ window.translations = {
         opacity: '透明度',
         opacityLabel: '透明度：目前',
         fullscreenMode: '全螢幕模式',
-        fullscreenColorSettings: '全螢幕顏色設置',
+        fullscreenColorSettings: '全螢幕顏色設定',
         fullscreenFontSize: '全螢幕字體大小',
         fullscreenFontSizeLabel: '全螢幕字體大小：目前',
         fullscreenFontSizeHint: '調整全螢幕時間顯示的字體大小，範圍10%-85%',
@@ -512,7 +564,8 @@ window.translations = {
 
     // Timer
     timer: {
-        settingsTitle: '計時器設置',
+        title: '計時器',
+        settingsTitle: '計時器設定',
         mode: '模式',
         selectMode: '選擇模式',
         countdown: '倒計時',
@@ -521,22 +574,24 @@ window.translations = {
         hours: '小時',
         minutes: '分鐘',
         seconds: '秒',
-        title: '計時器標題（可選）',
+        timerTitle: '計時器標題（可選）',
         titlePlaceholder: '例如：課堂演講、考試時間等',
-        setTime: '設置時間',
-        setStartTime: '設置開始時間',
-        fontSettings: '字體設置',
+        setTime: '設定時間',
+        setStartTime: '設定開始時間',
+        fontSettings: '字體設定',
         fontSize: '字體大小',
         fontSizeLabel: '字體大小：目前',
+        minimal: '最簡',
+        minimalMode: '最簡顯示 (雙擊恢復)',
         adjustColor: '調整顏色',
-        colorSettings: '顏色設置',
+        colorSettings: '顏色設定',
         textColor: '字體顏色',
         bgColor: '背景顏色',
         opacity: '透明度',
         opacityLabel: '透明度：目前',
         fullscreenFontSize: '全螢幕字體大小',
         fullscreenFontSizeLabel: '全螢幕字體大小：目前',
-        soundSettings: '聲音設置',
+        soundSettings: '聲音設定',
         playSound: '倒計時結束時播放提示音',
         loopPlayback: '循環播放',
         loopCount: '循環次數',
@@ -573,7 +628,7 @@ window.translations = {
         pause: '暫停',
         reset: '重置',
         stop: '停止',
-        alertSetTime: '請設置倒計時時間',
+        alertSetTime: '請設定倒計時時間',
         alertTitle: '提示'
     },
 
@@ -606,7 +661,7 @@ window.translations = {
 • 使用 Ctrl+Z 撤銷，Ctrl+Y 重做
 • 點擊右上角縮放按鈕或使用滑鼠滾輪縮放畫布
 • 點擊背景按鈕可以選擇不同的背景圖案
-• 在設置中可以切換無限畫布或分頁模式
+• 在設定中可以切換無限畫布或分頁模式
 • 支持觸控和滑鼠操作
 
 祝您使用愉快！`,

@@ -163,49 +163,6 @@ class HelpSystem {
         }
     }
 
-    parseRichText(text) {
-        if (!text) return '';
-
-        // Escape HTML first to prevent XSS
-        let result = text
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-
-        // Bold: **text**
-        result = result.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
-
-        // Underline: __text__
-        result = result.replace(/__(.*?)__/g, '<u>$1</u>');
-
-        // Color: [color=red]text[/color] or [color=#ff0000]text[/color]
-        result = result.replace(/\[color=([^\]]+)\](.*?)\[\/color\]/g, '<span style="color:$1">$2</span>');
-
-        // Size: [size=20px]text[/size]
-        result = result.replace(/\[size=([^\]]+)\](.*?)\[\/size\]/g, '<span style="font-size:$1">$2</span>');
-
-        // Newlines to breaks or divs
-        // If content has multiple lines, wrap them or use <br>
-        // Ideally, split by newline and wrap in divs for better spacing
-        if (result.includes('\n')) {
-            result = result.split('\n').map(line => {
-                if (!line.trim()) return '<br>';
-                // Check for lists
-                if (line.trim().match(/^\d+\./)) {
-                    return `<div style="margin-bottom:4px; font-weight:bold;">${line}</div>`;
-                }
-                if (line.trim().startsWith('- ') || line.trim().startsWith('• ')) {
-                    return `<div style="margin-bottom:4px; padding-left:10px;">${line}</div>`;
-                }
-                return `<div>${line}</div>`;
-            }).join('');
-        }
-
-        return result;
-    }
-
     createHelpButton(helpKey) {
         const btn = document.createElement('button');
         btn.className = 'help-btn';
@@ -266,8 +223,8 @@ class HelpSystem {
         // Update title in case language changed
         modal.querySelector('h2').textContent = window.i18n.t('common.help');
 
-        // Parse simple markdown-like syntax
-        let formattedContent = this.parseRichText(content);
+        // Parse simple markdown-like syntax using RichTextParser
+        let formattedContent = window.RichTextParser ? window.RichTextParser.parse(content) : content;
         modal.querySelector('.help-content').innerHTML = formattedContent;
         modal.classList.add('show');
     }

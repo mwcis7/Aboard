@@ -162,3 +162,53 @@
     margin: 8px 0 0;
     line-height: 1.5;
 }
+
+/* Tab Navigation Styles (Mirrored from Time Display) */
+.export-tab-nav {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 4px;
+    background-color: #f5f5f7;
+    border-radius: 12px;
+}
+
+.export-tab-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.export-tab-btn.active {
+    background-color: #ffffff;
+    color: var(--theme-color, #007AFF);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    font-weight: 600;
+}
+
+.export-tab-btn:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 0.5);
+    color: #333;
+}
+
+/* Tab Content Visibility */
+.export-tab-content {
+    display: none;
+}
+
+.export-tab-content.active {
+    display: block;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
