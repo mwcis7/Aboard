@@ -20,7 +20,8 @@ window.translations = {
         apply: 'Apply',
         reset: 'Reset',
         start: 'Start',
-        stop: 'Stop'
+        stop: 'Stop',
+        preview: 'Preview'
     },
 
     // Recovery dialog
@@ -593,8 +594,12 @@ window.translations = {
         soundSettings: 'Sound Settings',
         playSound: 'Play sound when timer ends',
         preview: 'Preview',
+        moreSettings: 'More Settings',
+        playbackSpeed: 'Playback Speed',
         loopPlayback: 'Loop Playback',
         loopCount: 'Loop Count',
+        loopInterval: 'Loop Interval',
+        seconds: 'sec',
         uploadCustomAudio: 'Upload Custom Audio',
         soundPresets: {
             classBell: 'Class Bell (10s)',

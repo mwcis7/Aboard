@@ -1557,13 +1557,41 @@
                         </div>
                         
                         <div class="sound-loop-settings">
-                            <div class="sound-checkbox">
-                                <input type="checkbox" id="timer-loop-checkbox">
-                                <label for="timer-loop-checkbox" data-i18n="timer.loopPlayback">循环播放</label>
-                            </div>
-                            <div class="sound-loop-count" id="sound-loop-count-group" style="display: none;">
-                                <label for="timer-loop-count" data-i18n="timer.loopCount">循环次数</label>
-                                <input type="number" id="timer-loop-count" min="1" max="100" value="3" class="loop-count-input">
+                            <div class="sound-more-settings">
+                                <button type="button" id="timer-more-settings-btn" class="more-settings-btn">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                    <span data-i18n="timer.moreSettings">更多设置</span>
+                                </button>
+                                <div id="timer-more-settings-content" class="more-settings-content" style="display: none;">
+                                    <div class="setting-row">
+                                        <label for="timer-playback-speed" data-i18n="timer.playbackSpeed">播放倍速</label>
+                                        <div class="speed-control">
+                                            <input type="range" id="timer-playback-speed" min="0.5" max="2.0" step="0.1" value="1.0">
+                                            <span id="timer-playback-speed-value">1.0x</span>
+                                        </div>
+                                    </div>
+                                    <div class="setting-row loop-row">
+                                        <div class="loop-enable-wrapper">
+                                            <input type="checkbox" id="timer-loop-checkbox">
+                                            <label for="timer-loop-checkbox" data-i18n="timer.loopPlayback">循环播放</label>
+                                        </div>
+                                    </div>
+                                    <div id="sound-loop-count-group" class="loop-details" style="display: none;">
+                                        <div class="loop-detail-item">
+                                            <label for="timer-loop-count" data-i18n="timer.loopCount">循环次数</label>
+                                            <input type="number" id="timer-loop-count" min="1" max="100" value="3" class="loop-count-input">
+                                        </div>
+                                        <div class="loop-detail-item">
+                                            <label for="timer-loop-interval" data-i18n="timer.loopInterval">循环间隔</label>
+                                            <div class="interval-input-wrapper">
+                                                <input type="number" id="timer-loop-interval" min="0" max="60" value="1" class="loop-count-input">
+                                                <span data-i18n="timer.seconds">秒</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         

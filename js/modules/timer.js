@@ -3,24 +3,26 @@
 
 // Single Timer Instance Class
 class TimerInstance {
-    constructor(id, mode, duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, manager, title = '', textColor = '#333333', bgColor = '#FFFFFF') {
-        this.id = id;
-        this.mode = mode; // 'stopwatch' or 'countdown'
-        this.manager = manager;
-        this.title = title; // Timer title
+    constructor(options) {
+        this.id = options.id;
+        this.mode = options.mode; // 'stopwatch' or 'countdown'
+        this.manager = options.manager;
+        this.title = options.title || ''; // Timer title
         
         // Color settings
-        this.textColor = textColor;
-        this.bgColor = bgColor;
+        this.textColor = options.textColor || '#333333';
+        this.bgColor = options.bgColor || '#FFFFFF';
         
         // Timer state
         this.isRunning = false;
         this.isPaused = false;
         this.startTime = 0;
         
+        const duration = options.duration || 0;
+
         // For stopwatch mode, duration is the starting time
         // For countdown mode, duration is the total time
-        if (mode === 'stopwatch') {
+        if (this.mode === 'stopwatch') {
             this.elapsedTime = duration; // Start from this time
         } else {
             this.elapsedTime = 0;
@@ -31,13 +33,16 @@ class TimerInstance {
         this.intervalId = null;
         
         // Sound settings
-        this.playSound = playSound;
-        this.selectedSound = selectedSound;
-        this.customSoundUrl = customSoundUrl;
-        this.loopSound = loopSound;
-        this.loopCount = loopCount;
+        this.playSound = options.playSound;
+        this.selectedSound = options.selectedSound;
+        this.customSoundUrl = options.customSoundUrl;
+        this.loopSound = options.loopSound;
+        this.loopCount = options.loopCount;
+        this.loopInterval = options.loopInterval || 0;
+        this.playbackSpeed = options.playbackSpeed || 1.0;
         this.currentAudio = null; // Track the current audio element
         this.currentLoopIteration = 0; // Track current loop iteration
+        this.loopTimeoutId = null; // Track loop timeout
         
         // UI elements
         this.displayElement = null;
@@ -501,17 +506,35 @@ class TimerInstance {
             this.currentAudio = null;
         }
         
+        // Clear any pending loop timeout
+        if (this.loopTimeoutId) {
+            clearTimeout(this.loopTimeoutId);
+            this.loopTimeoutId = null;
+        }
+
         const audio = new Audio(soundUrl);
+        // Apply playback speed
+        audio.playbackRate = this.playbackSpeed;
+
         this.currentAudio = audio;
         
         audio.addEventListener('ended', () => {
             if (this.loopSound && this.currentLoopIteration < this.loopCount - 1) {
                 this.currentLoopIteration++;
-                // Play again for the next loop
-                this.playSound_Internal(soundUrl);
+
+                // Handle loop interval
+                if (this.loopInterval > 0) {
+                    this.loopTimeoutId = setTimeout(() => {
+                        this.playSound_Internal(soundUrl);
+                    }, this.loopInterval * 1000);
+                } else {
+                    // Play immediately
+                    this.playSound_Internal(soundUrl);
+                }
             } else {
                 this.currentAudio = null;
                 this.currentLoopIteration = 0;
+                this.loopTimeoutId = null;
             }
         });
         
@@ -654,6 +677,12 @@ class TimerInstance {
             this.currentAudio = null;
         }
         
+        // Clear any pending loop timeout
+        if (this.loopTimeoutId) {
+            clearTimeout(this.loopTimeoutId);
+            this.loopTimeoutId = null;
+        }
+
         // Remove event listeners
         if (this.mouseMoveHandler) {
             document.removeEventListener('mousemove', this.mouseMoveHandler);
@@ -674,7 +703,7 @@ class TimerInstance {
         this.manager.removeTimer(this.id);
     }
     
-    updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, title = '', textColor = null, bgColor = null) {
+    updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, loopInterval, playbackSpeed, title = '', textColor = null, bgColor = null) {
         this.countdownDuration = duration;
         
         if (this.mode === 'stopwatch') {
@@ -688,6 +717,8 @@ class TimerInstance {
         this.customSoundUrl = customSoundUrl;
         this.loopSound = loopSound;
         this.loopCount = loopCount;
+        this.loopInterval = loopInterval;
+        this.playbackSpeed = playbackSpeed;
         this.title = title;
         
         // Update colors if provided
@@ -988,6 +1019,16 @@ class TimerManager {
             });
         }
         
+        // More Settings Toggle
+        const moreSettingsBtn = document.getElementById('timer-more-settings-btn');
+        const moreSettingsContent = document.getElementById('timer-more-settings-content');
+        if (moreSettingsBtn && moreSettingsContent) {
+            moreSettingsBtn.addEventListener('click', () => {
+                const isExpanded = moreSettingsBtn.classList.toggle('expanded');
+                moreSettingsContent.style.display = isExpanded ? 'block' : 'none';
+            });
+        }
+
         // Loop checkbox
         const loopCheckbox = document.getElementById('timer-loop-checkbox');
         const loopCountGroup = document.getElementById('sound-loop-count-group');
@@ -1001,6 +1042,15 @@ class TimerManager {
             });
         }
         
+        // Speed slider
+        const speedSlider = document.getElementById('timer-playback-speed');
+        const speedValue = document.getElementById('timer-playback-speed-value');
+        if (speedSlider && speedValue) {
+            speedSlider.addEventListener('input', (e) => {
+                speedValue.textContent = `${e.target.value}x`;
+            });
+        }
+
         // Timer color picker buttons
         document.querySelectorAll('.color-btn[data-timer-text-color]').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -1180,6 +1230,17 @@ class TimerManager {
             }
             document.getElementById('timer-loop-count').value = '3';
 
+            // Reset new settings
+            document.getElementById('timer-playback-speed').value = '1.0';
+            document.getElementById('timer-playback-speed-value').textContent = '1.0x';
+            document.getElementById('timer-loop-interval').value = '1';
+
+            // Reset More Settings UI
+            const moreSettingsBtn = document.getElementById('timer-more-settings-btn');
+            const moreSettingsContent = document.getElementById('timer-more-settings-content');
+            if (moreSettingsBtn) moreSettingsBtn.classList.remove('expanded');
+            if (moreSettingsContent) moreSettingsContent.style.display = 'none';
+
             this.updateMainPreviewButtonState();
         }
     }
@@ -1232,6 +1293,31 @@ class TimerManager {
                 loopCountInput.value = timer.loopCount;
             }
             
+            // Set new settings
+            const speedSlider = document.getElementById('timer-playback-speed');
+            const speedValue = document.getElementById('timer-playback-speed-value');
+            if (speedSlider) speedSlider.value = timer.playbackSpeed || 1.0;
+            if (speedValue) speedValue.textContent = `${timer.playbackSpeed || 1.0}x`;
+
+            const intervalInput = document.getElementById('timer-loop-interval');
+            if (intervalInput) intervalInput.value = timer.loopInterval || 0;
+
+            // Expand More Settings if loop is enabled or speed/interval changed from default
+            const isNonDefault = (timer.loopSound) || (timer.playbackSpeed !== 1.0) || (timer.loopInterval > 0 && timer.loopSound);
+
+            const moreSettingsBtn = document.getElementById('timer-more-settings-btn');
+            const moreSettingsContent = document.getElementById('timer-more-settings-content');
+
+            if (moreSettingsBtn && moreSettingsContent) {
+                if (isNonDefault) {
+                    moreSettingsBtn.classList.add('expanded');
+                    moreSettingsContent.style.display = 'block';
+                } else {
+                    moreSettingsBtn.classList.remove('expanded');
+                    moreSettingsContent.style.display = 'none';
+                }
+            }
+
             if (timer.selectedSound) {
                 document.querySelectorAll('.sound-preset-btn').forEach(b => b.classList.remove('active'));
                 const soundBtn = document.querySelector(`.sound-preset-btn[data-sound="${timer.selectedSound}"]`);
@@ -1279,6 +1365,8 @@ class TimerManager {
         // Get loop settings
         const loopSound = document.getElementById('timer-loop-checkbox').checked;
         const loopCount = parseInt(document.getElementById('timer-loop-count').value) || 3;
+        const loopInterval = parseInt(document.getElementById('timer-loop-interval').value) || 0;
+        const playbackSpeed = parseFloat(document.getElementById('timer-playback-speed').value) || 1.0;
         
         // Get color settings - check custom pickers first, then preset buttons
         let textColor = '#333333';
@@ -1314,12 +1402,28 @@ class TimerManager {
         
         if (this.adjustingTimer) {
             // Update existing timer
-            this.adjustingTimer.updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, title, textColor, bgColor);
+            this.adjustingTimer.updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, loopInterval, playbackSpeed, title, textColor, bgColor);
             this.adjustingTimer = null;
         } else {
             // Create new timer
             const id = this.nextTimerId++;
-            const timer = new TimerInstance(id, mode, duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, this, title, textColor, bgColor);
+            const options = {
+                id: id,
+                mode: mode,
+                duration: duration,
+                playSound: playSound,
+                selectedSound: selectedSound,
+                customSoundUrl: customSoundUrl,
+                loopSound: loopSound,
+                loopCount: loopCount,
+                loopInterval: loopInterval,
+                playbackSpeed: playbackSpeed,
+                manager: this,
+                title: title,
+                textColor: textColor,
+                bgColor: bgColor
+            };
+            const timer = new TimerInstance(options);
             this.timers.set(id, timer);
         }
         
@@ -1340,14 +1444,14 @@ class TimerManager {
         // Reset all preview button states
         if (this.currentPreviewButton) {
             if (this.currentPreviewButton.id === 'timer-sound-preview-btn') {
-                this.currentPreviewButton.textContent = window.i18n.t('timer.preview') || '试听';
+                this.currentPreviewButton.textContent = window.i18n.t('common.preview') || '试听';
             } else {
                 this.currentPreviewButton.innerHTML = `
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                     </svg>
                 `;
-                this.currentPreviewButton.title = '试听';
+                this.currentPreviewButton.title = window.i18n.t('common.preview') || '试听';
             }
             this.currentPreviewButton = null;
         }
@@ -1380,7 +1484,7 @@ class TimerManager {
                         <rect x="14" y="4" width="4" height="16"></rect>
                     </svg>
                 `;
-                previewButton.title = '暂停';
+                previewButton.title = window.i18n.t('common.stop') || '停止';
             }
             
             // Reset button when audio ends
@@ -1420,7 +1524,7 @@ class TimerManager {
                         <rect x="14" y="4" width="4" height="16"></rect>
                     </svg>
                 `;
-                previewButton.title = '暂停';
+                previewButton.title = window.i18n.t('common.stop') || '停止';
             }
             
             // Reset button when audio ends

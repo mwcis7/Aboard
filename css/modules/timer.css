@@ -258,31 +258,6 @@
     margin: 0;
 }
 
-.sound-preview-inline-btn {
-    padding: 4px 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background-color: #f5f5f5;
-    cursor: pointer;
-    margin-left: 8px;
-    font-size: 12px;
-    color: #333;
-    transition: all 0.2s ease;
-}
-
-.sound-preview-inline-btn:hover:not(:disabled) {
-    background-color: #e0e0e0;
-    border-color: #ccc;
-}
-
-.sound-preview-inline-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    background-color: #f9f9f9;
-    color: #999;
-    border-color: #eee;
-}
-
 .sound-presets {
     display: flex;
     flex-direction: column;
@@ -969,4 +944,139 @@
     background-color: var(--theme-color);
     color: #ffffff;
     border-color: var(--theme-color);
+}
+
+/* More Settings Toggle */
+.more-settings-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+}
+
+.more-settings-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.more-settings-btn.expanded {
+    background-color: var(--theme-color);
+    color: white;
+    border-color: var(--theme-color);
+}
+
+.more-settings-btn svg {
+    transition: transform 0.2s ease;
+}
+
+.more-settings-btn.expanded svg {
+    transform: rotate(180deg);
+}
+
+/* More Settings Content */
+.more-settings-content {
+    background: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.setting-row label {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+}
+
+/* Speed Control */
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.speed-control input[type="range"] {
+    width: 100px;
+    height: 4px;
+    background: #ddd;
+    border-radius: 2px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.speed-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--theme-color);
+    cursor: pointer;
+}
+
+.speed-control span {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    min-width: 36px;
+    text-align: right;
+}
+
+/* Loop Settings */
+.loop-row {
+    margin-bottom: 8px;
+}
+
+.loop-enable-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.loop-enable-wrapper input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.loop-details {
+    margin-top: 8px;
+    padding-left: 24px; /* Indent under checkbox */
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.loop-detail-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.interval-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.interval-input-wrapper span {
+    font-size: 12px;
+    color: #666;
 }

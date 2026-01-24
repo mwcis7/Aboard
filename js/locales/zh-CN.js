@@ -20,7 +20,8 @@ window.translations = {
         apply: '应用',
         reset: '重置',
         start: '开始',
-        stop: '停止'
+        stop: '停止',
+        preview: '试听'
     },
 
     // Recovery dialog
@@ -591,8 +592,12 @@ window.translations = {
         soundSettings: '声音设置',
         playSound: '倒计时结束时播放提示音',
         preview: '试听',
+        moreSettings: '更多设置',
+        playbackSpeed: '播放倍速',
         loopPlayback: '循环播放',
         loopCount: '循环次数',
+        loopInterval: '循环间隔',
+        seconds: '秒',
         uploadCustomAudio: '上传自定义音频',
         soundPresets: {
             classBell: '开始铃声(10s)',
