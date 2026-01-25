@@ -253,7 +253,7 @@
 @media (hover: none) and (pointer: coarse) {
     .picker-btn,
     .picker-action-btn {
-        min-height: 44px;
-        min-width: 44px;
+        min-height: var(--touch-target-size);
+        min-width: var(--touch-target-size);
     }
 }

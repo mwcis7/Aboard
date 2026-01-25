@@ -6,6 +6,7 @@
 
 :root {
     --theme-color: #007AFF;
+    --touch-target-size: 44px;
 }
 
 body {
@@ -34,8 +35,8 @@ button, a, input[type="button"], input[type="submit"] {
 
 /* Minimum touch target size for primary navigation buttons (44x44px recommended by WCAG) */
 .tool-btn, .history-btn, .feature-btn, .timer-action-btn, .timer-control-btn {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: var(--touch-target-size);
+    min-width: var(--touch-target-size);
 }
 
 /* Canvas */
@@ -2507,8 +2508,8 @@ button, a, input[type="button"], input[type="submit"] {
     .history-btn {
         width: 36px;
         height: 36px;
-        min-height: 44px;
-        min-width: 44px;
+        min-height: var(--touch-target-size);
+        min-width: var(--touch-target-size);
         padding: 4px;
     }
     
@@ -2516,7 +2517,7 @@ button, a, input[type="button"], input[type="submit"] {
         width: 50px;
         height: 36px;
         font-size: 10px;
-        min-height: 44px;
+        min-height: var(--touch-target-size);
     }
     
     /* Make sliders wider for easier touch */
@@ -2593,8 +2594,8 @@ button, a, input[type="button"], input[type="submit"] {
     .config-close-btn,
     .sound-preset-btn,
     [role="button"] {
-        min-height: 44px;
-        min-width: 44px;
+        min-height: var(--touch-target-size);
+        min-width: var(--touch-target-size);
     }
     
     /* Prevent zoom on double-tap for buttons */
@@ -2616,12 +2617,13 @@ button, a, input[type="button"], input[type="submit"] {
         gap: 8px;
     }
     
-    /* Remove hover states that don't apply to touch */
+    /* Reset hover states for touch devices - these effects don't apply well to touch */
     .tool-btn:hover,
     .history-btn:hover,
     .color-btn:hover,
     .feature-btn:hover {
         transform: none;
+        box-shadow: none;
     }
     
     /* Add active state feedback for touch */

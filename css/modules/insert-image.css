@@ -145,8 +145,8 @@
 }
 
 #insert-image-box .image-control-btn {
-    width: 44px;
-    height: 44px;
+    width: var(--touch-target-size);
+    height: var(--touch-target-size);
     border: none;
     border-radius: 10px;
     background-color: #f0f0f0;
@@ -263,7 +263,7 @@
     .image-source-tab {
         padding: 8px 12px;
         font-size: 12px;
-        min-height: 44px;
+        min-height: var(--touch-target-size);
     }
     
     .image-upload-zone {
@@ -274,12 +274,12 @@
 /* Touch device improvements */
 @media (hover: none) and (pointer: coarse) {
     .image-source-tab {
-        min-height: 44px;
+        min-height: var(--touch-target-size);
     }
     
     .image-upload-btn,
     .image-action-btn {
-        min-height: 44px;
-        min-width: 44px;
+        min-height: var(--touch-target-size);
+        min-width: var(--touch-target-size);
     }
 }

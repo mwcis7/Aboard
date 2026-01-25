@@ -1166,8 +1166,8 @@
     
     .timer-control-btn {
         padding: 8px 12px;
-        min-height: 44px;
-        min-width: 44px;
+        min-height: var(--touch-target-size);
+        min-width: var(--touch-target-size);
     }
     
     .sound-presets-grid {
@@ -1178,7 +1178,7 @@
     .sound-preset-btn {
         padding: 10px 8px;
         font-size: 11px;
-        min-height: 44px;
+        min-height: var(--touch-target-size);
     }
 }
 
@@ -1190,11 +1190,11 @@
     }
     
     .timer-control-btn {
-        min-height: 44px;
-        min-width: 44px;
+        min-height: var(--touch-target-size);
+        min-width: var(--touch-target-size);
     }
     
     .sound-preset-btn {
-        min-height: 44px;
+        min-height: var(--touch-target-size);
     }
 }
