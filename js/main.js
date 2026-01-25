@@ -419,9 +419,8 @@ class DrawingBoard {
                 // Pointer events provide coalesced events for higher precision (smoother curves)
                 if (e.getCoalescedEvents) {
                     const events = e.getCoalescedEvents();
-                    for (let event of events) {
-                        this.drawingEngine.draw(event);
-                    }
+                    // Use optimized batch drawing
+                    this.drawingEngine.drawBatch(events);
                 } else {
                     this.drawingEngine.draw(e);
                 }
