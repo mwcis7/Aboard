@@ -66,6 +66,91 @@ class PWAManager {
                 'checkUpdate': 'Check for Updates',
                 'checking': 'Checking for updates...',
                 'latest': 'You are on the latest version'
+            },
+            'ja-JP': {
+                'statusTitle': 'アプリの状態',
+                'currentMode': '現在のモード',
+                'online': 'オンライン',
+                'offline': 'オフライン',
+                'install': 'アプリをインストール',
+                'version': 'バージョン',
+                'offlineMessage': 'オフラインモードです。変更はローカルに保存されます。',
+                'updateAvailable': '新しいバージョンがあります',
+                'updateTitle': 'アップデート利用可能',
+                'updateMessage': '新しいバージョンがダウンロードされました。今すぐ更新しますか？\n(「後で」を選択すると次回起動時に適用されます)',
+                'update': '今すぐ更新',
+                'updateLater': '後で',
+                'checkUpdate': 'アップデートを確認',
+                'checking': 'アップデートを確認中...',
+                'latest': '最新バージョンです'
+            },
+            'ko-KR': {
+                'statusTitle': '앱 상태',
+                'currentMode': '현재 모드',
+                'online': '온라인',
+                'offline': '오프라인',
+                'install': '앱 설치',
+                'version': '버전',
+                'offlineMessage': '오프라인 모드입니다. 변경 사항은 로컬에 저장됩니다.',
+                'updateAvailable': '새 버전을 사용할 수 있습니다',
+                'updateTitle': '업데이트 가능',
+                'updateMessage': '새 버전이 다운로드되었습니다. 지금 업데이트하시겠습니까?\n(\'나중에\'를 선택하면 다음 실행 시 적용됩니다)',
+                'update': '지금 업데이트',
+                'updateLater': '나중에',
+                'checkUpdate': '업데이트 확인',
+                'checking': '업데이트 확인 중...',
+                'latest': '최신 버전입니다'
+            },
+            'fr-FR': {
+                'statusTitle': 'État de l\'application',
+                'currentMode': 'Mode actuel',
+                'online': 'En ligne',
+                'offline': 'Hors ligne',
+                'install': 'Installer l\'application',
+                'version': 'Version',
+                'offlineMessage': 'Mode hors ligne. Les modifications sont enregistrées localement.',
+                'updateAvailable': 'Nouvelle version disponible',
+                'updateTitle': 'Mise à jour disponible',
+                'updateMessage': 'Nouvelle version téléchargée. Actualiser maintenant pour appliquer ?\n(Sélectionnez "Plus tard" pour appliquer au prochain lancement)',
+                'update': 'Mettre à jour',
+                'updateLater': 'Plus tard',
+                'checkUpdate': 'Vérifier les mises à jour',
+                'checking': 'Vérification des mises à jour...',
+                'latest': 'Vous utilisez la dernière version'
+            },
+            'de-DE': {
+                'statusTitle': 'App-Status',
+                'currentMode': 'Aktueller Modus',
+                'online': 'Online',
+                'offline': 'Offline',
+                'install': 'App installieren',
+                'version': 'Version',
+                'offlineMessage': 'Offline-Modus. Änderungen werden lokal gespeichert.',
+                'updateAvailable': 'Neue Version verfügbar',
+                'updateTitle': 'Update verfügbar',
+                'updateMessage': 'Neue Version heruntergeladen. Jetzt aktualisieren?\n(Wählen Sie "Später", um es beim nächsten Start anzuwenden)',
+                'update': 'Jetzt aktualisieren',
+                'updateLater': 'Später',
+                'checkUpdate': 'Nach Updates suchen',
+                'checking': 'Suche nach Updates...',
+                'latest': 'Sie haben die neueste Version'
+            },
+            'es-ES': {
+                'statusTitle': 'Estado de la aplicación',
+                'currentMode': 'Modo actual',
+                'online': 'En línea',
+                'offline': 'Sin conexión',
+                'install': 'Instalar aplicación',
+                'version': 'Versión',
+                'offlineMessage': 'Modo sin conexión. Los cambios se guardan localmente.',
+                'updateAvailable': 'Nueva versión disponible',
+                'updateTitle': 'Actualización disponible',
+                'updateMessage': 'Nueva versión descargada. ¿Actualizar ahora?\n(Seleccione "Más tarde" para aplicar en el próximo inicio)',
+                'update': 'Actualizar ahora',
+                'updateLater': 'Más tarde',
+                'checkUpdate': 'Buscar actualizaciones',
+                'checking': 'Buscando actualizaciones...',
+                'latest': 'Tienes la última versión'
             }
         };
         // Fallback for other languages to English
@@ -414,8 +499,6 @@ class PWAManager {
         const statusText = `${currentModeLabel}: ${statusState}`;
 
         // Update Settings UI
-        // Note: Settings usually just shows the state, but we can match the requested format if needed.
-        // For Settings (About), standard "Online" is often preferred, but let's be consistent.
         if (this.statusText) this.statusText.textContent = statusState;
 
         if (this.installBtn) this.installBtn.textContent = this.getTranslation('install');
@@ -424,10 +507,14 @@ class PWAManager {
 
         const statusTitle = document.querySelector('#about-settings .about-section h4');
         if (statusTitle && statusTitle.textContent.includes('Status')) {
+             // We can check if it matches any of our statusTitle translations to be safer,
+             // or just replace it if we are sure it's the status section.
+             // Given the structure, it is the last h4 we added.
+             // Ideally we should have given it an ID. But this works for now.
              statusTitle.textContent = this.getTranslation('statusTitle');
         }
 
-        // Update Announcement UI - Explicit request: "当前模式：在线"
+        // Update Announcement UI
         if (this.announcementStatusText) this.announcementStatusText.textContent = statusText;
         if (this.announcementInstallBtn) this.announcementInstallBtn.textContent = this.getTranslation('install');
 
