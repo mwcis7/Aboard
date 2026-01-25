@@ -12,6 +12,8 @@ class TimerInstance {
         // Color settings
         this.textColor = options.textColor || '#333333';
         this.bgColor = options.bgColor || '#FFFFFF';
+        this.fullscreenTextColor = options.fullscreenTextColor || '#FFFFFF'; // Default white text
+        this.fullscreenBgColor = options.fullscreenBgColor || '#000000';     // Default black bg
         
         // Timer state
         this.isRunning = false;
@@ -638,9 +640,9 @@ class TimerInstance {
         // Update content with title if available, applying custom colors
         const modeText = this.mode === 'stopwatch' ? window.i18n.t('timer.stopwatch') : window.i18n.t('timer.countdown');
 
-        // Force black background and white text for fullscreen as requested
-        const fsTextColor = '#ffffff';
-        const fsBgColor = '#000000';
+        // Use configured fullscreen colors
+        const fsTextColor = this.fullscreenTextColor;
+        const fsBgColor = this.fullscreenBgColor;
 
         const titleHTML = this.title ? `<div class="timer-fullscreen-title" style="color: ${fsTextColor};">${this.title}</div>` : '';
         
@@ -708,7 +710,7 @@ class TimerInstance {
         this.manager.removeTimer(this.id);
     }
     
-    updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, loopInterval, playbackSpeed, title = '', textColor = null, bgColor = null) {
+    updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, loopInterval, playbackSpeed, title = '', textColor = null, bgColor = null, fullscreenTextColor = null, fullscreenBgColor = null) {
         this.countdownDuration = duration;
         
         if (this.mode === 'stopwatch') {
@@ -729,6 +731,8 @@ class TimerInstance {
         // Update colors if provided
         if (textColor) this.textColor = textColor;
         if (bgColor) this.bgColor = bgColor;
+        if (fullscreenTextColor) this.fullscreenTextColor = fullscreenTextColor;
+        if (fullscreenBgColor) this.fullscreenBgColor = fullscreenBgColor;
         
         // Apply colors to display element
         if (this.displayElement) {
@@ -1106,6 +1110,23 @@ class TimerManager {
             });
         });
         
+        // Timer color picker buttons (Fullscreen)
+        document.querySelectorAll('.color-btn[data-timer-fs-text-color]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.color-btn[data-timer-fs-text-color]').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+            });
+        });
+
+        document.querySelectorAll('.color-btn[data-timer-fs-bg-color]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.color-btn[data-timer-fs-bg-color]').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+            });
+        });
+
         // Timer color settings checkbox toggle
         const timerColorCheckbox = document.getElementById('timer-color-checkbox');
         const timerColorSettings = document.getElementById('timer-color-settings');
@@ -1119,6 +1140,25 @@ class TimerManager {
             });
         }
         
+        // Custom color pickers (Fullscreen)
+        const customFsTextColorPicker = document.getElementById('custom-timer-fs-text-color-picker');
+        if (customFsTextColorPicker) {
+            customFsTextColorPicker.addEventListener('input', (e) => {
+                document.querySelectorAll('.color-btn[data-timer-fs-text-color]').forEach(b => b.classList.remove('active'));
+                const parentBtn = e.target.closest('.color-picker-icon-btn');
+                if (parentBtn) parentBtn.classList.add('active-custom');
+            });
+        }
+
+        const customFsBgColorPicker = document.getElementById('custom-timer-fs-bg-color-picker');
+        if (customFsBgColorPicker) {
+            customFsBgColorPicker.addEventListener('input', (e) => {
+                document.querySelectorAll('.color-btn[data-timer-fs-bg-color]').forEach(b => b.classList.remove('active'));
+                const parentBtn = e.target.closest('.color-picker-icon-btn');
+                if (parentBtn) parentBtn.classList.add('active-custom');
+            });
+        }
+
         // Custom color pickers
         const customTextColorPicker = document.getElementById('custom-timer-text-color-picker');
         if (customTextColorPicker) {
@@ -1364,6 +1404,43 @@ class TimerManager {
                 }
             }
 
+            // Set colors (Widget)
+            // ... (handled implicitly by existing logic if I didn't break it? wait, existing logic is missing in search block, but I need to add Fullscreen color population)
+
+            // Set colors (Fullscreen)
+            // Reset all active states first
+            document.querySelectorAll('.color-btn[data-timer-fs-text-color]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.color-btn[data-timer-fs-bg-color]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.timer-color-picker-icon').forEach(b => b.classList.remove('active-custom'));
+
+            // Text Color (Fullscreen)
+            const fsTextColorBtn = document.querySelector(`.color-btn[data-timer-fs-text-color="${timer.fullscreenTextColor}"]`);
+            if (fsTextColorBtn) {
+                fsTextColorBtn.classList.add('active');
+            } else {
+                // Custom color
+                const picker = document.getElementById('custom-timer-fs-text-color-picker');
+                if (picker) {
+                    picker.value = timer.fullscreenTextColor;
+                    const parent = picker.closest('.color-picker-icon-btn');
+                    if (parent) parent.classList.add('active-custom');
+                }
+            }
+
+            // Bg Color (Fullscreen)
+            const fsBgColorBtn = document.querySelector(`.color-btn[data-timer-fs-bg-color="${timer.fullscreenBgColor}"]`);
+            if (fsBgColorBtn) {
+                fsBgColorBtn.classList.add('active');
+            } else {
+                // Custom color
+                const picker = document.getElementById('custom-timer-fs-bg-color-picker');
+                if (picker) {
+                    picker.value = timer.fullscreenBgColor;
+                    const parent = picker.closest('.color-picker-icon-btn');
+                    if (parent) parent.classList.add('active-custom');
+                }
+            }
+
             this.updateMainPreviewButtonState();
         }
     }
@@ -1430,6 +1507,30 @@ class TimerManager {
             bgColor = activeBgColorBtn.dataset.timerBgColor;
         }
         
+        // Get Fullscreen color settings
+        let fsTextColor = '#FFFFFF';
+        let fsBgColor = '#000000';
+
+        const activeFsTextColorBtn = document.querySelector('.color-btn.active[data-timer-fs-text-color]');
+        const customFsTextColorPicker = document.getElementById('custom-timer-fs-text-color-picker');
+        const customFsTextPickerParent = customFsTextColorPicker?.closest('.color-picker-icon-btn');
+
+        if (customFsTextPickerParent && customFsTextPickerParent.classList.contains('active-custom')) {
+            fsTextColor = customFsTextColorPicker.value;
+        } else if (activeFsTextColorBtn) {
+            fsTextColor = activeFsTextColorBtn.dataset.timerFsTextColor;
+        }
+
+        const activeFsBgColorBtn = document.querySelector('.color-btn.active[data-timer-fs-bg-color]');
+        const customFsBgColorPicker = document.getElementById('custom-timer-fs-bg-color-picker');
+        const customFsBgPickerParent = customFsBgColorPicker?.closest('.color-picker-icon-btn');
+
+        if (customFsBgPickerParent && customFsBgPickerParent.classList.contains('active-custom')) {
+            fsBgColor = customFsBgColorPicker.value;
+        } else if (activeFsBgColorBtn) {
+            fsBgColor = activeFsBgColorBtn.dataset.timerFsBgColor;
+        }
+
         const duration = (hours * 3600 + minutes * 60 + seconds) * 1000;
         
         // Use custom modal instead of browser alert
@@ -1440,7 +1541,7 @@ class TimerManager {
         
         if (this.adjustingTimer) {
             // Update existing timer
-            this.adjustingTimer.updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, loopInterval, playbackSpeed, title, textColor, bgColor);
+            this.adjustingTimer.updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, loopInterval, playbackSpeed, title, textColor, bgColor, fsTextColor, fsBgColor);
             this.adjustingTimer = null;
         } else {
             // Create new timer
@@ -1459,7 +1560,9 @@ class TimerManager {
                 manager: this,
                 title: title,
                 textColor: textColor,
-                bgColor: bgColor
+                bgColor: bgColor,
+                fullscreenTextColor: fsTextColor,
+                fullscreenBgColor: fsBgColor
             };
             const timer = new TimerInstance(options);
             this.timers.set(id, timer);
