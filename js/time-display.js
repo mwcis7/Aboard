@@ -15,8 +15,19 @@ class TimeDisplayManager {
         // Default to true if no value is stored (first time load)
         const storedEnabled = localStorage.getItem('timeDisplayEnabled');
         this.enabled = storedEnabled === null ? true : storedEnabled === 'true';
-        this.timeFormat = localStorage.getItem('timeDisplayTimeFormat') || '24h';
-        this.dateFormat = localStorage.getItem('timeDisplayDateFormat') || 'yyyy-mm-dd';
+
+        // Auto-detect time format if not set
+        const storedTimeFormat = localStorage.getItem('timeDisplayTimeFormat');
+        if (storedTimeFormat) {
+            this.timeFormat = storedTimeFormat;
+        } else {
+            // Detect system preference
+            const dateString = new Date().toLocaleTimeString();
+            const is12Hour = /AM|PM/.test(dateString) || /上午|下午/.test(dateString);
+            this.timeFormat = is12Hour ? '12h' : '24h';
+        }
+
+        this.dateFormat = localStorage.getItem('timeDisplayDateFormat') || 'auto'; // Default to auto
         this.color = localStorage.getItem('timeDisplayColor') || '#000000';
         this.bgColor = localStorage.getItem('timeDisplayBgColor') || '#FFFFFF';
         this.fontSize = parseInt(localStorage.getItem('timeDisplayFontSize')) || 16;
@@ -25,12 +36,17 @@ class TimeDisplayManager {
         this.showTime = localStorage.getItem('timeDisplayShowTime') !== 'false'; // Default true
         this.fullscreenMode = localStorage.getItem('timeDisplayFullscreenMode') || 'double'; // Default 'double' (disabled/single/double)
         this.fullscreenFontSize = parseInt(localStorage.getItem('timeDisplayFullscreenFontSize')) || 15; // Default 15 (vmin percentage)
+        this.fullscreenColor = localStorage.getItem('timeDisplayFullscreenColor') || '#ffffff';
+        this.fullscreenBgColor = localStorage.getItem('timeDisplayFullscreenBgColor') || '#000000';
+        this.fullscreenOpacity = parseInt(localStorage.getItem('timeDisplayFullscreenOpacity')) || 95;
+
         // Get user's current timezone by default, or use saved value
         this.timezone = localStorage.getItem('timeDisplayTimezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
         
         // Click detection settings
-        this.lastClickTime = 0;
-        this.doubleClickDelay = 600; // Increased from default ~300ms to 600ms for easier double-clicking
+        this.clickTimeout = null;
+        this.clickCount = 0;
+        this.doubleClickDelay = 500; // Relaxed double click delay
         
         this.applySettings();
         this.setupFullscreenListeners();
@@ -140,7 +156,9 @@ class TimeDisplayManager {
                     const s = parseInt(parts[3]);
                     const period = parts[4].toUpperCase();
                     
-                    const ampm = period === 'PM' ? '下午' : '上午';
+                    const amText = window.i18n ? window.i18n.t('timeDisplay.am') : 'AM';
+                    const pmText = window.i18n ? window.i18n.t('timeDisplay.pm') : 'PM';
+                    const ampm = period === 'PM' ? pmText : amText;
                     return `${ampm} ${this.padZero(hour12)}:${this.padZero(m)}:${this.padZero(s)}`;
                 }
             } else {
@@ -161,7 +179,9 @@ class TimeDisplayManager {
         
         if (this.timeFormat === '12h') {
             const hour12 = hours % 12 || 12;
-            const ampm = hours >= 12 ? '下午' : '上午';
+            const amText = window.i18n ? window.i18n.t('timeDisplay.am') : 'AM';
+            const pmText = window.i18n ? window.i18n.t('timeDisplay.pm') : 'PM';
+            const ampm = hours >= 12 ? pmText : amText;
             return `${ampm} ${this.padZero(hour12)}:${this.padZero(minutes)}:${this.padZero(seconds)}`;
         } else {
             return `${this.padZero(hours)}:${this.padZero(minutes)}:${this.padZero(seconds)}`;
@@ -169,14 +189,33 @@ class TimeDisplayManager {
     }
     
     formatDate(date) {
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
-        
         // Use translated weekday names from i18n
         const weekdayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         const weekday = window.i18n ? window.i18n.t(`days.${weekdayKeys[date.getDay()]}`) : ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][date.getDay()];
         
+        // Handle "auto" format using Intl.DateTimeFormat
+        if (this.dateFormat === 'auto') {
+            try {
+                const options = {
+                    timeZone: this.timezone,
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                };
+                // Use current locale if available
+                const locale = window.i18n ? window.i18n.getCurrentLocale() : 'zh-CN';
+                return new Intl.DateTimeFormat(locale, options).format(date);
+            } catch (e) {
+                console.error('Error auto-formatting date:', e);
+                // Fallback to yyyy-mm-dd
+            }
+        }
+
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+
         // Apply timezone conversion for date if needed
         try {
             if (this.timezone !== Intl.DateTimeFormat().resolvedOptions().timeZone) {
@@ -282,6 +321,30 @@ class TimeDisplayManager {
             this.updateFullscreenDisplay();
         }
     }
+
+    setFullscreenColor(color) {
+        this.fullscreenColor = color;
+        localStorage.setItem('timeDisplayFullscreenColor', color);
+        if (this.isFullscreen) {
+            this.updateFullscreenDisplay();
+        }
+    }
+
+    setFullscreenBgColor(color) {
+        this.fullscreenBgColor = color;
+        localStorage.setItem('timeDisplayFullscreenBgColor', color);
+        if (this.isFullscreen) {
+            this.updateFullscreenDisplay();
+        }
+    }
+
+    setFullscreenOpacity(opacity) {
+        this.fullscreenOpacity = opacity;
+        localStorage.setItem('timeDisplayFullscreenOpacity', opacity);
+        if (this.isFullscreen) {
+            this.updateFullscreenDisplay();
+        }
+    }
     
     setFontSize(size) {
         this.fontSize = size;
@@ -360,19 +423,23 @@ class TimeDisplayManager {
             if (this.fullscreenMode === 'disabled' || !this.enabled) return;
             
             if (this.fullscreenMode === 'single') {
-                // Single-click mode
+                // Single-click mode - Enter immediately
                 this.enterFullscreen();
             } else if (this.fullscreenMode === 'double') {
-                // Double-click mode
-                const now = Date.now();
-                const timeSinceLastClick = now - this.lastClickTime;
+                // Double-click mode - Use timeout logic
+                this.clickCount++;
                 
-                if (timeSinceLastClick < this.doubleClickDelay && timeSinceLastClick > 50) {
-                    // Double-click detected
-                    this.enterFullscreen();
-                    this.lastClickTime = 0; // Reset to prevent triple-click
+                if (this.clickCount === 1) {
+                    // First click, set timeout
+                    this.clickTimeout = setTimeout(() => {
+                        // Timeout expired, was just a single click
+                        this.clickCount = 0;
+                    }, this.doubleClickDelay);
                 } else {
-                    this.lastClickTime = now;
+                    // Second click within timeout
+                    clearTimeout(this.clickTimeout);
+                    this.clickCount = 0;
+                    this.enterFullscreen();
                 }
             }
         });
@@ -458,5 +525,18 @@ class TimeDisplayManager {
         }
         
         this.timeFullscreenContent.innerHTML = html;
+        this.timeFullscreenContent.style.color = this.fullscreenColor;
+
+        // Apply color to controls (slider label)
+        const controls = this.timeFullscreenModal.querySelector('.time-fullscreen-controls');
+        if (controls) {
+            controls.style.color = this.fullscreenColor;
+        }
+
+        // Apply background color and opacity to modal
+        if (this.timeFullscreenModal) {
+            const rgb = this.hexToRgb(this.fullscreenBgColor) || { r: 0, g: 0, b: 0 };
+            this.timeFullscreenModal.style.backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${this.fullscreenOpacity / 100})`;
+        }
     }
 }

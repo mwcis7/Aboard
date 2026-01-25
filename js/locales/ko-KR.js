@@ -21,6 +21,14 @@ window.translations = {
         reset: '재설정'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: '이전 콘텐츠 복원',
+        message: '이전 캔버스 콘텐츠가 감지되었습니다. 복원하시겠습니까?',
+        restore: '복원',
+        discard: '삭제'
+    },
+
     // App Title
     app: {
         title: 'Aboard - 미니멀 화이트보드',
@@ -60,8 +68,8 @@ window.translations = {
             color: '색상',
             colorAndSize: '색상 및 크기',
             colorPicker: '색상 선택기',
-            size: '크기',
-            sizeLabel: '크기: 현재',
+            size: '선 굵기',
+            sizeLabel: '굵기: 현재',
             sizePx: 'px'
         },
         shape: {
@@ -159,7 +167,18 @@ window.translations = {
         contrastLabel: '패턴 투명도: 현재',
         contrastHint: '배경 패턴 선의 명암을 조정합니다',
         preference: '배경 패턴 기본 설정',
-        upload: '업로드'
+        upload: '업로드',
+        moveCoordinateOrigin: '원점 이동',
+        moveCoordinateOriginHint: '버튼을 클릭한 후 캔버스에서 드래그하여 좌표 원점 이동'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: '확인',
+        cancel: '취소',
+        flipHorizontal: '좌우 반전',
+        flipVertical: '상하 반전',
+        rotate: '회전'
     },
 
     // Page Navigation
@@ -241,6 +260,30 @@ window.translations = {
             },
             edgeSnap: '가장자리 스냅 활성화',
             edgeSnapHint: '드래그 시 컨트롤 패널을 화면 가장자리에 자동 정렬',
+            // Toolbar customization
+            toolbarCustomization: '툴바 사용자 정의',
+            toolbarCustomizationHint: '툴바에 표시할 도구를 선택하고 드래그하여 순서 조정',
+            toolbarTools: {
+                undo: '실행 취소',
+                redo: '다시 실행',
+                pen: '펜',
+                move: '이동',
+                eraser: '지우개',
+                clear: '지우기',
+                background: '배경',
+                more: '더보기',
+                settings: '설정'
+            },
+            // Control button settings
+            controlButtonSettings: '컨트롤 버튼 설정',
+            controlButtonSettingsHint: '표시할 컨트롤 버튼 선택',
+            controlButtons: {
+                zoom: '확대/축소 버튼',
+                pagination: '페이지 매김 버튼',
+                time: '시간 표시',
+                fullscreen: '전체 화면 버튼',
+                download: '다운로드 버튼'
+            },
             controlPosition: '컨트롤 버튼 위치',
             controlPositionHint: '확대/축소 및 페이지 매김 컨트롤 표시 위치 선택',
             positionTopLeft: '왼쪽 위',
@@ -344,6 +387,7 @@ window.translations = {
         },
         more: {
             title: '추가 설정',
+            description: '시간 표시 설정은 오른쪽 하단 시간 영역을 클릭하세요',
             showTimeDisplay: '시간 및 날짜 표시',
             showTimeDisplayHint: '오른쪽 상단에 현재 시간 및 날짜 표시'
         },
@@ -365,12 +409,15 @@ window.translations = {
             textColor: '텍스트 색상',
             bgColor: '배경색',
             fontSize: '글꼴 크기',
+            fontSizeLabel: '글꼴 크기: 현재',
             opacity: '불투명도',
+            opacityLabel: '불투명도: 현재',
             fullscreenMode: '전체 화면 모드',
             fullscreenDisabled: '비활성화',
             fullscreenSingle: '한 번 클릭',
             fullscreenDouble: '두 번 클릭',
             fullscreenFontSize: '전체 화면 글꼴 크기',
+            fullscreenFontSizeLabel: '전체화면 글꼴 크기: 현재',
             fullscreenFontSizeHint: '전체 화면 시간 표시 글꼴 크기 조정, 범위 10%-85%',
             customColor: '사용자 정의 색상'
         }
@@ -381,7 +428,10 @@ window.translations = {
         title: '기능',
         moreFeatures: '더 많은 기능',
         time: '시간',
-        timer: '타이머'
+        timer: '타이머',
+        randomPicker: '추첨기',
+        scoreboard: '점수판',
+        insertImage: '이미지 삽입'
     },
 
     // Teaching Tools
@@ -411,6 +461,7 @@ window.translations = {
         showDate: '날짜 표시',
         showTime: '시간 표시',
         settings: '설정',
+        fullscreenDisplay: '전체 화면 표시',
         displayOptions: '표시 옵션',
         dateAndTime: '날짜 및 시간',
         dateOnly: '날짜만',
@@ -432,11 +483,16 @@ window.translations = {
         opacityLabel: '불투명도: 현재',
         fullscreenMode: '전체 화면 모드',
         fullscreenModeHint: '시간 전체 화면 표시 트리거 선택',
+        fullscreenColorSettings: '전체 화면 색상 설정',
         fullscreenFontSize: '전체 화면 글꼴 크기',
         fullscreenFontSizeLabel: '전체 화면 글꼴 크기: 현재',
+        fullscreenFontSizeHint: '전체 화면 글꼴 크기 조정 (10%-85%)',
         fullscreenSliderLabel: '글꼴 크기 조정 (10%-85%)',
         customColor: '사용자 정의 색상',
-        transparent: '투명'
+        transparent: '투명',
+        fullscreenDisabled: '비활성화',
+        fullscreenSingle: '한 번 클릭',
+        fullscreenDouble: '두 번 클릭'
     },
 
     // Timer
@@ -467,8 +523,12 @@ window.translations = {
         fullscreenFontSizeLabel: '전체 화면 글꼴 크기: 현재',
         soundSettings: '사운드 설정',
         playSound: '카운트다운 종료 시 알림 소리 재생',
+        preview: '미리듣기',
+        moreSettings: '더 많은 설정',
+        playbackSpeed: '재생 속도',
         loopPlayback: '반복 재생',
         loopCount: '반복 횟수',
+        loopInterval: '반복 간격',
         uploadCustomAudio: '사용자 정의 오디오 업로드',
         soundPresets: {
             classBell: '수업 종 (10초)',
@@ -485,7 +545,15 @@ window.translations = {
             yellow: '노란색',
             orange: '주황색',
             purple: '보라색',
-            transparent: '투명'
+            transparent: '투명',
+            darkGray: '어두운 회색 (기본값)',
+            lightGray: '밝은 회색',
+            lightRed: '밝은 빨간색',
+            lightBlue: '밝은 파란색',
+            lightGreen: '밝은 녹색',
+            lightYellow: '밝은 노란색',
+            lightOrange: '밝은 주황색',
+            whiteDefault: '흰색 (기본값)'
         },
         customColor: '사용자 정의 색상',
         start: '시작',
@@ -493,7 +561,9 @@ window.translations = {
         continue: '계속',
         pause: '일시 정지',
         reset: '재설정',
-        stop: '정지'
+        stop: '정지',
+        alertSetTime: '카운트다운 시간을 설정해주세요',
+        alertTitle: '알림'
     },
 
     // Timezone names

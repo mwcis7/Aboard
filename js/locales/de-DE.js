@@ -21,6 +21,14 @@ window.translations = {
         reset: 'Zurücksetzen'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: 'Vorherigen Inhalt wiederherstellen',
+        message: 'Vorheriger Canvas-Inhalt wurde erkannt. Möchten Sie ihn wiederherstellen?',
+        restore: 'Wiederherstellen',
+        discard: 'Verwerfen'
+    },
+
     // App Title
     app: {
         title: 'Aboard - Minimalistisches Whiteboard',
@@ -60,8 +68,8 @@ window.translations = {
             color: 'Farbe',
             colorAndSize: 'Farbe & Größe',
             colorPicker: 'Farbwähler',
-            size: 'Größe',
-            sizeLabel: 'Größe: Aktuell',
+            size: 'Linienstärke',
+            sizeLabel: 'Stärke: Aktuell',
             sizePx: 'px'
         },
         shape: {
@@ -152,7 +160,18 @@ window.translations = {
         opacityHint: 'Hintergrundtransparenz anpassen, 100% ist vollständig undurchsichtig',
         contrast: 'Kontrast',
         contrastHint: 'Die Dunkelheit der Hintergrundmusterlinien anpassen',
-        preference: 'Hintergrundmuster-Präferenz'
+        preference: 'Hintergrundmuster-Präferenz',
+        moveCoordinateOrigin: 'Ursprung verschieben',
+        moveCoordinateOriginHint: 'Klicken und auf der Leinwand ziehen, um den Koordinatenursprung zu verschieben'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: 'Bestätigen',
+        cancel: 'Abbrechen',
+        flipHorizontal: 'Horizontal spiegeln',
+        flipVertical: 'Vertikal spiegeln',
+        rotate: 'Drehen'
     },
 
     // Page Navigation
@@ -234,6 +253,30 @@ window.translations = {
             },
             edgeSnap: 'Randausrichtung aktivieren',
             edgeSnapHint: 'Bedienfelder automatisch am Bildschirmrand ausrichten',
+            // Toolbar customization
+            toolbarCustomization: 'Symbolleisten-Anpassung',
+            toolbarCustomizationHint: 'Wählen Sie Werkzeuge für die Symbolleiste, ziehen Sie zum Neuordnen',
+            toolbarTools: {
+                undo: 'Rückgängig',
+                redo: 'Wiederholen',
+                pen: 'Stift',
+                move: 'Verschieben',
+                eraser: 'Radierer',
+                clear: 'Löschen',
+                background: 'Hintergrund',
+                more: 'Mehr',
+                settings: 'Einstellungen'
+            },
+            // Control button settings
+            controlButtonSettings: 'Steuerungstasten-Einstellungen',
+            controlButtonSettingsHint: 'Wählen Sie die anzuzeigenden Steuerungstasten',
+            controlButtons: {
+                zoom: 'Zoom-Tasten',
+                pagination: 'Seitennummerierung-Tasten',
+                time: 'Zeitanzeige',
+                fullscreen: 'Vollbild-Taste',
+                download: 'Download-Taste'
+            },
             controlPosition: 'Position der Steuerungstasten',
             controlPositionHint: 'Wählen Sie die Position der Zoom- und Seitensteuerung',
             positionTopLeft: 'Oben links',
@@ -341,6 +384,7 @@ window.translations = {
         },
         more: {
             title: 'Weitere Einstellungen',
+            description: 'Für Zeitanzeigeeinstellungen klicken Sie auf den Zeitbereich unten rechts',
             showTimeDisplay: 'Zeit und Datum anzeigen',
             showTimeDisplayHint: 'Aktuelle Zeit und Datum in der oberen rechten Ecke anzeigen'
         },
@@ -349,51 +393,33 @@ window.translations = {
             showDate: 'Datum anzeigen',
             showTime: 'Uhrzeit anzeigen',
             timezone: 'Zeitzone',
-        timezoneHint: 'Wählen Sie die anzuzeigende Zeitzone',
+            timezoneHint: 'Wählen Sie die anzuzeigende Zeitzone',
             timeFormat: 'Zeitformat',
-        timeFormatHint: 'Wählen Sie das Zeitanzeigeformat',
+            timeFormatHint: 'Wählen Sie das Zeitanzeigeformat',
             timeFormat12: '12-Stunden (AM/PM)',
             timeFormat24: '24-Stunden',
             dateFormat: 'Datumsformat',
-        dateFormatHint: 'Wählen Sie das Datumsanzeigeformat',
+            dateFormatHint: 'Wählen Sie das Datumsanzeigeformat',
             dateFormatYMD: 'Jahr-Monat-Tag (2024-01-01)',
             dateFormatMDY: 'Monat-Tag-Jahr (01-01-2024)',
             dateFormatDMY: 'Tag-Monat-Jahr (01-01-2024)',
             dateFormatChinese: 'Chinesisch (2024年1月1日)',
             colorSettings: 'Farbeinstellungen',
-        colorSettingsHint: 'Schriftart und Hintergrundfarbe für Zeitanzeige festlegen',
+            colorSettingsHint: 'Schriftart und Hintergrundfarbe für Zeitanzeige festlegen',
             colorHint: 'Schrift- und Hintergrundfarben für die Zeitanzeige festlegen',
             textColor: 'Textfarbe',
             bgColor: 'Hintergrundfarbe',
-        opacity: 'Deckkraft',
-        opacityLabel: 'Deckkraft: Aktuell',
-        fullscreenFontSize: 'Vollbild-Schriftgröße',
-        fullscreenFontSizeLabel: 'Vollbild-Schriftgröße: Aktuell',
-        soundSettings: 'Toneinstellungen',
-        playSound: 'Alarmton abspielen, wenn Countdown endet',
-        loopPlayback: 'Schleifenwiedergabe',
-        loopCount: 'Schleifenzähler',
-        uploadCustomAudio: 'Benutzerdefiniertes Audio hochladen',
-        soundPresets: {
-            classBell: 'Schulglocke (10s)',
-            digitalBeep: 'Digitaler Piepton (3s)',
-            gentle: 'Sanft (5s)',
-            examEnd: 'Prüfungsende (8s)'
-        },
             fontSize: 'Schriftgröße',
-        fontSizeLabel: 'Schriftgröße: Aktuell',
-        fontSizeHint: 'Schriftgröße der Zeitanzeige anpassen',
-        fontSizeLabel: 'Schriftgröße: Aktuell',
+            fontSizeLabel: 'Schriftgröße: Aktuell',
             opacity: 'Deckkraft',
-        opacityLabel: 'Deckkraft: Aktuell',
+            opacityLabel: 'Deckkraft: Aktuell',
             fullscreenMode: 'Vollbildmodus',
-        fullscreenModeHint: 'Wählen Sie, wie die Vollbild-Zeitanzeige ausgelöst wird',
+            fullscreenModeHint: 'Wählen Sie, wie die Vollbild-Zeitanzeige ausgelöst wird',
             fullscreenDisabled: 'Deaktiviert',
             fullscreenSingle: 'Einzelklick',
             fullscreenDouble: 'Doppelklick',
             fullscreenFontSize: 'Vollbild-Schriftgröße',
-        fullscreenFontSizeLabel: 'Vollbild-Schriftgröße: Aktuell',
-        fullscreenSliderLabel: 'Schriftgrößenanpassung (10%-85%)',
+            fullscreenFontSizeLabel: 'Vollbild-Schriftgröße: Aktuell',
             fullscreenFontSizeHint: 'Schriftgröße der Vollbild-Zeitanzeige anpassen, Bereich 10%-85%',
             customColor: 'Benutzerdefinierte Farbe'
         },
@@ -422,7 +448,10 @@ window.translations = {
         title: 'Funktionen',
         moreFeatures: 'Weitere Funktionen',
         time: 'Zeit',
-        timer: 'Timer'
+        timer: 'Timer',
+        randomPicker: 'Auswahl',
+        scoreboard: 'Punktetafel',
+        insertImage: 'Bild einfügen'
     },
 
     // Teaching Tools
@@ -452,10 +481,32 @@ window.translations = {
         showDate: 'Datum anzeigen',
         showTime: 'Uhrzeit anzeigen',
         settings: 'Einstellungen',
+        fullscreenDisplay: 'Vollbild',
         displayOptions: 'Anzeigeoptionen',
         dateAndTime: 'Datum und Uhrzeit',
         dateOnly: 'Nur Datum',
-        timeOnly: 'Nur Uhrzeit'
+        timeOnly: 'Nur Uhrzeit',
+        timezone: 'Zeitzone',
+        timeFormat: 'Zeitformat',
+        dateFormat: 'Datumsformat',
+        colorSettings: 'Farbeinstellungen',
+        textColor: 'Textfarbe',
+        bgColor: 'Hintergrundfarbe',
+        fontSize: 'Schriftgröße',
+        fontSizeLabel: 'Schriftgröße: Aktuell',
+        opacity: 'Deckkraft',
+        opacityLabel: 'Deckkraft: Aktuell',
+        fullscreenMode: 'Vollbildmodus',
+        fullscreenColorSettings: 'Vollbild-Farbeinstellungen',
+        fullscreenFontSize: 'Vollbild-Schriftgröße',
+        fullscreenFontSizeLabel: 'Vollbild-Schriftgröße: Aktuell',
+        fullscreenFontSizeHint: 'Vollbild-Schriftgröße anpassen (10%-85%)',
+        fullscreenSliderLabel: 'Schriftgröße (10%-85%)',
+        customColor: 'Benutzerdefinierte Farbe',
+        transparent: 'Transparent',
+        fullscreenDisabled: 'Deaktiviert',
+        fullscreenSingle: 'Einzelklick',
+        fullscreenDouble: 'Doppelklick'
     },
 
     // Timer
@@ -494,8 +545,12 @@ window.translations = {
         fullscreenFontSizeLabel: 'Vollbild-Schriftgröße: Aktuell',
         soundSettings: 'Toneinstellungen',
         playSound: 'Alarmton abspielen, wenn Countdown endet',
+        preview: 'Vorschau',
+        moreSettings: 'Weitere Einstellungen',
+        playbackSpeed: 'Wiedergabegeschwindigkeit',
         loopPlayback: 'Schleifenwiedergabe',
         loopCount: 'Schleifenzähler',
+        loopInterval: 'Wiederholungsintervall',
         uploadCustomAudio: 'Benutzerdefiniertes Audio hochladen',
         soundPresets: {
             classBell: 'Schulglocke (10s)',
@@ -512,7 +567,15 @@ window.translations = {
             yellow: 'Gelb',
             orange: 'Orange',
             purple: 'Lila',
-            transparent: 'Transparent'
+            transparent: 'Transparent',
+            darkGray: 'Dunkelgrau (Standard)',
+            lightGray: 'Hellgrau',
+            lightRed: 'Hellrot',
+            lightBlue: 'Hellblau',
+            lightGreen: 'Hellgrün',
+            lightYellow: 'Hellgelb',
+            lightOrange: 'Hellorange',
+            whiteDefault: 'Weiß (Standard)'
         },
         customColor: 'Benutzerdefinierte Farbe',
         start: 'Starten',
@@ -520,7 +583,9 @@ window.translations = {
         continue: 'Fortsetzen',
         pause: 'Pause',
         reset: 'Zurücksetzen',
-        stop: 'Stoppen'
+        stop: 'Stoppen',
+        alertSetTime: 'Bitte stellen Sie die Countdown-Zeit ein',
+        alertTitle: 'Hinweis'
     },
 
     // Timezone names

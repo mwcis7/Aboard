@@ -14,6 +14,8 @@ class BackgroundManager {
         this.backgroundImage = null;
         this.backgroundImageData = localStorage.getItem('backgroundImageData') || null;
         this.imageSize = parseFloat(localStorage.getItem('imageSize')) || 1.0;
+        this.isImagePaused = false; // State for GIF playback control
+        this.imageStaticData = null; // Store static frame for paused GIF
         
         // Coordinate system origin offset
         this.coordinateOriginX = parseFloat(localStorage.getItem('coordinateOriginX')) || 0;
@@ -25,7 +27,9 @@ class BackgroundManager {
             width: 0,
             height: 0,
             rotation: 0,
-            scale: 1.0
+            scale: 1.0,
+            flipHorizontal: false,
+            flipVertical: false
         };
         
         // Load saved transform if exists
@@ -36,20 +40,40 @@ class BackgroundManager {
         
         // Load saved image if exists
         if (this.backgroundImageData) {
-            const img = new Image();
-            img.onload = () => {
-                this.backgroundImage = img;
-                if (this.backgroundPattern === 'image') {
-                    this.drawBackground();
-                }
-            };
-            img.src = this.backgroundImageData;
+            this.backgroundImage = this.backgroundImageData;
+            // Also need to initialize the DOM element if it doesn't exist?
+            // The DOM element logic is handled in drawBackgroundPattern/updateBackgroundImageElement
+            if (this.backgroundPattern === 'image') {
+                // Defer drawing until next frame to ensure DOM is ready if called from constructor
+                setTimeout(() => this.drawBackground(), 0);
+            }
         }
+
+        this.gifInstance = null; // Store SuperGif instance
+        this.gifLoopCount = 0; // Default infinite
+        this.currentGifLoop = 0;
     }
     
     drawBackground() {
         this.bgCtx.clearRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
         
+        // Handle background image visibility
+        this.updateBackgroundImageElement();
+
+        // If using image pattern, we might want to make canvas background transparent or specific color
+        // If the user wants opacity control over the background COLOR when image is behind:
+        // Current logic: Image replaces background color? Or sits on top?
+        // If image is an element behind canvas (or z-indexed), we need transparency.
+        // But we put image element behind background canvas?
+        // Let's assume we want: Background Color -> Image Element -> Background Pattern (Grid)
+        // But `drawBackground` fills color first.
+        // If pattern is 'image', we should NOT fill opaque color if we want to see the image element (if it's behind).
+        // However, we decided to put image element ON TOP of bgCanvas (or handled via DOM).
+
+        // If pattern is 'image', we handle it via DOM element.
+        // We still fill background color on bgCanvas as a base layer?
+        // If image is transparent (e.g. PNG), we see background color.
+
         this.bgCtx.globalAlpha = this.bgOpacity;
         this.bgCtx.fillStyle = this.backgroundColor;
         this.bgCtx.fillRect(0, 0, this.bgCanvas.width, this.bgCanvas.height);
@@ -57,17 +81,15 @@ class BackgroundManager {
         
         this.drawBackgroundPattern();
         
-        localStorage.setItem('backgroundColor', this.backgroundColor);
-        localStorage.setItem('backgroundPattern', this.backgroundPattern);
-        localStorage.setItem('bgOpacity', this.bgOpacity);
-        localStorage.setItem('patternIntensity', this.patternIntensity);
+        // Performance optimization: Avoid synchronous localStorage writes in draw loop
+        // These are now handled in setters
     }
     
     drawBackgroundPattern() {
         if (this.backgroundPattern === 'blank') return;
         
-        if (this.backgroundPattern === 'image' && this.backgroundImage) {
-            this.drawImagePattern();
+        if (this.backgroundPattern === 'image') {
+            // Handled by updateBackgroundImageElement
             return;
         }
         
@@ -101,47 +123,208 @@ class BackgroundManager {
         this.bgCtx.restore();
     }
     
-    drawImagePattern() {
-        if (!this.backgroundImage) return;
+    updateBackgroundImageElement() {
+        let containerElement = document.getElementById('background-image-container');
+        let imgElement = document.getElementById('background-image-element');
         
-        this.bgCtx.save();
-        this.bgCtx.globalAlpha = this.patternIntensity;
-        
-        const dpr = window.devicePixelRatio || 1;
-        const canvasWidth = this.bgCanvas.width / dpr;
-        const canvasHeight = this.bgCanvas.height / dpr;
-        
-        // Use transform if available, otherwise fall back to simple centering
-        if (this.imageTransform.width > 0 && this.imageTransform.height > 0) {
-            // Apply transformations
-            const centerX = this.imageTransform.x + this.imageTransform.width / 2;
-            const centerY = this.imageTransform.y + this.imageTransform.height / 2;
+        if (this.backgroundPattern === 'image' && this.backgroundImageData) {
+            if (!containerElement) {
+                containerElement = document.createElement('div');
+                containerElement.id = 'background-image-container';
+                containerElement.style.position = 'absolute';
+                containerElement.style.pointerEvents = 'none';
+                containerElement.style.zIndex = '0'; // Same as bgCanvas
+
+                // Append to transform-layer
+                const transformLayer = document.getElementById('transform-layer');
+                if (transformLayer) {
+                    transformLayer.insertBefore(containerElement, document.getElementById('canvas'));
+                } else {
+                    document.body.insertBefore(containerElement, document.getElementById('canvas'));
+                }
+            }
+
+            if (!imgElement) {
+                imgElement = document.createElement('img');
+                imgElement.id = 'background-image-element';
+                imgElement.style.width = '100%';
+                imgElement.style.height = '100%';
+                imgElement.style.display = 'block';
+                containerElement.appendChild(imgElement);
+            }
+
+            containerElement.style.display = 'block';
+
+            // Check if source changed
+            if (imgElement.src !== this.backgroundImageData && !this.isImagePaused) {
+                imgElement.src = this.backgroundImageData;
+
+                // Check if it's a GIF and initialize SuperGif if needed
+                if (this.isGif(this.backgroundImageData)) {
+                    this.initGif(imgElement);
+                    // Show GIF settings button
+                    const gifSettingsBtn = document.getElementById('bg-gif-settings-btn');
+                    if (gifSettingsBtn) gifSettingsBtn.style.display = 'block';
+                } else {
+                    // Hide GIF settings button
+                    const gifSettingsBtn = document.getElementById('bg-gif-settings-btn');
+                    if (gifSettingsBtn) gifSettingsBtn.style.display = 'none';
+                    if (this.gifInstance) {
+                        this.gifInstance = null;
+                        // Restore img if SuperGif modified DOM
+                        const container = document.getElementById('background-image-container');
+                        const existingJsgif = container.querySelector('.jsgif');
+                        if (existingJsgif) {
+                             existingJsgif.remove();
+                             container.appendChild(imgElement);
+                             imgElement.style.display = 'block';
+                        }
+                    }
+                }
+            }
+
+            // Apply transformations to container
+            const dpr = window.devicePixelRatio || 1;
+            const canvasWidth = this.bgCanvas.width / dpr;
+            const canvasHeight = this.bgCanvas.height / dpr;
             
-            this.bgCtx.translate(centerX, centerY);
-            this.bgCtx.rotate(this.imageTransform.rotation * Math.PI / 180);
-            this.bgCtx.scale(this.imageTransform.scale, this.imageTransform.scale);
-            this.bgCtx.translate(-centerX, -centerY);
-            
-            this.bgCtx.drawImage(
-                this.backgroundImage,
-                this.imageTransform.x,
-                this.imageTransform.y,
-                this.imageTransform.width,
-                this.imageTransform.height
-            );
+            containerElement.style.opacity = this.patternIntensity;
+
+            // Handle paused state (freeze GIF or static image)
+            if (this.isImagePaused) {
+                 if (this.gifInstance) {
+                     this.gifInstance.pause();
+                 }
+            } else {
+                 if (this.gifInstance && !this.gifInstance.get_playing()) {
+                     this.gifInstance.play();
+                 }
+            }
+
+            if (this.imageTransform.width > 0 && this.imageTransform.height > 0) {
+                // Apply transformations using CSS
+                containerElement.style.left = `${this.imageTransform.x}px`;
+                containerElement.style.top = `${this.imageTransform.y}px`;
+                containerElement.style.width = `${this.imageTransform.width}px`;
+                containerElement.style.height = `${this.imageTransform.height}px`;
+
+                // Build transform string including flip
+                const scaleX = this.imageTransform.flipHorizontal ? -this.imageTransform.scale : this.imageTransform.scale;
+                const scaleY = this.imageTransform.flipVertical ? -this.imageTransform.scale : this.imageTransform.scale;
+
+                containerElement.style.transformOrigin = 'center center';
+                containerElement.style.transform = `rotate(${this.imageTransform.rotation}deg) scale(${scaleX}, ${scaleY})`;
+            } else {
+                // Fallback centering logic
+                if (imgElement.naturalWidth) {
+                    const scaledWidth = imgElement.naturalWidth * this.imageSize;
+                    const scaledHeight = imgElement.naturalHeight * this.imageSize;
+                    const x = (canvasWidth - scaledWidth) / 2;
+                    const y = (canvasHeight - scaledHeight) / 2;
+
+                    containerElement.style.left = `${x}px`;
+                    containerElement.style.top = `${y}px`;
+                    containerElement.style.width = `${scaledWidth}px`;
+                    containerElement.style.height = `${scaledHeight}px`;
+                    containerElement.style.transform = 'none';
+                } else {
+                    // If not loaded yet, wait
+                    imgElement.onload = () => this.drawBackground(); // Redraw (update styles) when loaded
+                }
+            }
+
         } else {
-            // Fall back to simple centered image
-            const scaledWidth = this.backgroundImage.width * this.imageSize;
-            const scaledHeight = this.backgroundImage.height * this.imageSize;
-            const x = (canvasWidth - scaledWidth) / 2;
-            const y = (canvasHeight - scaledHeight) / 2;
-            
-            this.bgCtx.drawImage(this.backgroundImage, x, y, scaledWidth, scaledHeight);
+            if (containerElement) {
+                containerElement.style.display = 'none';
+            }
         }
-        
-        this.bgCtx.restore();
+    }
+
+    isGif(dataUrl) {
+        return dataUrl && dataUrl.startsWith('data:image/gif');
+    }
+
+    async initGif(imgElement) {
+        // Ensure SuperGif is loaded
+        if (!window.SuperGif) {
+            try {
+                if (window.ScriptLoader) {
+                    await ScriptLoader.load('js/modules/libgif.js');
+                } else {
+                    console.error('ScriptLoader not found');
+                    return;
+                }
+            } catch (e) {
+                console.error('Failed to load libgif.js', e);
+                return;
+            }
+        }
+
+        // Clear previous instance if exists (remove jsgif wrapper if any)
+        const container = document.getElementById('background-image-container');
+        // If there is already a jsgif div, remove it and restore img
+        const existingJsgif = container.querySelector('.jsgif');
+        if (existingJsgif) {
+             existingJsgif.remove();
+             container.appendChild(imgElement);
+             imgElement.style.display = 'block';
+        }
+
+        this.gifInstance = null;
+
+        try {
+            this.gifInstance = new SuperGif({
+                gif: imgElement,
+                auto_play: !this.isImagePaused,
+                loop_mode: this.gifLoopCount === 0 ? true : false,
+                vp_t: 0, vp_l: 0,
+                on_end: () => {
+                   this.handleGifLoop();
+                }
+            });
+
+            this.currentGifLoop = 0;
+
+            this.gifInstance.load(() => {
+                const canvas = this.gifInstance.get_canvas();
+                if (canvas) {
+                    canvas.style.width = '100%';
+                    canvas.style.height = '100%';
+                }
+            });
+        } catch(e) {
+            console.error("Failed to init SuperGif", e);
+        }
+    }
+
+    handleGifLoop() {
+        if (this.gifLoopCount > 0) {
+            this.currentGifLoop++;
+            if (this.currentGifLoop >= this.gifLoopCount) {
+                this.gifInstance.pause();
+                this.isImagePaused = true;
+                // Dispatch event for UI update
+                window.dispatchEvent(new CustomEvent('backgroundGifPaused'));
+            }
+        }
     }
     
+    setGifLoopCount(count) {
+        this.gifLoopCount = count;
+        // Re-init gif to apply loop mode if needed or just reset counter
+        // SuperGif doesn't allow changing loop_mode dynamically easily.
+        // But we handle loop counting manually in handleGifLoop mostly.
+        this.currentGifLoop = 0;
+
+        // Update loop_mode config if we re-init
+        // For now, assume manual handling is enough or re-init on next load
+        // Force re-init by setting src to same?
+        // Or better, just rely on manual handling.
+
+        // If we change from 0 (infinite) to N, we need to start counting.
+        // If we change from N to 0, we need to stop counting/stopping.
+    }
+
     drawDotsPattern(dpr, patternColor) {
         const baseSpacing = 20 * dpr;
         const spacing = baseSpacing / this.patternDensity;
@@ -270,8 +453,8 @@ class BackgroundManager {
     drawCoordinatePattern(dpr, patternColor) {
         // Coordinate system center is always at the exact center of the canvas
         // The origin offset is applied relative to this center
-        const centerX = this.bgCanvas.width / 2;
-        const centerY = this.bgCanvas.height / 2;
+        const centerX = (this.bgCanvas.width / 2) + (this.coordinateOriginX * dpr);
+        const centerY = (this.bgCanvas.height / 2) + (this.coordinateOriginY * dpr);
         const baseGridSize = 20 * dpr;
         const gridSize = baseGridSize / this.patternDensity;
         
@@ -352,21 +535,25 @@ class BackgroundManager {
     
     setBackgroundColor(color) {
         this.backgroundColor = color;
+        localStorage.setItem('backgroundColor', this.backgroundColor);
         this.drawBackground();
     }
     
     setBackgroundPattern(pattern) {
         this.backgroundPattern = pattern;
+        localStorage.setItem('backgroundPattern', this.backgroundPattern);
         this.drawBackground();
     }
     
     setOpacity(opacity) {
         this.bgOpacity = opacity;
+        localStorage.setItem('bgOpacity', this.bgOpacity);
         this.drawBackground();
     }
     
     setPatternIntensity(intensity) {
         this.patternIntensity = intensity;
+        localStorage.setItem('patternIntensity', this.patternIntensity);
         this.drawBackground();
     }
     
@@ -378,15 +565,56 @@ class BackgroundManager {
     
     setBackgroundImage(imageData) {
         this.backgroundImageData = imageData;
+        this.isImagePaused = false;
+        this.imageStaticData = null;
         localStorage.setItem('backgroundImageData', imageData);
         
-        const img = new Image();
-        img.onload = () => {
-            this.backgroundImage = img;
-            this.backgroundPattern = 'image';
-            this.drawBackground();
-        };
-        img.src = imageData;
+        return new Promise((resolve) => {
+            // Create an Image object to get dimensions for ImageControls
+            const img = new Image();
+            img.onload = () => {
+                this.backgroundImage = img;
+
+                // If this is a new image, reset transform to center it
+                this.imageTransform = {
+                    x: 0,
+                    y: 0,
+                    width: 0, // Resetting width/height forces ImageControls to recalculate
+                    height: 0,
+                    rotation: 0,
+                    scale: 1.0
+                };
+
+                this.backgroundPattern = 'image';
+                this.drawBackground();
+                resolve();
+            };
+            img.src = imageData;
+        });
+    }
+
+    toggleImagePlayback() {
+        if (!this.backgroundPattern === 'image' || !this.backgroundImageData) return;
+
+        this.isImagePaused = !this.isImagePaused;
+
+        if (this.gifInstance) {
+            if (this.isImagePaused) {
+                this.gifInstance.pause();
+            } else {
+                if (this.gifLoopCount > 0 && this.currentGifLoop >= this.gifLoopCount) {
+                    this.currentGifLoop = 0;
+                }
+                this.gifInstance.play();
+            }
+        } else {
+            // Fallback for non-GIFs
+            this.updateBackgroundImageElement();
+        }
+    }
+
+    captureStaticFrame() {
+        // Deprecated/Unused with SuperGif
     }
     
     setImageSize(size) {
@@ -441,8 +669,8 @@ class BackgroundManager {
         
         const dpr = window.devicePixelRatio || 1;
         // Center is always at exact canvas center (matching drawCoordinatePattern)
-        const centerX = this.bgCanvas.width / (2 * dpr);
-        const centerY = this.bgCanvas.height / (2 * dpr);
+        const centerX = (this.bgCanvas.width / (2 * dpr)) + this.coordinateOriginX;
+        const centerY = (this.bgCanvas.height / (2 * dpr)) + this.coordinateOriginY;
         
         const distance = Math.sqrt(Math.pow(canvasX - centerX, 2) + Math.pow(canvasY - centerY, 2));
         return distance < threshold;

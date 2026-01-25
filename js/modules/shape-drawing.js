@@ -27,7 +27,7 @@ class ShapeDrawingManager {
         this.ARROW_LINE_OFFSET = 0.8; // Factor to shorten line at arrow ends
         this.ARROW_SIZE_DEFAULT = 15; // Default arrow size
         this.ARROW_SIZE_MIN_SETTING = 5; // Minimum configurable arrow size
-        this.ARROW_SIZE_MAX_SETTING = 50; // Maximum configurable arrow size
+        this.ARROW_SIZE_MAX_SETTING = 100; // Maximum configurable arrow size
         
         // Arrow size setting (independent from line thickness)
         this.arrowSize = this.ARROW_SIZE_DEFAULT;
@@ -79,7 +79,7 @@ class ShapeDrawingManager {
     }
     
     setDashDensity(density) {
-        this.dashDensity = Math.max(5, Math.min(40, density));
+        this.dashDensity = Math.max(1, Math.min(100, density));
         this.saveSettings();
     }
     
@@ -96,6 +96,17 @@ class ShapeDrawingManager {
     setMultiLineSpacing(spacing) {
         this.multiLineSpacing = Math.max(5, Math.min(50, spacing));
         this.saveSettings();
+    }
+    
+    /**
+     * Get the scale factor for preview drawing.
+     * This accounts for both the canvas CSS scale (zoom) and DPR to ensure
+     * the preview matches the final drawing appearance.
+     * @param {boolean} isPreview - Whether this is for preview (true) or final drawing (false)
+     * @returns {number} The scale factor to apply
+     */
+    getPreviewScaleFactor(isPreview) {
+        return isPreview ? this.canvasCssScale : 1;
     }
     
     createPreviewCanvas() {
@@ -293,9 +304,12 @@ class ShapeDrawingManager {
         // which scales all drawing operations including lineWidth. To match the final
         // drawing (which doesn't have this transform), we need to compensate by dividing
         // lineWidth by DPR when drawing on the preview canvas.
-        if (isPreview) {
-            lineWidth = lineWidth / this.cachedDpr;
-        }
+        // Additionally, we need to account for the CSS scale of the main canvas (zoom level).
+        // The preview is drawn in screen coordinates, but the final shape is drawn in canvas
+        // coordinates. When the canvas is zoomed, its CSS transform affects how the final
+        // drawing appears. We multiply by canvasCssScale to make the preview match the final.
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
+        lineWidth = lineWidth * scaleFactor;
         
         ctx.lineWidth = lineWidth;
         
@@ -306,12 +320,15 @@ class ShapeDrawingManager {
     applyLineStyle(ctx) {
         ctx.setLineDash([]);
         
+        // Calculate visual spacing based on density value
+        const spacing = Math.max(2, 400 / Math.max(1, this.dashDensity));
+
         switch(this.lineStyle) {
             case 'dashed':
-                ctx.setLineDash([this.dashDensity, this.dashDensity / 2]);
+                ctx.setLineDash([spacing, spacing * 0.6]);
                 break;
             case 'dotted':
-                ctx.setLineDash([2, this.dashDensity / 2]);
+                ctx.setLineDash([2, spacing * 0.6]);
                 break;
             case 'solid':
             case 'wavy':
@@ -329,22 +346,22 @@ class ShapeDrawingManager {
         // Use screen coordinates for preview (matches what user sees on screen)
         switch(this.currentShape) {
             case 'line':
-                this.drawLineWithStyle(this.previewCtx, this.startScreenPoint, this.endScreenPoint);
+                this.drawLineWithStyle(this.previewCtx, this.startScreenPoint, this.endScreenPoint, true);
                 break;
             case 'arrow':
-                this.drawArrowLine(this.previewCtx, this.startScreenPoint, this.endScreenPoint, false);
+                this.drawArrowLine(this.previewCtx, this.startScreenPoint, this.endScreenPoint, false, true);
                 break;
             case 'doubleArrow':
-                this.drawArrowLine(this.previewCtx, this.startScreenPoint, this.endScreenPoint, true);
+                this.drawArrowLine(this.previewCtx, this.startScreenPoint, this.endScreenPoint, true, true);
                 break;
             case 'rectangle':
-                this.drawRectangleWithStyle(this.previewCtx, this.startScreenPoint, this.endScreenPoint);
+                this.drawRectangleWithStyle(this.previewCtx, this.startScreenPoint, this.endScreenPoint, true);
                 break;
             case 'circle':
-                this.drawCircleWithStyle(this.previewCtx, this.startScreenPoint, this.endScreenPoint);
+                this.drawCircleWithStyle(this.previewCtx, this.startScreenPoint, this.endScreenPoint, true);
                 break;
             case 'ellipse':
-                this.drawEllipseWithStyle(this.previewCtx, this.startScreenPoint, this.endScreenPoint);
+                this.drawEllipseWithStyle(this.previewCtx, this.startScreenPoint, this.endScreenPoint, true);
                 break;
         }
         
@@ -357,22 +374,22 @@ class ShapeDrawingManager {
         
         switch(this.currentShape) {
             case 'line':
-                this.drawLineWithStyle(this.ctx, this.startPoint, this.endPoint);
+                this.drawLineWithStyle(this.ctx, this.startPoint, this.endPoint, false);
                 break;
             case 'arrow':
-                this.drawArrowLine(this.ctx, this.startPoint, this.endPoint, false);
+                this.drawArrowLine(this.ctx, this.startPoint, this.endPoint, false, false);
                 break;
             case 'doubleArrow':
-                this.drawArrowLine(this.ctx, this.startPoint, this.endPoint, true);
+                this.drawArrowLine(this.ctx, this.startPoint, this.endPoint, true, false);
                 break;
             case 'rectangle':
-                this.drawRectangleWithStyle(this.ctx, this.startPoint, this.endPoint);
+                this.drawRectangleWithStyle(this.ctx, this.startPoint, this.endPoint, false);
                 break;
             case 'circle':
-                this.drawCircleWithStyle(this.ctx, this.startPoint, this.endPoint);
+                this.drawCircleWithStyle(this.ctx, this.startPoint, this.endPoint, false);
                 break;
             case 'ellipse':
-                this.drawEllipseWithStyle(this.ctx, this.startPoint, this.endPoint);
+                this.drawEllipseWithStyle(this.ctx, this.startPoint, this.endPoint, false);
                 break;
         }
         
@@ -381,27 +398,27 @@ class ShapeDrawingManager {
         this.ctx.setLineDash([]);
     }
     
-    drawLineWithStyle(ctx, start, end) {
+    drawLineWithStyle(ctx, start, end, isPreview = false) {
         if (!start || !end) return;
         
         switch(this.lineStyle) {
             case 'wavy':
-                this.drawWavyLine(ctx, start, end);
+                this.drawWavyLine(ctx, start, end, isPreview);
                 break;
             case 'double':
-                this.drawMultiLine(ctx, start, end, 2);
+                this.drawMultiLine(ctx, start, end, 2, isPreview);
                 break;
             case 'triple':
-                this.drawMultiLine(ctx, start, end, 3);
+                this.drawMultiLine(ctx, start, end, 3, isPreview);
                 break;
             case 'multi':
-                this.drawMultiLine(ctx, start, end, this.multiLineCount);
+                this.drawMultiLine(ctx, start, end, this.multiLineCount, isPreview);
                 break;
             case 'arrow':
-                this.drawArrowLine(ctx, start, end, false);
+                this.drawArrowLine(ctx, start, end, false, isPreview);
                 break;
             case 'doubleArrow':
-                this.drawArrowLine(ctx, start, end, true);
+                this.drawArrowLine(ctx, start, end, true, isPreview);
                 break;
             default:
                 this.drawLine(ctx, start, end);
@@ -409,7 +426,7 @@ class ShapeDrawingManager {
         }
     }
     
-    drawRectangleWithStyle(ctx, start, end) {
+    drawRectangleWithStyle(ctx, start, end, isPreview = false) {
         if (!start || !end) return;
         
         const x = Math.min(start.x, end.x);
@@ -420,18 +437,18 @@ class ShapeDrawingManager {
         switch(this.lineStyle) {
             case 'wavy':
                 // Draw wavy rectangle (4 wavy lines)
-                this.drawWavyLine(ctx, {x: x, y: y}, {x: x + width, y: y}); // top
-                this.drawWavyLine(ctx, {x: x + width, y: y}, {x: x + width, y: y + height}); // right
-                this.drawWavyLine(ctx, {x: x + width, y: y + height}, {x: x, y: y + height}); // bottom
-                this.drawWavyLine(ctx, {x: x, y: y + height}, {x: x, y: y}); // left
+                this.drawWavyLine(ctx, {x: x, y: y}, {x: x + width, y: y}, isPreview); // top
+                this.drawWavyLine(ctx, {x: x + width, y: y}, {x: x + width, y: y + height}, isPreview); // right
+                this.drawWavyLine(ctx, {x: x + width, y: y + height}, {x: x, y: y + height}, isPreview); // bottom
+                this.drawWavyLine(ctx, {x: x, y: y + height}, {x: x, y: y}, isPreview); // left
                 break;
             case 'double':
             case 'triple':
                 const count = this.lineStyle === 'double' ? 2 : 3;
-                this.drawMultiRectangle(ctx, x, y, width, height, count);
+                this.drawMultiRectangle(ctx, x, y, width, height, count, isPreview);
                 break;
             case 'multi':
-                this.drawMultiRectangle(ctx, x, y, width, height, this.multiLineCount);
+                this.drawMultiRectangle(ctx, x, y, width, height, this.multiLineCount, isPreview);
                 break;
             default:
                 ctx.beginPath();
@@ -445,7 +462,7 @@ class ShapeDrawingManager {
      * Draw circle with various line styles
      * Circle is drawn from center point outward to edge (radius)
      */
-    drawCircleWithStyle(ctx, center, edge) {
+    drawCircleWithStyle(ctx, center, edge, isPreview = false) {
         if (!center || !edge) return;
         
         // Calculate radius from center to edge point
@@ -457,16 +474,16 @@ class ShapeDrawingManager {
         
         switch(this.lineStyle) {
             case 'wavy':
-                this.drawWavyCircle(ctx, center, radius);
+                this.drawWavyCircle(ctx, center, radius, isPreview);
                 break;
             case 'double':
-                this.drawMultiCircle(ctx, center, radius, 2);
+                this.drawMultiCircle(ctx, center, radius, 2, isPreview);
                 break;
             case 'triple':
-                this.drawMultiCircle(ctx, center, radius, 3);
+                this.drawMultiCircle(ctx, center, radius, 3, isPreview);
                 break;
             case 'multi':
-                this.drawMultiCircle(ctx, center, radius, this.multiLineCount);
+                this.drawMultiCircle(ctx, center, radius, this.multiLineCount, isPreview);
                 break;
             default:
                 // Solid, dashed, dotted - use standard arc
@@ -480,9 +497,12 @@ class ShapeDrawingManager {
     /**
      * Draw wavy circle using bezier curves
      */
-    drawWavyCircle(ctx, center, radius) {
-        const waveAmplitude = this.drawingEngine.penSize * 1.2;
-        const numWaves = Math.max(12, Math.floor(radius * Math.PI * 2 / this.waveDensity));
+    drawWavyCircle(ctx, center, radius, isPreview = false) {
+        // For preview, scale the wave parameters to match the final drawing
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
+        const waveAmplitude = this.drawingEngine.penSize * 1.2 * scaleFactor;
+        const waveDensity = this.waveDensity * scaleFactor;
+        const numWaves = Math.max(12, Math.floor(radius * Math.PI * 2 / waveDensity));
         
         ctx.beginPath();
         
@@ -518,12 +538,15 @@ class ShapeDrawingManager {
     /**
      * Draw multiple concentric circles (for double/triple line style)
      */
-    drawMultiCircle(ctx, center, radius, count) {
-        const totalSpacing = (count - 1) * this.multiLineSpacing;
+    drawMultiCircle(ctx, center, radius, count, isPreview = false) {
+        // For preview, scale the spacing to match the final drawing
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
+        const spacing = this.multiLineSpacing * scaleFactor;
+        const totalSpacing = (count - 1) * spacing;
         const startOffset = -totalSpacing / 2;
         
         for (let i = 0; i < count; i++) {
-            const offset = startOffset + i * this.multiLineSpacing;
+            const offset = startOffset + i * spacing;
             const circleRadius = Math.max(1, radius + offset);
             
             ctx.beginPath();
@@ -547,8 +570,9 @@ class ShapeDrawingManager {
      * @param {Object} start - Start point {x, y}
      * @param {Object} end - End point {x, y}
      * @param {boolean} isDouble - Whether to draw arrowheads at both ends
+     * @param {boolean} isPreview - Whether this is a preview drawing (needs scaling)
      */
-    drawArrowLine(ctx, start, end, isDouble) {
+    drawArrowLine(ctx, start, end, isDouble, isPreview = false) {
         if (!start || !end) return;
         
         const dx = end.x - start.x;
@@ -562,7 +586,8 @@ class ShapeDrawingManager {
         const ny = dy / length;
         
         // Use independent arrow size setting
-        const arrowSize = this.arrowSize;
+        // Apply preview scale factor to match what will appear on the final canvas
+        const arrowSize = this.arrowSize * this.getPreviewScaleFactor(isPreview);
         const arrowAngle = this.ARROW_ANGLE;
         const lineOffset = this.ARROW_LINE_OFFSET;
         
@@ -622,7 +647,7 @@ class ShapeDrawingManager {
         }
     }
     
-    drawWavyLine(ctx, start, end) {
+    drawWavyLine(ctx, start, end, isPreview = false) {
         if (!start || !end) return;
         
         const dx = end.x - start.x;
@@ -632,8 +657,10 @@ class ShapeDrawingManager {
         if (length === 0) return;
         
         // Calculate wave parameters
-        const waveLength = this.waveDensity;
-        const waveAmplitude = this.drawingEngine.penSize * 1.5;
+        // For preview, scale the wave parameters to match the final drawing
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
+        const waveLength = this.waveDensity * scaleFactor;
+        const waveAmplitude = this.drawingEngine.penSize * 1.5 * scaleFactor;
         const numSegments = Math.max(4, Math.floor(length / (waveLength / 2)));
         
         // Calculate perpendicular direction for wave offset
@@ -665,7 +692,7 @@ class ShapeDrawingManager {
         ctx.stroke();
     }
     
-    drawMultiLine(ctx, start, end, count) {
+    drawMultiLine(ctx, start, end, count, isPreview = false) {
         if (!start || !end) return;
         
         const dx = end.x - start.x;
@@ -678,11 +705,14 @@ class ShapeDrawingManager {
         const perpX = -dy / length;
         const perpY = dx / length;
         
-        const totalWidth = (count - 1) * this.multiLineSpacing;
+        // For preview, scale the spacing to match the final drawing
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
+        const spacing = this.multiLineSpacing * scaleFactor;
+        const totalWidth = (count - 1) * spacing;
         const startOffset = -totalWidth / 2;
         
         for (let i = 0; i < count; i++) {
-            const offset = startOffset + i * this.multiLineSpacing;
+            const offset = startOffset + i * spacing;
             ctx.beginPath();
             ctx.moveTo(start.x + perpX * offset, start.y + perpY * offset);
             ctx.lineTo(end.x + perpX * offset, end.y + perpY * offset);
@@ -690,12 +720,15 @@ class ShapeDrawingManager {
         }
     }
     
-    drawMultiRectangle(ctx, x, y, width, height, count) {
-        const totalOffset = (count - 1) * this.multiLineSpacing;
+    drawMultiRectangle(ctx, x, y, width, height, count, isPreview = false) {
+        // For preview, scale the spacing to match the final drawing
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
+        const spacing = this.multiLineSpacing * scaleFactor;
+        const totalOffset = (count - 1) * spacing;
         const startOffset = -totalOffset / 2;
         
         for (let i = 0; i < count; i++) {
-            const offset = startOffset + i * this.multiLineSpacing;
+            const offset = startOffset + i * spacing;
             ctx.beginPath();
             ctx.rect(
                 x - offset,
@@ -711,7 +744,7 @@ class ShapeDrawingManager {
      * Draw ellipse with various line styles
      * Ellipse is drawn from center point outward to edge (defines radii)
      */
-    drawEllipseWithStyle(ctx, center, edge) {
+    drawEllipseWithStyle(ctx, center, edge, isPreview = false) {
         if (!center || !edge) return;
         
         // Calculate radii from center to edge point
@@ -722,16 +755,16 @@ class ShapeDrawingManager {
         
         switch(this.lineStyle) {
             case 'wavy':
-                this.drawWavyEllipse(ctx, center, radiusX, radiusY);
+                this.drawWavyEllipse(ctx, center, radiusX, radiusY, isPreview);
                 break;
             case 'double':
-                this.drawMultiEllipse(ctx, center, radiusX, radiusY, 2);
+                this.drawMultiEllipse(ctx, center, radiusX, radiusY, 2, isPreview);
                 break;
             case 'triple':
-                this.drawMultiEllipse(ctx, center, radiusX, radiusY, 3);
+                this.drawMultiEllipse(ctx, center, radiusX, radiusY, 3, isPreview);
                 break;
             case 'multi':
-                this.drawMultiEllipse(ctx, center, radiusX, radiusY, this.multiLineCount);
+                this.drawMultiEllipse(ctx, center, radiusX, radiusY, this.multiLineCount, isPreview);
                 break;
             default:
                 // Solid, dashed, dotted - use standard ellipse
@@ -745,10 +778,13 @@ class ShapeDrawingManager {
     /**
      * Draw wavy ellipse using bezier curves
      */
-    drawWavyEllipse(ctx, center, radiusX, radiusY) {
-        const waveAmplitude = this.drawingEngine.penSize * 1.2;
+    drawWavyEllipse(ctx, center, radiusX, radiusY, isPreview = false) {
+        // For preview, scale the wave parameters to match the final drawing
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
+        const waveAmplitude = this.drawingEngine.penSize * 1.2 * scaleFactor;
+        const waveDensity = this.waveDensity * scaleFactor;
         const avgRadius = (radiusX + radiusY) / 2;
-        const numWaves = Math.max(12, Math.floor(avgRadius * Math.PI * 2 / this.waveDensity));
+        const numWaves = Math.max(12, Math.floor(avgRadius * Math.PI * 2 / waveDensity));
         
         ctx.beginPath();
         
@@ -785,12 +821,15 @@ class ShapeDrawingManager {
     /**
      * Draw multiple concentric ellipses (for double/triple line style)
      */
-    drawMultiEllipse(ctx, center, radiusX, radiusY, count) {
-        const totalSpacing = (count - 1) * this.multiLineSpacing;
+    drawMultiEllipse(ctx, center, radiusX, radiusY, count, isPreview = false) {
+        // For preview, scale the spacing to match the final drawing
+        const scaleFactor = this.getPreviewScaleFactor(isPreview);
+        const spacing = this.multiLineSpacing * scaleFactor;
+        const totalSpacing = (count - 1) * spacing;
         const startOffset = -totalSpacing / 2;
         
         for (let i = 0; i < count; i++) {
-            const offset = startOffset + i * this.multiLineSpacing;
+            const offset = startOffset + i * spacing;
             const ellipseRadiusX = Math.max(1, radiusX + offset);
             const ellipseRadiusY = Math.max(1, radiusY + offset);
             

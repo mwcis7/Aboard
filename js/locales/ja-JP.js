@@ -21,6 +21,14 @@ window.translations = {
         reset: 'リセット'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: '前回のコンテンツを復元',
+        message: '前回のキャンバスコンテンツが検出されました。復元しますか？',
+        restore: '復元',
+        discard: '破棄'
+    },
+
     // App Title
     app: {
         title: 'Aboard - ミニマリストホワイトボード',
@@ -60,8 +68,8 @@ window.translations = {
             color: '色',
             colorAndSize: '色とサイズ',
             colorPicker: 'カラーピッカー',
-            size: 'サイズ',
-            sizeLabel: 'サイズ：現在',
+            size: '線の太さ',
+            sizeLabel: '太さ：現在',
             sizePx: 'px'
         },
         shape: {
@@ -159,7 +167,18 @@ window.translations = {
         contrastLabel: 'パターン透明度：現在',
         contrastHint: '背景パターン線の明暗を調整します',
         preference: '背景パターンの設定',
-        upload: 'アップロード'
+        upload: 'アップロード',
+        moveCoordinateOrigin: '原点を移動',
+        moveCoordinateOriginHint: 'ボタンをクリックしてキャンバス上でドラッグして座標原点を移動'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: '確定',
+        cancel: 'キャンセル',
+        flipHorizontal: '左右反転',
+        flipVertical: '上下反転',
+        rotate: '回転'
     },
 
     // Page Navigation
@@ -241,6 +260,30 @@ window.translations = {
             },
             edgeSnap: 'エッジスナップを有効化',
             edgeSnapHint: 'ドラッグ時にコントロールパネルを画面端に自動配置',
+            // Toolbar customization
+            toolbarCustomization: 'ツールバーのカスタマイズ',
+            toolbarCustomizationHint: 'ツールバーに表示するツールを選択し、ドラッグで順序を変更',
+            toolbarTools: {
+                undo: '元に戻す',
+                redo: 'やり直し',
+                pen: 'ペン',
+                move: '移動',
+                eraser: '消しゴム',
+                clear: 'クリア',
+                background: '背景',
+                more: 'その他',
+                settings: '設定'
+            },
+            // Control button settings
+            controlButtonSettings: 'コントロールボタン設定',
+            controlButtonSettingsHint: '表示するコントロールボタンを選択',
+            controlButtons: {
+                zoom: 'ズームボタン',
+                pagination: 'ページネーションボタン',
+                time: '時刻表示',
+                fullscreen: 'フルスクリーンボタン',
+                download: 'ダウンロードボタン'
+            },
             controlPosition: 'コントロールボタンの位置',
             controlPositionHint: 'ズームとページネーションコントロールの表示位置を選択',
             positionTopLeft: '左上',
@@ -344,6 +387,7 @@ window.translations = {
         },
         more: {
             title: 'その他の設定',
+            description: '時刻表示の設定は右下の時刻エリアをクリックしてください',
             showTimeDisplay: '時刻と日付を表示',
             showTimeDisplayHint: '右上隅に現在の時刻と日付を表示'
         },
@@ -365,12 +409,15 @@ window.translations = {
             textColor: 'テキスト色',
             bgColor: '背景色',
             fontSize: 'フォントサイズ',
+            fontSizeLabel: 'フォントサイズ：現在',
             opacity: '不透明度',
+            opacityLabel: '不透明度：現在',
             fullscreenMode: 'フルスクリーンモード',
             fullscreenDisabled: '無効',
             fullscreenSingle: 'シングルクリック',
             fullscreenDouble: 'ダブルクリック',
             fullscreenFontSize: 'フルスクリーンフォントサイズ',
+            fullscreenFontSizeLabel: 'フルスクリーンフォントサイズ：現在',
             fullscreenFontSizeHint: 'フルスクリーン時刻表示のフォントサイズを調整、範囲10%-85%',
             customColor: 'カスタムカラー'
         }
@@ -381,7 +428,10 @@ window.translations = {
         title: '機能',
         moreFeatures: 'その他の機能',
         time: '時刻',
-        timer: 'タイマー'
+        timer: 'タイマー',
+        randomPicker: '抽選器',
+        scoreboard: 'スコアボード',
+        insertImage: '画像を挿入'
     },
 
     // Teaching Tools
@@ -411,6 +461,7 @@ window.translations = {
         showDate: '日付を表示',
         showTime: '時刻を表示',
         settings: '設定',
+        fullscreenDisplay: 'フルスクリーン表示',
         displayOptions: '表示オプション',
         dateAndTime: '日付と時刻',
         dateOnly: '日付のみ',
@@ -432,11 +483,16 @@ window.translations = {
         opacityLabel: '不透明度：現在',
         fullscreenMode: 'フルスクリーンモード',
         fullscreenModeHint: '時刻をフルスクリーン表示するトリガーを選択',
+        fullscreenColorSettings: 'フルスクリーン色設定',
         fullscreenFontSize: 'フルスクリーンフォントサイズ',
         fullscreenFontSizeLabel: 'フルスクリーンフォントサイズ：現在',
+        fullscreenFontSizeHint: 'フルスクリーンフォントサイズを調整 (10%-85%)',
         fullscreenSliderLabel: 'フォントサイズ調整 (10%-85%)',
         customColor: 'カスタムカラー',
-        transparent: '透明'
+        transparent: '透明',
+        fullscreenDisabled: '無効',
+        fullscreenSingle: 'シングルクリック',
+        fullscreenDouble: 'ダブルクリック'
     },
 
     // Timer
@@ -467,8 +523,12 @@ window.translations = {
         fullscreenFontSizeLabel: 'フルスクリーンフォントサイズ：現在',
         soundSettings: 'サウンド設定',
         playSound: 'カウントダウン終了時にアラート音を再生',
+        preview: '試聴',
+        moreSettings: '詳細設定',
+        playbackSpeed: '再生速度',
         loopPlayback: 'ループ再生',
         loopCount: 'ループ回数',
+        loopInterval: 'ループ間隔',
         uploadCustomAudio: 'カスタムオーディオをアップロード',
         soundPresets: {
             classBell: 'クラスベル (10秒)',
@@ -485,7 +545,15 @@ window.translations = {
             yellow: '黄',
             orange: 'オレンジ',
             purple: '紫',
-            transparent: '透明'
+            transparent: '透明',
+            darkGray: '濃いグレー (デフォルト)',
+            lightGray: '薄いグレー',
+            lightRed: '薄い赤',
+            lightBlue: '薄い青',
+            lightGreen: '薄い緑',
+            lightYellow: '薄い黄',
+            lightOrange: '薄いオレンジ',
+            whiteDefault: '白 (デフォルト)'
         },
         customColor: 'カスタムカラー',
         start: '開始',
@@ -493,7 +561,9 @@ window.translations = {
         continue: '続行',
         pause: '一時停止',
         reset: 'リセット',
-        stop: '停止'
+        stop: '停止',
+        alertSetTime: 'カウントダウン時間を設定してください',
+        alertTitle: '警告'
     },
 
     // Timezone names

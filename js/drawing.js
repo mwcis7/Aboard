@@ -74,7 +74,7 @@ class DrawingEngine {
     }
     
     setPenDashDensity(density) {
-        this.penDashDensity = Math.max(3, Math.min(30, density));
+        this.penDashDensity = Math.max(1, Math.min(100, density));
         localStorage.setItem('penDashDensity', this.penDashDensity);
     }
     
@@ -106,45 +106,21 @@ class DrawingEngine {
     }
     
     applyLineStyle() {
-        // For freehand drawing, we don't use setLineDash anymore
-        // Instead, we handle dash/dot patterns in the draw() method
-        this.ctx.setLineDash([]);
-    }
-    
-    /**
-     * Check if current point should be drawn based on dash pattern
-     * Returns true if we should draw, false if we're in a gap
-     */
-    shouldDrawDash(distance) {
-        if (this.penLineStyle === 'solid' || this.penLineStyle === 'multi') {
-            return true;
-        }
-        
-        // Get dash and gap lengths based on style and density
-        let dashLength, gapLength;
-        
         if (this.penLineStyle === 'dashed') {
-            // Dash density controls the length of dashes
-            dashLength = this.penDashDensity;
-            gapLength = this.penDashDensity * 0.6;
+            const spacing = Math.max(2, 400 / Math.max(1, this.penDashDensity));
+            const dashLen = spacing;
+            const gapLen = spacing * 0.6;
+            this.ctx.setLineDash([dashLen, gapLen]);
+            this.ctx.lineDashOffset = -this.accumulatedDistance;
         } else if (this.penLineStyle === 'dotted') {
-            // Dotted: small dots with gaps controlled by density
-            dashLength = this.penSize * 1.5;
-            gapLength = this.penDashDensity * 0.8;
+            const spacing = Math.max(2, 400 / Math.max(1, this.penDashDensity));
+            const dotLen = this.penSize * 0.1; // Almost circular dots (with round caps)
+            const gapLen = spacing * 0.6 + this.penSize; // Gap needs to account for cap width
+            this.ctx.setLineDash([dotLen, gapLen]);
+            this.ctx.lineDashOffset = -this.accumulatedDistance;
         } else {
-            return true; // Default to solid
+            this.ctx.setLineDash([]);
         }
-        
-        const cycleLength = dashLength + gapLength;
-        
-        // Add distance to accumulated
-        this.accumulatedDistance += distance;
-        
-        // Check where we are in the cycle
-        const positionInCycle = this.accumulatedDistance % cycleLength;
-        
-        // Return true if we're in the dash phase
-        return positionInCycle < dashLength;
     }
     
     setupDrawingContext() {
@@ -185,8 +161,10 @@ class DrawingEngine {
             this.ctx.setLineDash([]); // Always solid for eraser
             
             // Set line cap/join based on eraser shape
+            // Use 'square' for rectangle to match the visual cursor behavior
+            // 'square' extends line by half lineWidth, matching the eraser border edge
             if (this.eraserShape === 'rectangle') {
-                this.ctx.lineCap = 'butt';
+                this.ctx.lineCap = 'square';
                 this.ctx.lineJoin = 'miter';
             } else {
                 this.ctx.lineCap = 'round';
@@ -244,93 +222,129 @@ class DrawingEngine {
     }
     
     draw(e) {
-        if (!this.isDrawing) return;
+        this.drawBatch([e]);
+    }
+
+    drawBatch(events) {
+        if (!this.isDrawing || !events || events.length === 0) return;
         
-        let pos = this.getPosition(e);
+        const validPoints = [];
         
-        // Check for edge snapping when pen tool is active
-        if (this.currentTool === 'pen' && this.edgeDrawingManager) {
-            const processed = this.edgeDrawingManager.processDrawingPoint(pos.x, pos.y);
-            if (processed.blocked) {
-                // Point is inside a tool, don't draw this segment
-                return;
-            }
-            if (processed.snapped) {
-                pos = { x: processed.x, y: processed.y };
-                this.isSnappedToEdge = true;
-            } else {
-                this.isSnappedToEdge = false;
-            }
-        }
-        
-        if (this.lastPoint && 
-            Math.abs(pos.x - this.lastPoint.x) < 0.5 && 
-            Math.abs(pos.y - this.lastPoint.y) < 0.5) {
-            return;
-        }
-        
-        this.points.push(pos);
-        
-        if (this.points.length >= 2) {
-            const lastIndex = this.points.length - 1;
-            const prevPoint = this.points[lastIndex - 1];
-            const currPoint = this.points[lastIndex];
-            
-            // Calculate distance between points for pressure simulation
-            // Larger distance = faster movement = less pressure
-            const dx = currPoint.x - prevPoint.x;
-            const dy = currPoint.y - prevPoint.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            // Check if we should draw this segment (for dashed/dotted lines)
-            const shouldDraw = this.shouldDrawDash(distance);
-            
-            // Apply pen-specific drawing effects with line style support
-            // All pen types now support multi-line, dashed, and dotted styles
-            if (shouldDraw) {
-                if (this.penLineStyle === 'multi') {
-                    // Draw multiple parallel lines for all pen types
-                    this.drawMultiLine(prevPoint, currPoint);
-                } else if (this.penType === 'ballpoint') {
-                    // Ballpoint pen: smooth ink flow with slight pressure variation
-                    this.ctx.save();
-                    const minWidth = this.penSize * 0.7;
-                    const maxWidth = this.penSize * 1.2;
-                    const speedFactor = Math.min(distance / 8, 1);
-                    const lineWidth = maxWidth - (speedFactor * (maxWidth - minWidth));
-                    this.ctx.lineWidth = lineWidth;
-                    this.ctx.globalAlpha = 0.95;
-                    
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(prevPoint.x, prevPoint.y);
-                    this.ctx.lineTo(currPoint.x, currPoint.y);
-                    this.ctx.stroke();
-                    this.ctx.restore();
-                    this.setupDrawingContext();
-                } else if (this.penType === 'brush') {
-                    // Brush pen: soft edges with ink spread effect like calligraphy
-                    this.drawBrushStroke(prevPoint, currPoint, distance);
-                } else if (this.penType === 'pencil') {
-                    // Pencil: grainy texture with lighter strokes
-                    this.drawPencilStroke(prevPoint, currPoint, distance);
-                } else if (this.penType === 'fountain') {
-                    // Fountain pen: variable line width with elegant flow
-                    this.drawFountainStroke(prevPoint, currPoint, distance);
+        // Pre-process events to get valid points
+        for (const e of events) {
+            let pos = this.getPosition(e);
+
+            // Check for edge snapping when pen tool is active
+            if (this.currentTool === 'pen' && this.edgeDrawingManager) {
+                const processed = this.edgeDrawingManager.processDrawingPoint(pos.x, pos.y);
+                if (processed.blocked) {
+                    // Point is inside a tool, don't draw this segment
+                    continue;
+                }
+                if (processed.snapped) {
+                    pos = { x: processed.x, y: processed.y };
+                    this.isSnappedToEdge = true;
                 } else {
-                    // Normal pen: consistent line width
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(prevPoint.x, prevPoint.y);
-                    this.ctx.lineTo(currPoint.x, currPoint.y);
-                    this.ctx.stroke();
+                    this.isSnappedToEdge = false;
                 }
             }
-            
-            this.lastPoint = currPoint;
-        } else {
+
+            if (this.lastPoint &&
+                Math.abs(pos.x - this.lastPoint.x) < 0.5 &&
+                Math.abs(pos.y - this.lastPoint.y) < 0.5) {
+                continue;
+            }
+
+            this.points.push(pos);
+            validPoints.push(pos);
             this.lastPoint = pos;
+        }
+        
+        if (validPoints.length === 0) return;
+        
+        // Apply line style before drawing
+        this.applyLineStyle();
+        
+        // Check if we can use batch drawing (Normal pen)
+        const complexBrushes = ['pencil', 'brush', 'fountain', 'ballpoint'];
+        const isComplex = complexBrushes.includes(this.penType) || this.penLineStyle === 'multi';
+
+        if (!isComplex) {
+            // Optimized batch drawing for Normal pen
+            // Single path operation for multiple segments
+            this.ctx.beginPath();
+            
+            // Start from the point before the first valid point
+            const startIndex = this.points.length - validPoints.length;
+            // Safe check for index
+            const startPoint = (startIndex > 0) ? this.points[startIndex - 1] : validPoints[0];
+            
+            this.ctx.moveTo(startPoint.x, startPoint.y);
+            
+            for (const p of validPoints) {
+                this.ctx.lineTo(p.x, p.y);
+
+                // Update accumulated distance (approximate)
+                // Not strictly needed for solid lines but good for consistency
+                // const dx = p.x - startPoint.x;
+                // const dy = p.y - startPoint.y;
+                // this.accumulatedDistance += Math.sqrt(dx*dx + dy*dy);
+            }
+            
+            this.ctx.stroke();
+        } else {
+            // Fallback for complex brushes: draw segment by segment
+            const startIndex = this.points.length - validPoints.length;
+
+            for (let i = 0; i < validPoints.length; i++) {
+                const currIndex = startIndex + i;
+                // Need previous point
+                if (currIndex === 0) continue;
+
+                const prevPoint = this.points[currIndex - 1];
+                const currPoint = this.points[currIndex];
+
+                const dx = currPoint.x - prevPoint.x;
+                const dy = currPoint.y - prevPoint.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                this.accumulatedDistance += distance;
+
+                if (this.penLineStyle === 'multi') {
+                    this.drawMultiLine(prevPoint, currPoint);
+                } else if (this.penType === 'ballpoint') {
+                    this.drawBallpointStroke(prevPoint, currPoint, distance);
+                } else if (this.penType === 'brush') {
+                    this.drawBrushStroke(prevPoint, currPoint, distance);
+                } else if (this.penType === 'pencil') {
+                    this.drawPencilStroke(prevPoint, currPoint, distance);
+                } else if (this.penType === 'fountain') {
+                    this.drawFountainStroke(prevPoint, currPoint, distance);
+                }
+            }
         }
     }
     
+    /**
+     * Draw a ballpoint pen stroke
+     */
+    drawBallpointStroke(prevPoint, currPoint, distance) {
+        this.ctx.save();
+        const minWidth = this.penSize * 0.7;
+        const maxWidth = this.penSize * 1.2;
+        const speedFactor = Math.min(distance / 8, 1);
+        const lineWidth = maxWidth - (speedFactor * (maxWidth - minWidth));
+        this.ctx.lineWidth = lineWidth;
+        this.ctx.globalAlpha = 0.95;
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(prevPoint.x, prevPoint.y);
+        this.ctx.lineTo(currPoint.x, currPoint.y);
+        this.ctx.stroke();
+        this.ctx.restore();
+        this.setupDrawingContext();
+    }
+
     /**
      * Draw multiple parallel lines for multi-line style
      * Uses smoothed perpendiculars to avoid discontinuities at corners

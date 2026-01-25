@@ -18,7 +18,18 @@ window.translations = {
         no: '否',
         ok: '好的',
         apply: '应用',
-        reset: '重置'
+        reset: '重置',
+        start: '开始',
+        stop: '停止',
+        preview: '试听'
+    },
+
+    // Recovery dialog
+    recovery: {
+        title: '恢复上次内容',
+        message: '检测到上次使用时的画布内容，是否恢复？',
+        restore: '恢复',
+        discard: '放弃'
     },
 
     // App Title
@@ -34,7 +45,7 @@ window.translations = {
         pen: '笔',
         shape: '形状',
         move: '移动',
-        eraser: '橡皮',
+        eraser: '擦除',
         clear: '清空',
         background: '背景',
         teachingTools: '教具',
@@ -60,8 +71,9 @@ window.translations = {
             color: '颜色',
             colorAndSize: '颜色与粗细',
             colorPicker: '取色器',
-            size: '粗细',
-            sizeLabel: '粗细：当前',
+            size: '线条粗细',
+            thickness: '笔粗细',
+            sizeLabel: '线条粗细：当前',
             sizePx: 'px'
         },
         shape: {
@@ -78,12 +90,12 @@ window.translations = {
             lineProperties: '线条属性'
         },
         eraser: {
-            title: '橡皮',
-            type: '橡皮类型',
-            normal: '普通橡皮',
-            pixel: '像素橡皮',
-            size: '橡皮大小',
-            sizeLabel: '橡皮擦大小：当前',
+            title: '擦除',
+            type: '擦除类型',
+            normal: '普通擦除',
+            pixel: '像素擦除',
+            size: '擦除大小',
+            sizeLabel: '擦除大小：当前',
             shape: '形状',
             shapeCircle: '圆形',
             shapeRectangle: '方形'
@@ -147,6 +159,7 @@ window.translations = {
         coordinate: '坐标系',
         coordinateOriginHint: '在移动模式下双击选中坐标系中心可拖动移动',
         image: '上传图片',
+        imagePrefix: '图片',
         density: '密度',
         densityLabel: '密度：当前',
         size: '大小',
@@ -159,7 +172,18 @@ window.translations = {
         contrastHint: '调整背景图案线条的明暗程度',
         preference: '背景图案偏好',
         preferenceHint: '选择在属性栏中显示的图案',
-        upload: '上传'
+        upload: '上传',
+        moveCoordinateOrigin: '移动坐标原点',
+        moveCoordinateOriginHint: '点击按钮后，可在画布上拖动移动坐标原点'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: '确定',
+        cancel: '取消',
+        flipHorizontal: '水平翻转',
+        flipVertical: '垂直翻转',
+        rotate: '旋转'
     },
 
     // Page Navigation
@@ -174,6 +198,17 @@ window.translations = {
     // Settings
     settings: {
         title: '设置',
+        exportSuccess: '配置已成功导出！',
+        exportFailed: '导出配置失败',
+        importSuccess: '配置已导入',
+        importError: '配置文件无效',
+        importNoChange: '没有检测到配置变更',
+        diff: {
+            current: '当前',
+            new: '新',
+            title: '导入配置确认',
+            message: '检测到以下设置将被更改：'
+        },
         tabs: {
             general: '通用',
             display: '显示',
@@ -192,6 +227,8 @@ window.translations = {
             themeColor: '主题色',
             showZoomControls: '显示缩放控件',
             showZoomControlsHint: '勾选后，在画布上方显示缩放控件',
+            showImportExportBtn: '显示导入导出按钮',
+            showImportExportBtnHint: '勾选后，在缩放控件旁显示导入导出按钮',
             showFullscreenBtn: '显示全屏按钮',
             showFullscreenBtnHint: '勾选后，在缩放控件旁显示全屏按钮',
             toolbarSize: '工具栏大小',
@@ -243,6 +280,32 @@ window.translations = {
             },
             edgeSnap: '启用边缘吸附',
             edgeSnapHint: '拖动控制面板时自动吸附到屏幕边缘',
+            touchZoom: '触控缩放',
+            touchZoomHint: '允许双指捏合缩放画布',
+            // Toolbar customization
+            toolbarCustomization: '工具栏自定义',
+            toolbarCustomizationHint: '选择要在工具栏中显示的工具，拖动可调整顺序',
+            toolbarTools: {
+                undo: '撤销',
+                redo: '重做',
+                pen: '笔',
+                move: '移动',
+                eraser: '擦除',
+                clear: '清空',
+                background: '背景',
+                more: '更多',
+                settings: '设置'
+            },
+            // Control button settings
+            controlButtonSettings: '控制按钮设置',
+            controlButtonSettingsHint: '选择要显示的控制按钮',
+            controlButtons: {
+                zoom: '缩放按钮',
+                pagination: '分页按钮',
+                time: '时间显示',
+                fullscreen: '全屏按钮',
+                download: '下载按钮'
+            },
             controlPosition: '控制按钮位置',
             controlPositionHint: '选择缩放和分页控件在屏幕上的显示位置',
             positionTopLeft: '左上角',
@@ -262,6 +325,8 @@ window.translations = {
             modeHint: '选择画布的显示模式',
             size: '画布尺寸',
             sizeHint: '选择预设尺寸或自定义画布比例和大小',
+            unlimitedZoom: '允许无限放大',
+            unlimitedZoomHint: '勾选后，画布可以无限放大（最高500倍）',
             infiniteCanvas: '无限画布',
             pagination: '分页模式',
             presets: {
@@ -306,21 +371,21 @@ window.translations = {
             title: '公告',
             welcome: '欢迎使用 Aboard！',
             content: [
-                '欢迎使用 Aboard 白板应用！',
+            '**欢迎使用 Aboard 白板应用！**',
                 '',
-                '使用提示：',
+            '[color=#007AFF]使用提示：[/color]',
                 '• 点击底部工具栏选择不同工具进行绘画',
-                '• 使用 Ctrl+Z 撤销，Ctrl+Y 重做',
+            '• 使用 **Ctrl+Z** 撤销，**Ctrl+Y** 重做',
                 '• 点击右上角缩放按钮或使用鼠标滚轮缩放画布',
                 '• 点击背景按钮可以选择不同的背景图案',
                 '• 在设置中可以切换无限画布或分页模式',
                 '• 支持触控和鼠标操作',
                 '',
-                '链接：',
+            '[color=#007AFF]链接：[/color]',
                 '• GitHub 项目：https://github.com/lifeafter619/Aboard',
                 '• 作者博客：https://66619.eu.org',
                 '',
-                '祝您使用愉快！'
+            '[size=16px]**祝您使用愉快！**[/size]'
             ]
         },
         about: {
@@ -350,6 +415,7 @@ window.translations = {
         },
         more: {
             title: '更多设置',
+            description: '时间显示相关设置请点击右下角时间区域进入设置界面',
             showTimeDisplay: '显示时间和日期',
             showTimeDisplayHint: '在右上角显示当前时间和日期'
         },
@@ -365,6 +431,7 @@ window.translations = {
             timeFormat24: '24小时制',
             dateFormat: '日期格式',
             dateFormatHint: '选择日期的显示格式',
+            dateFormatAuto: '自动 (跟随系统)',
             dateFormatYMD: '年-月-日 (2024-01-01)',
             dateFormatMDY: '月-日-年 (01-01-2024)',
             dateFormatDMY: '日-月-年 (01-01-2024)',
@@ -375,8 +442,10 @@ window.translations = {
             textColor: '字体颜色',
             bgColor: '背景颜色',
             fontSize: '字体大小',
+            fontSizeLabel: '字体大小：当前',
             fontSizeHint: '调整时间显示的字体大小',
             opacity: '透明度',
+            opacityLabel: '透明度：当前',
             opacityHint: '调整时间显示的透明度',
             fullscreenMode: '全屏模式',
             fullscreenModeHint: '选择如何触发时间全屏显示',
@@ -384,6 +453,7 @@ window.translations = {
             fullscreenSingle: '单击',
             fullscreenDouble: '双击',
             fullscreenFontSize: '全屏字体大小',
+            fullscreenFontSizeLabel: '全屏字体大小：当前',
             fullscreenFontSizeHint: '调整全屏时间显示的字体大小，范围10%-85%',
             customColor: '自定义颜色',
             displayOptions: '显示选项'
@@ -395,7 +465,45 @@ window.translations = {
         title: '小功能',
         moreFeatures: '更多功能',
         time: '时间',
-        timer: '计时'
+        timer: '计时',
+        randomPicker: '点名器',
+        scoreboard: '计分板',
+        insertImage: '插入图片'
+    },
+
+    // Random Picker
+    randomPicker: {
+        namePicker: '姓名点名器',
+        numberPicker: '数字点名器',
+        noNames: '请添加名单',
+        settingsTitle: '点名器设置',
+        modeName: '姓名模式',
+        modeNumber: '数字模式',
+        titleLabel: '标题',
+        titlePlaceholder: '自定义标题（可选）',
+        namesLabel: '名单列表（每行一个）',
+        namesPlaceholder: '张三\n李四\n王五',
+        defaultNames: '张三\n李四\n王五\n赵六\n孙七',
+        allowRepeats: '允许重复抽取',
+        rangeLabel: '数字范围',
+        importLabel: '导入名单 (Excel/CSV)',
+        defaultColumnName: '姓名',
+        importBtn: '选择文件导入',
+        importHint: '提示：自动读取表格中对应列名的内容',
+        importSuccess: '成功导入 {count} 个名字',
+        importNoData: '未找到指定列的数据，请检查列名设置',
+        importError: '文件解析失败'
+    },
+
+    // Scoreboard
+    scoreboard: {
+        title: '计分板',
+        addTeam: '添加队伍',
+        reset: '重置分数',
+        confirmRemoveTeam: '确定要移除这个队伍吗？',
+        teamDefault: '队伍',
+        removeTeam: '删除队伍',
+        confirmReset: '确定要重置所有分数吗？'
     },
 
     // Teaching Tools
@@ -425,6 +533,8 @@ window.translations = {
         showDate: '显示日期',
         showTime: '显示时间',
         settings: '设置',
+        am: '上午',
+        pm: '下午',
         fullscreenDisplay: '全屏显示',
         displayOptions: '显示选项',
         dateAndTime: '日期和时间',
@@ -441,31 +551,39 @@ window.translations = {
         opacity: '透明度',
         opacityLabel: '透明度：当前',
         fullscreenMode: '全屏模式',
+        fullscreenColorSettings: '全屏颜色设置',
         fullscreenFontSize: '全屏字体大小',
         fullscreenFontSizeLabel: '全屏字体大小：当前',
+        fullscreenFontSizeHint: '调整全屏时间显示的字体大小，范围10%-85%',
         fullscreenSliderLabel: '字体大小调节 (10%-85%)',
         customColor: '自定义颜色',
-        transparent: '透明'
+        transparent: '透明',
+        fullscreenDisabled: '关闭',
+        fullscreenSingle: '单击',
+        fullscreenDouble: '双击'
     },
 
     // Timer
     timer: {
+        title: '计时器',
         settingsTitle: '计时器设置',
         mode: '模式',
         selectMode: '选择模式',
         countdown: '倒计时',
         stopwatch: '正计时',
-        duration: '计时时长（分钟）',
+        duration: '设置总时间',
         hours: '小时',
         minutes: '分钟',
         seconds: '秒',
-        title: '计时器标题（可选）',
+        timerTitle: '计时器标题（可选）',
         titlePlaceholder: '例如：课堂演讲、考试时间等',
         setTime: '设置时间',
         setStartTime: '设置开始时间',
         fontSettings: '字体设置',
         fontSize: '字体大小',
         fontSizeLabel: '字体大小：当前',
+        minimal: '最简',
+        minimalMode: '最简显示 (双击恢复)',
         adjustColor: '调整颜色',
         colorSettings: '颜色设置',
         textColor: '字体颜色',
@@ -476,8 +594,13 @@ window.translations = {
         fullscreenFontSizeLabel: '全屏字体大小：当前',
         soundSettings: '声音设置',
         playSound: '倒计时结束时播放提示音',
+        preview: '试听',
+        moreSettings: '更多设置',
+        playbackSpeed: '播放倍速',
         loopPlayback: '循环播放',
         loopCount: '循环次数',
+        loopInterval: '循环间隔',
+        seconds: '秒',
         uploadCustomAudio: '上传自定义音频',
         soundPresets: {
             classBell: '开始铃声(10s)',
@@ -510,7 +633,9 @@ window.translations = {
         continue: '继续',
         pause: '暂停',
         reset: '重置',
-        stop: '停止'
+        stop: '停止',
+        alertSetTime: '请设置倒计时时间',
+        alertTitle: '提示'
     },
 
     // Timezone names

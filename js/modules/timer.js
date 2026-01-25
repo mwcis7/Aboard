@@ -3,24 +3,28 @@
 
 // Single Timer Instance Class
 class TimerInstance {
-    constructor(id, mode, duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, manager, title = '', textColor = '#333333', bgColor = '#FFFFFF') {
-        this.id = id;
-        this.mode = mode; // 'stopwatch' or 'countdown'
-        this.manager = manager;
-        this.title = title; // Timer title
+    constructor(options) {
+        this.id = options.id;
+        this.mode = options.mode; // 'stopwatch' or 'countdown'
+        this.manager = options.manager;
+        this.title = options.title || ''; // Timer title
         
         // Color settings
-        this.textColor = textColor;
-        this.bgColor = bgColor;
+        this.textColor = options.textColor || '#333333';
+        this.bgColor = options.bgColor || '#FFFFFF';
+        this.fullscreenTextColor = options.fullscreenTextColor || '#FFFFFF'; // Default white text
+        this.fullscreenBgColor = options.fullscreenBgColor || '#000000';     // Default black bg
         
         // Timer state
         this.isRunning = false;
         this.isPaused = false;
         this.startTime = 0;
         
+        const duration = options.duration || 0;
+
         // For stopwatch mode, duration is the starting time
         // For countdown mode, duration is the total time
-        if (mode === 'stopwatch') {
+        if (this.mode === 'stopwatch') {
             this.elapsedTime = duration; // Start from this time
         } else {
             this.elapsedTime = 0;
@@ -31,13 +35,16 @@ class TimerInstance {
         this.intervalId = null;
         
         // Sound settings
-        this.playSound = playSound;
-        this.selectedSound = selectedSound;
-        this.customSoundUrl = customSoundUrl;
-        this.loopSound = loopSound;
-        this.loopCount = loopCount;
+        this.playSound = options.playSound;
+        this.selectedSound = options.selectedSound;
+        this.customSoundUrl = options.customSoundUrl;
+        this.loopSound = options.loopSound;
+        this.loopCount = options.loopCount;
+        this.loopInterval = options.loopInterval || 0;
+        this.playbackSpeed = options.playbackSpeed || 1.0;
         this.currentAudio = null; // Track the current audio element
         this.currentLoopIteration = 0; // Track current loop iteration
+        this.loopTimeoutId = null; // Track loop timeout
         
         // UI elements
         this.displayElement = null;
@@ -111,10 +118,12 @@ class TimerInstance {
         
         const titleHTML = this.title ? `<div class="timer-display-title">${this.title}</div>` : '';
         
+        const modeText = this.mode === 'stopwatch' ? window.i18n.t('timer.stopwatch') : window.i18n.t('timer.countdown');
+
         display.innerHTML = `
             <div class="timer-display-header">
-                <div class="timer-display-mode">${this.mode === 'stopwatch' ? '正计时' : '倒计时'}</div>
-                <button class="timer-close-btn" title="关闭">
+                <div class="timer-display-mode">${modeText}</div>
+                <button class="timer-close-btn" title="${window.i18n.t('common.close')}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -129,7 +138,7 @@ class TimerInstance {
                         <rect x="6" y="4" width="4" height="16"></rect>
                         <rect x="14" y="4" width="4" height="16"></rect>
                     </svg>
-                    暂停
+                    ${window.i18n.t('timer.pause')}
                 </button>
                 <button class="timer-control-btn timer-reset-btn">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -138,34 +147,34 @@ class TimerInstance {
                         <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
                         <path d="M3 21v-5h5"></path>
                     </svg>
-                    重置
+                    ${window.i18n.t('timer.reset')}
                 </button>
             </div>
             <div class="timer-display-actions">
-                <button class="timer-action-btn timer-minimal-btn" title="最简显示 (双击恢复)">
+                <button class="timer-action-btn timer-minimal-btn" title="${window.i18n.t('timer.minimalMode') || '最简显示 (双击恢复)'}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="9" y1="9" x2="15" y2="15"></line>
                         <line x1="15" y1="9" x2="9" y2="15"></line>
                     </svg>
-                    最简
+                    ${window.i18n.t('timer.minimal') || '最简'}
                 </button>
-                <button class="timer-action-btn timer-adjust-btn" title="调整">
+                <button class="timer-action-btn timer-adjust-btn" title="${window.i18n.t('timer.adjust')}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <circle cx="12" cy="12" r="3"></circle>
                         <path d="M12 1v6m0 6v6M5.6 5.6l4.2 4.2m4.2 4.2l4.2 4.2M1 12h6m6 0h6M5.6 18.4l4.2-4.2m4.2-4.2l4.2-4.2"></path>
                     </svg>
-                    调整
+                    ${window.i18n.t('timer.adjust')}
                 </button>
-                <button class="timer-action-btn timer-fullscreen-btn" title="全屏">
+                <button class="timer-action-btn timer-fullscreen-btn" title="${window.i18n.t('timeDisplay.fullscreenDisplay')}">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
                     </svg>
-                    全屏
+                    ${window.i18n.t('timeDisplay.fullscreenDisplay')}
                 </button>
             </div>
             <div class="timer-font-size-control">
-                <label>字体大小</label>
+                <label>${window.i18n.t('timer.fontSize')}</label>
                 <input type="range" class="timer-font-size-slider" min="16" max="60" value="32" step="2">
             </div>
         `;
@@ -242,14 +251,13 @@ class TimerInstance {
     }
     
     setupDragging() {
-        const header = this.displayElement.querySelector('.timer-display-header');
-        const timeDisplay = this.displayElement.querySelector('.timer-display-time');
-        
         // Unified handler for mouse and touch start
         const handleStart = (e) => {
-            // Don't start dragging if clicking on close button
-            if (e.target.closest('.timer-close-btn')) return;
+            // Don't start dragging if clicking on interactive elements
+            if (e.target.closest('button') || e.target.closest('input')) return;
             
+            e.stopPropagation(); // Prevent drawing on canvas
+
             this.isDragging = true;
             this.displayElement.classList.add('dragging');
             
@@ -263,12 +271,10 @@ class TimerInstance {
             e.preventDefault();
         };
         
-        // Allow dragging from header or time display (when compact)
+        // Allow dragging from the entire widget
         // Add both mouse and touch event listeners for better touch device support
-        header.addEventListener('mousedown', handleStart);
-        header.addEventListener('touchstart', handleStart, { passive: false });
-        timeDisplay.addEventListener('mousedown', handleStart);
-        timeDisplay.addEventListener('touchstart', handleStart, { passive: false });
+        this.displayElement.addEventListener('mousedown', handleStart);
+        this.displayElement.addEventListener('touchstart', handleStart, { passive: false });
         
         // Unified handler for mouse and touch move
         const handleMove = (e) => {
@@ -277,44 +283,39 @@ class TimerInstance {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
-            // Use requestAnimationFrame for smooth dragging performance
-            requestAnimationFrame(() => {
-                if (!this.isDragging) return; // Double check inside RAF
-                
-                const x = clientX - this.dragOffset.x;
-                const y = clientY - this.dragOffset.y;
-                
-                // Apply edge snapping
-                const edgeSnapDistance = 30;
-                const windowWidth = window.innerWidth;
-                const windowHeight = window.innerHeight;
-                const rect = this.displayElement.getBoundingClientRect();
-                
-                let finalX = x;
-                let finalY = y;
-                
-                // Snap to edges
-                if (x < edgeSnapDistance) {
-                    finalX = 10;
-                } else if (x + rect.width > windowWidth - edgeSnapDistance) {
-                    finalX = windowWidth - rect.width - 10;
-                }
-                
-                if (y < edgeSnapDistance) {
-                    finalY = 10;
-                } else if (y + rect.height > windowHeight - edgeSnapDistance) {
-                    finalY = windowHeight - rect.height - 10;
-                }
-                
-                // Keep within bounds
-                finalX = Math.max(0, Math.min(finalX, windowWidth - rect.width));
-                finalY = Math.max(0, Math.min(finalY, windowHeight - rect.height));
-                
-                this.displayElement.style.left = `${finalX}px`;
-                this.displayElement.style.top = `${finalY}px`;
-                this.displayElement.style.right = 'auto';
-                this.displayElement.style.bottom = 'auto';
-            });
+            const x = clientX - this.dragOffset.x;
+            const y = clientY - this.dragOffset.y;
+
+            // Apply edge snapping
+            const edgeSnapDistance = 30;
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            const rect = this.displayElement.getBoundingClientRect();
+
+            let finalX = x;
+            let finalY = y;
+
+            // Snap to edges
+            if (x < edgeSnapDistance) {
+                finalX = 10;
+            } else if (x + rect.width > windowWidth - edgeSnapDistance) {
+                finalX = windowWidth - rect.width - 10;
+            }
+
+            if (y < edgeSnapDistance) {
+                finalY = 10;
+            } else if (y + rect.height > windowHeight - edgeSnapDistance) {
+                finalY = windowHeight - rect.height - 10;
+            }
+
+            // Keep within bounds
+            finalX = Math.max(0, Math.min(finalX, windowWidth - rect.width));
+            finalY = Math.max(0, Math.min(finalY, windowHeight - rect.height));
+
+            this.displayElement.style.left = `${finalX}px`;
+            this.displayElement.style.top = `${finalY}px`;
+            this.displayElement.style.right = 'auto';
+            this.displayElement.style.bottom = 'auto';
         };
         
         // Unified handler for mouse and touch end
@@ -419,7 +420,7 @@ class TimerInstance {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polygon points="5 3 19 12 5 21 5 3"></polygon>
                     </svg>
-                    开始
+                    ${window.i18n.t('timer.continue') || '继续'}
                 `;
             } else {
                 btn.innerHTML = `
@@ -427,7 +428,7 @@ class TimerInstance {
                         <rect x="6" y="4" width="4" height="16"></rect>
                         <rect x="14" y="4" width="4" height="16"></rect>
                     </svg>
-                    暂停
+                    ${window.i18n.t('timer.pause')}
                 `;
             }
         }
@@ -507,17 +508,35 @@ class TimerInstance {
             this.currentAudio = null;
         }
         
+        // Clear any pending loop timeout
+        if (this.loopTimeoutId) {
+            clearTimeout(this.loopTimeoutId);
+            this.loopTimeoutId = null;
+        }
+
         const audio = new Audio(soundUrl);
+        // Apply playback speed
+        audio.playbackRate = this.playbackSpeed;
+
         this.currentAudio = audio;
         
         audio.addEventListener('ended', () => {
             if (this.loopSound && this.currentLoopIteration < this.loopCount - 1) {
                 this.currentLoopIteration++;
-                // Play again for the next loop
-                this.playSound_Internal(soundUrl);
+
+                // Handle loop interval
+                if (this.loopInterval > 0) {
+                    this.loopTimeoutId = setTimeout(() => {
+                        this.playSound_Internal(soundUrl);
+                    }, this.loopInterval * 1000);
+                } else {
+                    // Play immediately
+                    this.playSound_Internal(soundUrl);
+                }
             } else {
                 this.currentAudio = null;
                 this.currentLoopIteration = 0;
+                this.loopTimeoutId = null;
             }
         });
         
@@ -619,18 +638,23 @@ class TimerInstance {
         // Title font size is fixed at 3vmin (defined in CSS), not affected by slider
         
         // Update content with title if available, applying custom colors
-        const modeText = this.mode === 'stopwatch' ? '正计时' : '倒计时';
-        const titleHTML = this.title ? `<div class="timer-fullscreen-title" style="color: ${this.textColor};">${this.title}</div>` : '';
+        const modeText = this.mode === 'stopwatch' ? window.i18n.t('timer.stopwatch') : window.i18n.t('timer.countdown');
+
+        // Use configured fullscreen colors
+        const fsTextColor = this.fullscreenTextColor;
+        const fsBgColor = this.fullscreenBgColor;
+
+        const titleHTML = this.title ? `<div class="timer-fullscreen-title" style="color: ${fsTextColor};">${this.title}</div>` : '';
         
         this.fullscreenContent.innerHTML = `
-            <div class="timer-fullscreen-mode" style="font-size: ${modeFontSize}px; color: ${this.textColor};">${modeText}</div>
+            <div class="timer-fullscreen-mode" style="font-size: ${modeFontSize}px; color: ${fsTextColor};">${modeText}</div>
             ${titleHTML}
-            <div class="timer-fullscreen-time" style="font-size: ${timeFontSize}px; color: ${this.textColor};">${timeString}</div>
+            <div class="timer-fullscreen-time" style="font-size: ${timeFontSize}px; color: ${fsTextColor};">${timeString}</div>
         `;
         
         // Apply background color to fullscreen modal
         if (this.fullscreenModal) {
-            this.fullscreenModal.style.backgroundColor = this.bgColor;
+            this.fullscreenModal.style.backgroundColor = fsBgColor;
         }
     }
     
@@ -660,6 +684,12 @@ class TimerInstance {
             this.currentAudio = null;
         }
         
+        // Clear any pending loop timeout
+        if (this.loopTimeoutId) {
+            clearTimeout(this.loopTimeoutId);
+            this.loopTimeoutId = null;
+        }
+
         // Remove event listeners
         if (this.mouseMoveHandler) {
             document.removeEventListener('mousemove', this.mouseMoveHandler);
@@ -680,7 +710,7 @@ class TimerInstance {
         this.manager.removeTimer(this.id);
     }
     
-    updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, title = '', textColor = null, bgColor = null) {
+    updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, loopInterval, playbackSpeed, title = '', textColor = null, bgColor = null, fullscreenTextColor = null, fullscreenBgColor = null) {
         this.countdownDuration = duration;
         
         if (this.mode === 'stopwatch') {
@@ -694,11 +724,15 @@ class TimerInstance {
         this.customSoundUrl = customSoundUrl;
         this.loopSound = loopSound;
         this.loopCount = loopCount;
+        this.loopInterval = loopInterval;
+        this.playbackSpeed = playbackSpeed;
         this.title = title;
         
         // Update colors if provided
         if (textColor) this.textColor = textColor;
         if (bgColor) this.bgColor = bgColor;
+        if (fullscreenTextColor) this.fullscreenTextColor = fullscreenTextColor;
+        if (fullscreenBgColor) this.fullscreenBgColor = fullscreenBgColor;
         
         // Apply colors to display element
         if (this.displayElement) {
@@ -770,6 +804,40 @@ class TimerManager {
         this.renderCustomSounds();
     }
     
+    updateMainPreviewButtonState() {
+        const previewBtn = document.getElementById('timer-sound-preview-btn');
+        if (!previewBtn) return;
+
+        const soundCheckbox = document.getElementById('timer-sound-checkbox');
+        const activeSoundBtn = document.querySelector('.sound-preset-btn.active');
+
+        if (soundCheckbox && soundCheckbox.checked && activeSoundBtn) {
+            previewBtn.disabled = false;
+        } else {
+            previewBtn.disabled = true;
+        }
+    }
+
+    updateMoreSettingsState() {
+        const moreSettingsBtn = document.getElementById('timer-more-settings-btn');
+        if (!moreSettingsBtn) return;
+
+        const loopCheckbox = document.getElementById('timer-loop-checkbox');
+        const speedSlider = document.getElementById('timer-playback-speed');
+        const intervalInput = document.getElementById('timer-loop-interval');
+
+        const isLoop = loopCheckbox && loopCheckbox.checked;
+        const isSpeedChanged = speedSlider && parseFloat(speedSlider.value) !== 1.0;
+        const isIntervalSet = intervalInput && parseInt(intervalInput.value) > 0;
+
+        // Active if any setting is non-default
+        if (isLoop || isSpeedChanged || (isLoop && isIntervalSet)) {
+            moreSettingsBtn.classList.add('active-settings');
+        } else {
+            moreSettingsBtn.classList.remove('active-settings');
+        }
+    }
+
     preloadSounds() {
         // Preload all preset sounds for immediate playback
         Object.keys(this.sounds).forEach(key => {
@@ -889,6 +957,7 @@ class TimerManager {
         // Timer mode buttons
         document.querySelectorAll('.timer-mode-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 const mode = e.currentTarget.dataset.mode;
                 document.querySelectorAll('.timer-mode-btn').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
@@ -907,6 +976,26 @@ class TimerManager {
                 } else {
                     soundSettingsContent.style.display = 'none';
                 }
+                this.updateMainPreviewButtonState();
+            });
+        }
+
+        // Main preview button
+        const mainPreviewBtn = document.getElementById('timer-sound-preview-btn');
+        if (mainPreviewBtn) {
+            mainPreviewBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Find active preset
+                const activeSoundBtn = document.querySelector('.sound-preset-btn.active');
+                if (activeSoundBtn) {
+                    const soundUrl = activeSoundBtn.dataset.url;
+                    const soundKey = activeSoundBtn.dataset.sound;
+                    if (soundUrl) {
+                        this.previewSoundByUrl(soundUrl, mainPreviewBtn);
+                    } else if (soundKey && this.sounds[soundKey]) {
+                        this.previewSound(soundKey, mainPreviewBtn);
+                    }
+                }
             });
         }
         
@@ -922,6 +1011,7 @@ class TimerManager {
                 if (button.dataset.sound) {
                     document.querySelectorAll('.sound-preset-btn').forEach(b => b.classList.remove('active'));
                     button.classList.add('active');
+                    this.updateMainPreviewButtonState();
                 }
             });
         });
@@ -958,6 +1048,16 @@ class TimerManager {
             });
         }
         
+        // More Settings Toggle
+        const moreSettingsBtn = document.getElementById('timer-more-settings-btn');
+        const moreSettingsContent = document.getElementById('timer-more-settings-content');
+        if (moreSettingsBtn && moreSettingsContent) {
+            moreSettingsBtn.addEventListener('click', () => {
+                const isExpanded = moreSettingsBtn.classList.toggle('expanded');
+                moreSettingsContent.style.display = isExpanded ? 'block' : 'none';
+            });
+        }
+
         // Loop checkbox
         const loopCheckbox = document.getElementById('timer-loop-checkbox');
         const loopCountGroup = document.getElementById('sound-loop-count-group');
@@ -968,12 +1068,35 @@ class TimerManager {
                 } else {
                     loopCountGroup.style.display = 'none';
                 }
+                this.updateMoreSettingsState();
             });
         }
-        
+
+        // Loop interval input
+        const loopIntervalInput = document.getElementById('timer-loop-interval');
+        if (loopIntervalInput) {
+            loopIntervalInput.addEventListener('change', () => {
+                this.updateMoreSettingsState();
+            });
+            loopIntervalInput.addEventListener('input', () => {
+                this.updateMoreSettingsState();
+            });
+        }
+
+        // Speed slider
+        const speedSlider = document.getElementById('timer-playback-speed');
+        const speedValue = document.getElementById('timer-playback-speed-value');
+        if (speedSlider && speedValue) {
+            speedSlider.addEventListener('input', (e) => {
+                speedValue.textContent = `${e.target.value}x`;
+                this.updateMoreSettingsState();
+            });
+        }
+
         // Timer color picker buttons
         document.querySelectorAll('.color-btn[data-timer-text-color]').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 document.querySelectorAll('.color-btn[data-timer-text-color]').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
             });
@@ -981,11 +1104,29 @@ class TimerManager {
         
         document.querySelectorAll('.color-btn[data-timer-bg-color]').forEach(btn => {
             btn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 document.querySelectorAll('.color-btn[data-timer-bg-color]').forEach(b => b.classList.remove('active'));
                 e.currentTarget.classList.add('active');
             });
         });
         
+        // Timer color picker buttons (Fullscreen)
+        document.querySelectorAll('.color-btn[data-timer-fs-text-color]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.color-btn[data-timer-fs-text-color]').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+            });
+        });
+
+        document.querySelectorAll('.color-btn[data-timer-fs-bg-color]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.color-btn[data-timer-fs-bg-color]').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+            });
+        });
+
         // Timer color settings checkbox toggle
         const timerColorCheckbox = document.getElementById('timer-color-checkbox');
         const timerColorSettings = document.getElementById('timer-color-settings');
@@ -999,6 +1140,25 @@ class TimerManager {
             });
         }
         
+        // Custom color pickers (Fullscreen)
+        const customFsTextColorPicker = document.getElementById('custom-timer-fs-text-color-picker');
+        if (customFsTextColorPicker) {
+            customFsTextColorPicker.addEventListener('input', (e) => {
+                document.querySelectorAll('.color-btn[data-timer-fs-text-color]').forEach(b => b.classList.remove('active'));
+                const parentBtn = e.target.closest('.color-picker-icon-btn');
+                if (parentBtn) parentBtn.classList.add('active-custom');
+            });
+        }
+
+        const customFsBgColorPicker = document.getElementById('custom-timer-fs-bg-color-picker');
+        if (customFsBgColorPicker) {
+            customFsBgColorPicker.addEventListener('input', (e) => {
+                document.querySelectorAll('.color-btn[data-timer-fs-bg-color]').forEach(b => b.classList.remove('active'));
+                const parentBtn = e.target.closest('.color-picker-icon-btn');
+                if (parentBtn) parentBtn.classList.add('active-custom');
+            });
+        }
+
         // Custom color pickers
         const customTextColorPicker = document.getElementById('custom-timer-text-color-picker');
         if (customTextColorPicker) {
@@ -1037,7 +1197,8 @@ class TimerManager {
         // Timer settings modal close button
         const timerSettingsCloseBtn = document.getElementById('timer-settings-close-btn');
         if (timerSettingsCloseBtn) {
-            timerSettingsCloseBtn.addEventListener('click', () => {
+            timerSettingsCloseBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 this.hideSettingsModal();
             });
         }
@@ -1045,7 +1206,8 @@ class TimerManager {
         // Timer alert modal OK button
         const timerAlertOkBtn = document.getElementById('timer-alert-ok-btn');
         if (timerAlertOkBtn) {
-            timerAlertOkBtn.addEventListener('click', () => {
+            timerAlertOkBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
                 this.hideAlertModal();
             });
         }
@@ -1096,9 +1258,9 @@ class TimerManager {
         const label = document.getElementById('timer-time-label');
         if (label) {
             if (mode === 'stopwatch') {
-                label.textContent = '设置开始时间';
+                label.textContent = window.i18n.t('timer.setStartTime');
             } else {
-                label.textContent = '设置总时间';
+                label.textContent = window.i18n.t('timer.duration');
             }
         }
     }
@@ -1145,6 +1307,20 @@ class TimerManager {
                 loopCountGroup.style.display = 'none';
             }
             document.getElementById('timer-loop-count').value = '3';
+
+            // Reset new settings
+            document.getElementById('timer-playback-speed').value = '1.0';
+            document.getElementById('timer-playback-speed-value').textContent = '1.0x';
+            document.getElementById('timer-loop-interval').value = '1';
+
+            // Reset More Settings UI
+            const moreSettingsBtn = document.getElementById('timer-more-settings-btn');
+            const moreSettingsContent = document.getElementById('timer-more-settings-content');
+            if (moreSettingsBtn) moreSettingsBtn.classList.remove('expanded');
+            if (moreSettingsContent) moreSettingsContent.style.display = 'none';
+
+            this.updateMainPreviewButtonState();
+            this.updateMoreSettingsState();
         }
     }
     
@@ -1196,6 +1372,30 @@ class TimerManager {
                 loopCountInput.value = timer.loopCount;
             }
             
+            // Set new settings
+            const speedSlider = document.getElementById('timer-playback-speed');
+            const speedValue = document.getElementById('timer-playback-speed-value');
+            if (speedSlider) speedSlider.value = timer.playbackSpeed || 1.0;
+            if (speedValue) speedValue.textContent = `${timer.playbackSpeed || 1.0}x`;
+
+            const intervalInput = document.getElementById('timer-loop-interval');
+            if (intervalInput) intervalInput.value = timer.loopInterval || 0;
+
+            // Update More Settings State
+            const moreSettingsBtn = document.getElementById('timer-more-settings-btn');
+            const moreSettingsContent = document.getElementById('timer-more-settings-content');
+
+            // Always collapse by default when opening settings for a timer, user can expand if they want to see details
+            // OR: keep expanded if it has active settings?
+            // Let's reset expansion but set active state correctly
+
+            if (moreSettingsBtn) {
+                moreSettingsBtn.classList.remove('expanded');
+                if (moreSettingsContent) moreSettingsContent.style.display = 'none';
+            }
+
+            this.updateMoreSettingsState();
+
             if (timer.selectedSound) {
                 document.querySelectorAll('.sound-preset-btn').forEach(b => b.classList.remove('active'));
                 const soundBtn = document.querySelector(`.sound-preset-btn[data-sound="${timer.selectedSound}"]`);
@@ -1203,6 +1403,45 @@ class TimerManager {
                     soundBtn.classList.add('active');
                 }
             }
+
+            // Set colors (Widget)
+            // ... (handled implicitly by existing logic if I didn't break it? wait, existing logic is missing in search block, but I need to add Fullscreen color population)
+
+            // Set colors (Fullscreen)
+            // Reset all active states first
+            document.querySelectorAll('.color-btn[data-timer-fs-text-color]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.color-btn[data-timer-fs-bg-color]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.timer-color-picker-icon').forEach(b => b.classList.remove('active-custom'));
+
+            // Text Color (Fullscreen)
+            const fsTextColorBtn = document.querySelector(`.color-btn[data-timer-fs-text-color="${timer.fullscreenTextColor}"]`);
+            if (fsTextColorBtn) {
+                fsTextColorBtn.classList.add('active');
+            } else {
+                // Custom color
+                const picker = document.getElementById('custom-timer-fs-text-color-picker');
+                if (picker) {
+                    picker.value = timer.fullscreenTextColor;
+                    const parent = picker.closest('.color-picker-icon-btn');
+                    if (parent) parent.classList.add('active-custom');
+                }
+            }
+
+            // Bg Color (Fullscreen)
+            const fsBgColorBtn = document.querySelector(`.color-btn[data-timer-fs-bg-color="${timer.fullscreenBgColor}"]`);
+            if (fsBgColorBtn) {
+                fsBgColorBtn.classList.add('active');
+            } else {
+                // Custom color
+                const picker = document.getElementById('custom-timer-fs-bg-color-picker');
+                if (picker) {
+                    picker.value = timer.fullscreenBgColor;
+                    const parent = picker.closest('.color-picker-icon-btn');
+                    if (parent) parent.classList.add('active-custom');
+                }
+            }
+
+            this.updateMainPreviewButtonState();
         }
     }
     
@@ -1241,6 +1480,8 @@ class TimerManager {
         // Get loop settings
         const loopSound = document.getElementById('timer-loop-checkbox').checked;
         const loopCount = parseInt(document.getElementById('timer-loop-count').value) || 3;
+        const loopInterval = parseInt(document.getElementById('timer-loop-interval').value) || 0;
+        const playbackSpeed = parseFloat(document.getElementById('timer-playback-speed').value) || 1.0;
         
         // Get color settings - check custom pickers first, then preset buttons
         let textColor = '#333333';
@@ -1266,22 +1507,64 @@ class TimerManager {
             bgColor = activeBgColorBtn.dataset.timerBgColor;
         }
         
+        // Get Fullscreen color settings
+        let fsTextColor = '#FFFFFF';
+        let fsBgColor = '#000000';
+
+        const activeFsTextColorBtn = document.querySelector('.color-btn.active[data-timer-fs-text-color]');
+        const customFsTextColorPicker = document.getElementById('custom-timer-fs-text-color-picker');
+        const customFsTextPickerParent = customFsTextColorPicker?.closest('.color-picker-icon-btn');
+
+        if (customFsTextPickerParent && customFsTextPickerParent.classList.contains('active-custom')) {
+            fsTextColor = customFsTextColorPicker.value;
+        } else if (activeFsTextColorBtn) {
+            fsTextColor = activeFsTextColorBtn.dataset.timerFsTextColor;
+        }
+
+        const activeFsBgColorBtn = document.querySelector('.color-btn.active[data-timer-fs-bg-color]');
+        const customFsBgColorPicker = document.getElementById('custom-timer-fs-bg-color-picker');
+        const customFsBgPickerParent = customFsBgColorPicker?.closest('.color-picker-icon-btn');
+
+        if (customFsBgPickerParent && customFsBgPickerParent.classList.contains('active-custom')) {
+            fsBgColor = customFsBgColorPicker.value;
+        } else if (activeFsBgColorBtn) {
+            fsBgColor = activeFsBgColorBtn.dataset.timerFsBgColor;
+        }
+
         const duration = (hours * 3600 + minutes * 60 + seconds) * 1000;
         
         // Use custom modal instead of browser alert
         if (mode === 'countdown' && duration === 0) {
-            this.showAlertModal('请设置倒计时时间');
+            this.showAlertModal(window.i18n.t('timer.alertSetTime') || '请设置倒计时时间');
             return;
         }
         
         if (this.adjustingTimer) {
             // Update existing timer
-            this.adjustingTimer.updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, title, textColor, bgColor);
+            this.adjustingTimer.updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, loopInterval, playbackSpeed, title, textColor, bgColor, fsTextColor, fsBgColor);
             this.adjustingTimer = null;
         } else {
             // Create new timer
             const id = this.nextTimerId++;
-            const timer = new TimerInstance(id, mode, duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, this, title, textColor, bgColor);
+            const options = {
+                id: id,
+                mode: mode,
+                duration: duration,
+                playSound: playSound,
+                selectedSound: selectedSound,
+                customSoundUrl: customSoundUrl,
+                loopSound: loopSound,
+                loopCount: loopCount,
+                loopInterval: loopInterval,
+                playbackSpeed: playbackSpeed,
+                manager: this,
+                title: title,
+                textColor: textColor,
+                bgColor: bgColor,
+                fullscreenTextColor: fsTextColor,
+                fullscreenBgColor: fsBgColor
+            };
+            const timer = new TimerInstance(options);
             this.timers.set(id, timer);
         }
         
@@ -1301,12 +1584,16 @@ class TimerManager {
         
         // Reset all preview button states
         if (this.currentPreviewButton) {
-            this.currentPreviewButton.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                </svg>
-            `;
-            this.currentPreviewButton.title = '试听';
+            if (this.currentPreviewButton.id === 'timer-sound-preview-btn') {
+                this.currentPreviewButton.textContent = window.i18n.t('common.preview') || '试听';
+            } else {
+                this.currentPreviewButton.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                `;
+                this.currentPreviewButton.title = window.i18n.t('common.preview') || '试听';
+            }
             this.currentPreviewButton = null;
         }
     }
@@ -1329,13 +1616,17 @@ class TimerManager {
             this.currentPreviewButton = previewButton;
             
             // Update button to show pause icon
-            previewButton.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="6" y="4" width="4" height="16"></rect>
-                    <rect x="14" y="4" width="4" height="16"></rect>
-                </svg>
-            `;
-            previewButton.title = '暂停';
+            if (previewButton.id === 'timer-sound-preview-btn') {
+                previewButton.textContent = window.i18n.t('common.stop') || '停止';
+            } else {
+                previewButton.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                `;
+                previewButton.title = window.i18n.t('common.stop') || '停止';
+            }
             
             // Reset button when audio ends
             this.previewAudio.addEventListener('ended', () => {
@@ -1365,13 +1656,17 @@ class TimerManager {
             this.currentPreviewButton = previewButton;
             
             // Update button to show pause icon
-            previewButton.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="6" y="4" width="4" height="16"></rect>
-                    <rect x="14" y="4" width="4" height="16"></rect>
-                </svg>
-            `;
-            previewButton.title = '暂停';
+            if (previewButton.id === 'timer-sound-preview-btn') {
+                previewButton.textContent = window.i18n.t('common.stop') || '停止';
+            } else {
+                previewButton.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                `;
+                previewButton.title = window.i18n.t('common.stop') || '停止';
+            }
             
             // Reset button when audio ends
             this.previewAudio.addEventListener('ended', () => {

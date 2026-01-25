@@ -21,6 +21,14 @@ window.translations = {
         reset: 'Restablecer'
     },
 
+    // Recovery dialog
+    recovery: {
+        title: 'Restaurar contenido anterior',
+        message: 'Se detectó contenido de lienzo anterior. ¿Desea restaurarlo?',
+        restore: 'Restaurar',
+        discard: 'Descartar'
+    },
+
     // App Title
     app: {
         title: 'Aboard - Pizarra Minimalista',
@@ -59,7 +67,10 @@ window.translations = {
             brush: 'Pincel',
             color: 'Color',
             colorAndSize: 'Color y tamaño',
-            colorPicker: 'Selector de color'
+            colorPicker: 'Selector de color',
+            size: 'Grosor de línea',
+            sizeLabel: 'Grosor: Actual',
+            sizePx: 'px'
         },
         shape: {
             title: 'Forma',
@@ -147,7 +158,18 @@ window.translations = {
         opacityHint: 'Ajustar la transparencia del fondo, 100% es completamente opaco',
         contrast: 'Contraste',
         contrastHint: 'Ajustar la oscuridad de las líneas del patrón de fondo',
-        preference: 'Preferencia de patrón de fondo'
+        preference: 'Preferencia de patrón de fondo',
+        moveCoordinateOrigin: 'Mover origen',
+        moveCoordinateOriginHint: 'Haga clic y arrastre en el lienzo para mover el origen de coordenadas'
+    },
+
+    // Image Controls
+    imageControls: {
+        confirm: 'Confirmar',
+        cancel: 'Cancelar',
+        flipHorizontal: 'Voltear horizontal',
+        flipVertical: 'Voltear vertical',
+        rotate: 'Rotar'
     },
 
     // Page Navigation
@@ -229,6 +251,30 @@ window.translations = {
             },
             edgeSnap: 'Habilitar ajuste de borde',
             edgeSnapHint: 'Ajustar automáticamente los paneles de control a los bordes de la pantalla',
+            // Toolbar customization
+            toolbarCustomization: 'Personalización de la barra de herramientas',
+            toolbarCustomizationHint: 'Seleccione herramientas para mostrar, arrastre para reordenar',
+            toolbarTools: {
+                undo: 'Deshacer',
+                redo: 'Rehacer',
+                pen: 'Lápiz',
+                move: 'Mover',
+                eraser: 'Borrador',
+                clear: 'Borrar',
+                background: 'Fondo',
+                more: 'Más',
+                settings: 'Configuración'
+            },
+            // Control button settings
+            controlButtonSettings: 'Configuración de botones de control',
+            controlButtonSettingsHint: 'Seleccione los botones de control a mostrar',
+            controlButtons: {
+                zoom: 'Botones de zoom',
+                pagination: 'Botones de paginación',
+                time: 'Visualización de hora',
+                fullscreen: 'Botón de pantalla completa',
+                download: 'Botón de descarga'
+            },
             controlPosition: 'Posición del botón de control',
             controlPositionHint: 'Elegir dónde mostrar los controles de zoom y paginación',
             positionTopLeft: 'Superior izquierda',
@@ -332,6 +378,7 @@ window.translations = {
         },
         more: {
             title: 'Más configuraciones',
+            description: 'Para la configuración de visualización de hora, haga clic en el área de hora en la esquina inferior derecha',
             showTimeDisplay: 'Mostrar hora y fecha',
             showTimeDisplayHint: 'Mostrar la hora y fecha actuales en la esquina superior derecha'
         },
@@ -353,12 +400,15 @@ window.translations = {
             textColor: 'Color de texto',
             bgColor: 'Color de fondo',
             fontSize: 'Tamaño de fuente',
+            fontSizeLabel: 'Tamaño de fuente: Actual',
             opacity: 'Opacidad',
+            opacityLabel: 'Opacidad: Actual',
             fullscreenMode: 'Modo de pantalla completa',
             fullscreenDisabled: 'Desactivado',
             fullscreenSingle: 'Clic simple',
             fullscreenDouble: 'Doble clic',
             fullscreenFontSize: 'Tamaño de fuente de pantalla completa',
+            fullscreenFontSizeLabel: 'Tamaño de fuente de pantalla completa: Actual',
             fullscreenFontSizeHint: 'Ajustar el tamaño de fuente de la visualización de hora en pantalla completa, rango 10%-85%',
             customColor: 'Color personalizado'
         },
@@ -387,7 +437,10 @@ window.translations = {
         title: 'Características',
         moreFeatures: 'Más características',
         time: 'Hora',
-        timer: 'Temporizador'
+        timer: 'Temporizador',
+        randomPicker: 'Selector',
+        scoreboard: 'Marcador',
+        insertImage: 'Insertar imagen'
     },
 
     // Teaching Tools
@@ -411,14 +464,38 @@ window.translations = {
 
     // Time Display
     timeDisplay: {
+        title: 'Visualización de Hora',
+        settingsTitle: 'Configuración de Visualización de Hora',
         options: 'Opciones de visualización de hora',
         showDate: 'Mostrar fecha',
         showTime: 'Mostrar hora',
         settings: 'Configuración',
+        fullscreenDisplay: 'Pantalla completa',
         displayOptions: 'Opciones de visualización',
         dateAndTime: 'Fecha y hora',
         dateOnly: 'Solo fecha',
-        timeOnly: 'Solo hora'
+        timeOnly: 'Solo hora',
+        timezone: 'Zona horaria',
+        timeFormat: 'Formato de hora',
+        dateFormat: 'Formato de fecha',
+        colorSettings: 'Configuración de color',
+        textColor: 'Color de texto',
+        bgColor: 'Color de fondo',
+        fontSize: 'Tamaño de fuente',
+        fontSizeLabel: 'Tamaño de fuente: Actual',
+        opacity: 'Opacidad',
+        opacityLabel: 'Opacidad: Actual',
+        fullscreenMode: 'Modo pantalla completa',
+        fullscreenColorSettings: 'Configuración de color en pantalla completa',
+        fullscreenFontSize: 'Tamaño de fuente en pantalla completa',
+        fullscreenFontSizeLabel: 'Tamaño de fuente en pantalla completa: Actual',
+        fullscreenFontSizeHint: 'Ajustar tamaño de fuente en pantalla completa (10%-85%)',
+        fullscreenSliderLabel: 'Tamaño de fuente (10%-85%)',
+        customColor: 'Color personalizado',
+        transparent: 'Transparente',
+        fullscreenDisabled: 'Desactivado',
+        fullscreenSingle: 'Un clic',
+        fullscreenDouble: 'Doble clic'
     },
 
     // Timer
@@ -439,6 +516,21 @@ window.translations = {
         colorSettings: 'Configuración de color',
         textColor: 'Color de texto',
         bgColor: 'Color de fondo',
+        soundSettings: 'Configuración de sonido',
+        playSound: 'Reproducir sonido al finalizar la cuenta regresiva',
+        preview: 'Vista previa',
+        moreSettings: 'Más ajustes',
+        playbackSpeed: 'Velocidad de reproducción',
+        loopPlayback: 'Reproducción en bucle',
+        loopCount: 'Número de bucles',
+        loopInterval: 'Intervalo de bucle',
+        uploadCustomAudio: 'Subir audio personalizado',
+        soundPresets: {
+            classBell: 'Campana de clase (10s)',
+            examEnd: 'Fin de examen (4s)',
+            gentle: 'Suave (17s)',
+            digitalBeep: 'Pitido digital (4s)'
+        },
         colors: {
             black: 'Negro',
             white: 'Blanco',
@@ -448,7 +540,15 @@ window.translations = {
             yellow: 'Amarillo',
             orange: 'Naranja',
             purple: 'Morado',
-            transparent: 'Transparente'
+            transparent: 'Transparente',
+            darkGray: 'Gris oscuro (Predeterminado)',
+            lightGray: 'Gris claro',
+            lightRed: 'Rojo claro',
+            lightBlue: 'Azul claro',
+            lightGreen: 'Verde claro',
+            lightYellow: 'Amarillo claro',
+            lightOrange: 'Naranja claro',
+            whiteDefault: 'Blanco (Predeterminado)'
         },
         customColor: 'Color personalizado',
         start: 'Iniciar',
@@ -456,7 +556,9 @@ window.translations = {
         continue: 'Continuar',
         pause: 'Pausar',
         reset: 'Restablecer',
-        stop: 'Detener'
+        stop: 'Detener',
+        alertSetTime: 'Por favor, establezca el tiempo de cuenta regresiva',
+        alertTitle: 'Alerta'
     },
 
     // Timezone names

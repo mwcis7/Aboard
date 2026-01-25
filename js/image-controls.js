@@ -12,12 +12,15 @@ class ImageControls {
         
         // Constants
         this.MIN_IMAGE_SIZE = 50;
+        this.MAX_IMAGE_SIZE_RATIO = 0.5; // Image should not exceed 50% of canvas size
         
         // Image state
         this.imagePosition = { x: 0, y: 0 };
         this.imageSize = { width: 0, height: 0 };
         this.imageRotation = 0;
         this.imageScale = 1.0;
+        this.flipHorizontal = false;
+        this.flipVertical = false;
         
         // Drag state
         this.dragStartPos = { x: 0, y: 0 };
@@ -60,9 +63,23 @@ class ImageControls {
                         </svg>
                     </div>
                     
+                    <!-- Flip horizontal handle -->
+                    <div class="flip-handle flip-horizontal" id="flip-horizontal-handle" data-i18n-title="imageControls.flipHorizontal">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M12 3v18M8 6l-5 6 5 6M16 6l5 6-5 6"/>
+                        </svg>
+                    </div>
+                    
+                    <!-- Flip vertical handle -->
+                    <div class="flip-handle flip-vertical" id="flip-vertical-handle" data-i18n-title="imageControls.flipVertical">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M3 12h18M6 8l6-5 6 5M6 16l6 5 6-5"/>
+                        </svg>
+                    </div>
+                    
                     <!-- Control toolbar with only confirm button -->
                     <div class="image-controls-toolbar">
-                        <button id="image-done-btn" class="image-control-btn image-done-btn" title="确定">
+                        <button id="image-done-btn" class="image-control-btn image-done-btn" data-i18n-title="imageControls.confirm">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
@@ -84,8 +101,10 @@ class ImageControls {
             if (e.target === this.controlBox || e.target.closest('.image-controls-box') === this.controlBox) {
                 if (!e.target.classList.contains('resize-handle') && 
                     !e.target.classList.contains('rotate-handle') &&
+                    !e.target.classList.contains('flip-handle') &&
                     !e.target.closest('.resize-handle') &&
                     !e.target.closest('.rotate-handle') &&
+                    !e.target.closest('.flip-handle') &&
                     !e.target.closest('.image-controls-toolbar')) {
                     this.startDrag(e);
                 }
@@ -104,6 +123,18 @@ class ImageControls {
         document.getElementById('rotate-handle').addEventListener('mousedown', (e) => {
             e.stopPropagation();
             this.startRotate(e);
+        });
+        
+        // Flip horizontal handle
+        document.getElementById('flip-horizontal-handle').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleFlipHorizontal();
+        });
+        
+        // Flip vertical handle
+        document.getElementById('flip-vertical-handle').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleFlipVertical();
         });
         
         // Global mouse events
@@ -138,11 +169,29 @@ class ImageControls {
         
         // Initialize with image data
         const canvas = this.backgroundManager.bgCanvas;
-        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
         
-        // Store original dimensions
-        const originalWidth = imageData.width || rect.width * 0.6;
-        const originalHeight = imageData.height || rect.height * 0.6;
+        // Get logical canvas dimensions (same coordinate system as background manager)
+        const logicalWidth = canvas.width / dpr;
+        const logicalHeight = canvas.height / dpr;
+        
+        // Store original dimensions - use natural image dimensions
+        let originalWidth = imageData.width || logicalWidth * 0.4;
+        let originalHeight = imageData.height || logicalHeight * 0.4;
+        
+        // Limit initial image size to no more than MAX_IMAGE_SIZE_RATIO of canvas size
+        const maxWidth = logicalWidth * this.MAX_IMAGE_SIZE_RATIO;
+        const maxHeight = logicalHeight * this.MAX_IMAGE_SIZE_RATIO;
+        const aspectRatio = originalWidth / originalHeight;
+        
+        if (originalWidth > maxWidth) {
+            originalWidth = maxWidth;
+            originalHeight = originalWidth / aspectRatio;
+        }
+        if (originalHeight > maxHeight) {
+            originalHeight = maxHeight;
+            originalWidth = originalHeight * aspectRatio;
+        }
         
         // Check if there's an existing transform from backgroundManager
         const existingTransform = this.backgroundManager.imageTransform;
@@ -156,15 +205,26 @@ class ImageControls {
             this.imagePosition.y = existingTransform.y;
             this.imageRotation = existingTransform.rotation || 0;
             this.imageScale = existingTransform.scale || 1.0;
+            this.flipHorizontal = existingTransform.flipHorizontal || false;
+            this.flipVertical = existingTransform.flipVertical || false;
         } else {
             // Center the image initially (first time showing controls)
+            // Use logical canvas coordinates (same as background manager)
             this.imageSize.width = originalWidth;
             this.imageSize.height = originalHeight;
-            this.imagePosition.x = (rect.width - this.imageSize.width) / 2;
-            this.imagePosition.y = (rect.height - this.imageSize.height) / 2;
+            this.imagePosition.x = (logicalWidth - this.imageSize.width) / 2;
+            this.imagePosition.y = (logicalHeight - this.imageSize.height) / 2;
             this.imageRotation = 0;
             this.imageScale = 1.0;
+            this.flipHorizontal = false;
+            this.flipVertical = false;
         }
+        
+        // Update flip button visual states
+        const flipHBtn = document.getElementById('flip-horizontal-handle');
+        const flipVBtn = document.getElementById('flip-vertical-handle');
+        if (flipHBtn) flipHBtn.classList.toggle('active', this.flipHorizontal);
+        if (flipVBtn) flipVBtn.classList.toggle('active', this.flipVertical);
         
         this.originalWidth = originalWidth;
         this.originalHeight = originalHeight;
@@ -197,21 +257,30 @@ class ImageControls {
     updateControlBox() {
         const canvas = this.backgroundManager.bgCanvas;
         const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
         
-        const canvasScale = this.getCanvasScale();
+        // Get logical canvas dimensions
+        const logicalWidth = canvas.width / dpr;
+        const logicalHeight = canvas.height / dpr;
         
-        // Calculate actual position and size accounting for canvas transform
-        const actualX = rect.left + (this.imagePosition.x * canvasScale);
-        const actualY = rect.top + (this.imagePosition.y * canvasScale);
-        const actualWidth = this.imageSize.width * canvasScale;
-        const actualHeight = this.imageSize.height * canvasScale;
+        // Calculate scale factor from logical canvas to screen coordinates
+        // This accounts for any CSS transforms on the canvas
+        const scaleX = rect.width / logicalWidth;
+        const scaleY = rect.height / logicalHeight;
         
-        // Apply transformations to control box to match image exactly
+        // Convert logical canvas coordinates to screen coordinates
+        const actualX = rect.left + (this.imagePosition.x * scaleX);
+        const actualY = rect.top + (this.imagePosition.y * scaleY);
+        const actualWidth = this.imageSize.width * scaleX;
+        const actualHeight = this.imageSize.height * scaleY;
+        
+        // Apply transformations to control box - only rotation, NOT flip
+        // The flip is only applied to the image inside, not the control box frame
         this.controlBox.style.left = `${actualX}px`;
         this.controlBox.style.top = `${actualY}px`;
         this.controlBox.style.width = `${actualWidth}px`;
         this.controlBox.style.height = `${actualHeight}px`;
-        this.controlBox.style.transform = `rotate(${this.imageRotation}deg) scale(${this.imageScale})`;
+        this.controlBox.style.transform = `rotate(${this.imageRotation}deg)`;
         
         // Update background image with current transformations
         this.applyImageTransform();
@@ -225,8 +294,30 @@ class ImageControls {
             width: this.imageSize.width,
             height: this.imageSize.height,
             rotation: this.imageRotation,
-            scale: this.imageScale
+            scale: this.imageScale,
+            flipHorizontal: this.flipHorizontal,
+            flipVertical: this.flipVertical
         });
+    }
+    
+    toggleFlipHorizontal() {
+        this.flipHorizontal = !this.flipHorizontal;
+        // Update button visual state
+        const btn = document.getElementById('flip-horizontal-handle');
+        if (btn) {
+            btn.classList.toggle('active', this.flipHorizontal);
+        }
+        this.updateControlBox();
+    }
+    
+    toggleFlipVertical() {
+        this.flipVertical = !this.flipVertical;
+        // Update button visual state
+        const btn = document.getElementById('flip-vertical-handle');
+        if (btn) {
+            btn.classList.toggle('active', this.flipVertical);
+        }
+        this.updateControlBox();
     }
     
     startDrag(e) {
@@ -239,13 +330,15 @@ class ImageControls {
     drag(e) {
         if (!this.isDragging) return;
         
-        // Get canvas scale to convert screen delta to canvas delta
-        // Screen coordinates (mouse position) need to be divided by scale
-        // to get the equivalent movement in canvas logical coordinates
-        const canvasScale = this.getCanvasScale();
+        // Get scale factor to convert screen delta to logical canvas delta
+        const canvas = this.backgroundManager.bgCanvas;
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const logicalWidth = canvas.width / dpr;
+        const scaleX = rect.width / logicalWidth;
         
-        const deltaX = (e.clientX - this.dragStartPos.x) / canvasScale;
-        const deltaY = (e.clientY - this.dragStartPos.y) / canvasScale;
+        const deltaX = (e.clientX - this.dragStartPos.x) / scaleX;
+        const deltaY = (e.clientY - this.dragStartPos.y) / scaleX; // Use same scale for both axes
         
         this.imagePosition.x = this.dragStartImagePos.x + deltaX;
         this.imagePosition.y = this.dragStartImagePos.y + deltaY;
@@ -269,13 +362,15 @@ class ImageControls {
     resize(e) {
         if (!this.isResizing) return;
         
-        // Get canvas scale to convert screen delta to canvas delta
-        // Resize handles move in screen coordinates but we need to
-        // update image size in canvas logical coordinates
-        const canvasScale = this.getCanvasScale();
+        // Get scale factor to convert screen delta to logical canvas delta
+        const canvas = this.backgroundManager.bgCanvas;
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const logicalWidth = canvas.width / dpr;
+        const scaleX = rect.width / logicalWidth;
         
-        const deltaX = (e.clientX - this.resizeStartPos.x) / canvasScale;
-        const deltaY = (e.clientY - this.resizeStartPos.y) / canvasScale;
+        const deltaX = (e.clientX - this.resizeStartPos.x) / scaleX;
+        const deltaY = (e.clientY - this.resizeStartPos.y) / scaleX; // Use same scale for both axes
         
         const aspectRatio = this.resizeStartSize.width / this.resizeStartSize.height;
         
@@ -378,11 +473,13 @@ class ImageControls {
         this.imageSize.width = this.originalWidth || this.imageSize.width;
         this.imageSize.height = this.originalHeight || this.imageSize.height;
         
-        // Center the image
+        // Center the image in logical canvas coordinates
         const canvas = this.backgroundManager.bgCanvas;
-        const rect = canvas.getBoundingClientRect();
-        this.imagePosition.x = (rect.width - this.imageSize.width) / 2;
-        this.imagePosition.y = (rect.height - this.imageSize.height) / 2;
+        const dpr = window.devicePixelRatio || 1;
+        const logicalWidth = canvas.width / dpr;
+        const logicalHeight = canvas.height / dpr;
+        this.imagePosition.x = (logicalWidth - this.imageSize.width) / 2;
+        this.imagePosition.y = (logicalHeight - this.imageSize.height) / 2;
         
         this.updateControlBox();
     }
