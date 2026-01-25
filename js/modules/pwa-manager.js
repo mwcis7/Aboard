@@ -12,45 +12,57 @@ class PWAManager {
         this.announcementInstallBtn = null;
 
         // Update elements
-        this.updateSnackbar = null;
+        this.updateModal = null;
 
         // Local Translations
         this.translations = {
             'zh-CN': {
                 'statusTitle': '应用状态',
+                'currentMode': '当前模式',
                 'online': '在线',
                 'offline': '离线',
                 'install': '安装应用',
                 'version': '版本',
                 'offlineMessage': '当前处于离线模式，更改已保存到本地',
                 'updateAvailable': '有新版本可用',
+                'updateTitle': '发现新版本',
+                'updateMessage': '新版本已下载完毕。是否立即刷新以应用更新？\n(选择“稍后”将在下次启动时应用)',
                 'update': '立即更新',
+                'updateLater': '稍后',
                 'checkUpdate': '检查更新',
                 'checking': '正在检查更新...',
                 'latest': '已是最新版本'
             },
             'zh-TW': {
                 'statusTitle': '應用狀態',
+                'currentMode': '當前模式',
                 'online': '在線',
                 'offline': '離線',
                 'install': '安裝應用',
                 'version': '版本',
                 'offlineMessage': '當前處於離線模式，更改已保存到本地',
                 'updateAvailable': '有新版本可用',
+                'updateTitle': '發現新版本',
+                'updateMessage': '新版本已下載完畢。是否立即刷新以應用更新？\n(選擇“稍後”將在下次啟動時應用)',
                 'update': '立即更新',
+                'updateLater': '稍後',
                 'checkUpdate': '檢查更新',
                 'checking': '正在檢查更新...',
                 'latest': '已是最新版本'
             },
             'en-US': {
                 'statusTitle': 'App Status',
+                'currentMode': 'Current Mode',
                 'online': 'Online',
                 'offline': 'Offline',
                 'install': 'Install App',
                 'version': 'Version',
                 'offlineMessage': 'Offline mode. Changes are saved locally.',
                 'updateAvailable': 'New version available',
+                'updateTitle': 'Update Available',
+                'updateMessage': 'New version downloaded. Refresh now to apply?\n(Select "Later" to apply on next launch)',
                 'update': 'Update Now',
+                'updateLater': 'Later',
                 'checkUpdate': 'Check for Updates',
                 'checking': 'Checking for updates...',
                 'latest': 'You are on the latest version'
@@ -99,7 +111,7 @@ class PWAManager {
                         // Check for updates on registration
                         // If there's a waiting worker, it means an update is ready
                         if (registration.waiting) {
-                            this.showUpdateNotification(registration.waiting);
+                            this.showUpdateModal(registration.waiting);
                         }
 
                         // Listen for new updates
@@ -108,7 +120,7 @@ class PWAManager {
                             newWorker.onstatechange = () => {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                                     // New version installed and ready to take over
-                                    this.showUpdateNotification(newWorker);
+                                    this.showUpdateModal(newWorker);
                                 }
                             };
                         };
@@ -149,57 +161,63 @@ class PWAManager {
         }
     }
 
-    showUpdateNotification(worker) {
-        // Create persistent snackbar if not exists
-        if (this.updateSnackbar) return;
+    showUpdateModal(worker) {
+        if (this.updateModal) {
+            this.updateModal.classList.add('show');
+            return;
+        }
 
-        const snackbar = document.createElement('div');
-        snackbar.className = 'update-snackbar';
-        snackbar.style.position = 'fixed';
-        snackbar.style.bottom = '20px';
-        snackbar.style.left = '50%';
-        snackbar.style.transform = 'translateX(-50%) translateY(100px)';
-        snackbar.style.backgroundColor = '#333';
-        snackbar.style.color = '#fff';
-        snackbar.style.padding = '12px 24px';
-        snackbar.style.borderRadius = '8px';
-        snackbar.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-        snackbar.style.display = 'flex';
-        snackbar.style.alignItems = 'center';
-        snackbar.style.gap = '16px';
-        snackbar.style.zIndex = '3000'; // Above most things
-        snackbar.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-        snackbar.style.fontFamily = 'var(--font-family, system-ui, -apple-system, sans-serif)';
-        snackbar.style.fontSize = '14px';
+        // Create modal using the project's modal style
+        const modal = document.createElement('div');
+        modal.id = 'pwa-update-modal';
+        modal.className = 'modal show'; // Initially show it
 
-        const text = document.createElement('span');
-        text.textContent = this.getTranslation('updateAvailable');
+        const content = document.createElement('div');
+        content.className = 'modal-content confirm-modal-content';
 
-        const btn = document.createElement('button');
-        btn.textContent = this.getTranslation('update');
-        btn.style.backgroundColor = 'var(--theme-color, #007AFF)';
-        btn.style.color = 'white';
-        btn.style.border = 'none';
-        btn.style.padding = '6px 12px';
-        btn.style.borderRadius = '4px';
-        btn.style.cursor = 'pointer';
-        btn.style.fontWeight = '500';
-        btn.style.fontSize = '13px';
+        const header = document.createElement('div');
+        header.className = 'modal-header';
+        const title = document.createElement('h2');
+        title.textContent = this.getTranslation('updateTitle');
+        header.appendChild(title);
 
-        btn.onclick = () => {
-            worker.postMessage({ type: 'SKIP_WAITING' });
-            snackbar.style.transform = 'translateX(-50%) translateY(100px)'; // Slide down
+        const body = document.createElement('div');
+        body.className = 'modal-body';
+        const message = document.createElement('p');
+        message.className = 'confirm-message';
+        message.textContent = this.getTranslation('updateMessage');
+        // Allow newline in message
+        message.style.whiteSpace = 'pre-line';
+        body.appendChild(message);
+
+        const footer = document.createElement('div');
+        footer.className = 'confirm-buttons';
+
+        const laterBtn = document.createElement('button');
+        laterBtn.className = 'confirm-btn cancel-btn';
+        laterBtn.textContent = this.getTranslation('updateLater');
+        laterBtn.onclick = () => {
+            modal.classList.remove('show');
         };
 
-        snackbar.appendChild(text);
-        snackbar.appendChild(btn);
-        document.body.appendChild(snackbar);
-        this.updateSnackbar = snackbar;
+        const updateBtn = document.createElement('button');
+        updateBtn.className = 'confirm-btn ok-btn';
+        updateBtn.textContent = this.getTranslation('update');
+        updateBtn.onclick = () => {
+            worker.postMessage({ type: 'SKIP_WAITING' });
+            modal.classList.remove('show');
+        };
 
-        // Animate in
-        requestAnimationFrame(() => {
-            snackbar.style.transform = 'translateX(-50%)';
-        });
+        footer.appendChild(laterBtn);
+        footer.appendChild(updateBtn);
+        body.appendChild(footer);
+
+        content.appendChild(header);
+        content.appendChild(body);
+        modal.appendChild(content);
+
+        document.body.appendChild(modal);
+        this.updateModal = modal;
     }
 
     setupUI() {
@@ -354,6 +372,8 @@ class PWAManager {
     setupEventListeners() {
         window.addEventListener('online', () => {
             this.updateOnlineStatus();
+            // Check for updates when coming online
+            this.checkForUpdates();
             // Show toast when coming back online
             if (window.drawingBoard && window.drawingBoard.settingsManager && window.drawingBoard.settingsManager.toastManager) {
                 window.drawingBoard.settingsManager.toastManager.show(this.getTranslation('online'), 'success');
@@ -389,10 +409,15 @@ class PWAManager {
 
     updateLabels() {
         // Refresh text content based on new locale
-        const statusText = navigator.onLine ? this.getTranslation('online') : this.getTranslation('offline');
+        const currentModeLabel = this.getTranslation('currentMode');
+        const statusState = navigator.onLine ? this.getTranslation('online') : this.getTranslation('offline');
+        const statusText = `${currentModeLabel}: ${statusState}`;
 
         // Update Settings UI
-        if (this.statusText) this.statusText.textContent = statusText;
+        // Note: Settings usually just shows the state, but we can match the requested format if needed.
+        // For Settings (About), standard "Online" is often preferred, but let's be consistent.
+        if (this.statusText) this.statusText.textContent = statusState;
+
         if (this.installBtn) this.installBtn.textContent = this.getTranslation('install');
         const checkUpdateBtn = document.getElementById('pwa-check-update-btn');
         if (checkUpdateBtn) checkUpdateBtn.textContent = this.getTranslation('checkUpdate');
@@ -402,7 +427,7 @@ class PWAManager {
              statusTitle.textContent = this.getTranslation('statusTitle');
         }
 
-        // Update Announcement UI
+        // Update Announcement UI - Explicit request: "当前模式：在线"
         if (this.announcementStatusText) this.announcementStatusText.textContent = statusText;
         if (this.announcementInstallBtn) this.announcementInstallBtn.textContent = this.getTranslation('install');
 
@@ -413,18 +438,36 @@ class PWAManager {
                  versionDiv.textContent = `${this.getTranslation('version')}: v2.1.0`;
              }
         }
+
+        // Update Modal if open
+        if (this.updateModal && this.updateModal.classList.contains('show')) {
+            const title = this.updateModal.querySelector('h2');
+            if (title) title.textContent = this.getTranslation('updateTitle');
+            const message = this.updateModal.querySelector('.confirm-message');
+            if (message) message.textContent = this.getTranslation('updateMessage');
+            const okBtn = this.updateModal.querySelector('.ok-btn');
+            if (okBtn) okBtn.textContent = this.getTranslation('update');
+            const cancelBtn = this.updateModal.querySelector('.cancel-btn');
+            if (cancelBtn) cancelBtn.textContent = this.getTranslation('updateLater');
+        }
     }
 
     updateOnlineStatus() {
         const isOnline = navigator.onLine;
         const color = isOnline ? '#34C759' : '#8E8E93'; // Green or Gray
-        const text = isOnline ? this.getTranslation('online') : this.getTranslation('offline');
+
+        const currentModeLabel = this.getTranslation('currentMode');
+        const statusState = isOnline ? this.getTranslation('online') : this.getTranslation('offline');
+
+        // Announcement: "Current Mode: Online"
+        const announcementText = `${currentModeLabel}: ${statusState}`;
 
         if (this.statusIndicator) this.statusIndicator.style.backgroundColor = color;
-        if (this.statusText) this.statusText.textContent = text;
+        // Settings: Just "Online" (Cleaner for settings list)
+        if (this.statusText) this.statusText.textContent = statusState;
 
         if (this.announcementStatusIndicator) this.announcementStatusIndicator.style.backgroundColor = color;
-        if (this.announcementStatusText) this.announcementStatusText.textContent = text;
+        if (this.announcementStatusText) this.announcementStatusText.textContent = announcementText;
     }
 
     async installApp() {
@@ -440,27 +483,15 @@ class PWAManager {
 
     checkForUpdates() {
         if (!('serviceWorker' in navigator)) {
-            alert('Service Worker not supported');
             return;
-        }
-
-        if (window.drawingBoard && window.drawingBoard.settingsManager && window.drawingBoard.settingsManager.toastManager) {
-            window.drawingBoard.settingsManager.toastManager.show(this.getTranslation('checking'), 'info');
         }
 
         navigator.serviceWorker.getRegistration().then(reg => {
             if (reg) {
                 reg.update().then(() => {
-                    // If no update found after a short delay, show "Latest"
-                    // This is a bit of a hack since update() promise resolves whether updated or not
-                    // Ideally we rely on onupdatefound, but if that doesn't fire, we assume latest.
-                    setTimeout(() => {
-                        if (!reg.installing && !reg.waiting) {
-                            if (window.drawingBoard && window.drawingBoard.settingsManager && window.drawingBoard.settingsManager.toastManager) {
-                                window.drawingBoard.settingsManager.toastManager.show(this.getTranslation('latest'), 'success');
-                            }
-                        }
-                    }, 1000);
+                    // Check logic is handled by onupdatefound -> showUpdateModal
+                    // For manual checks, we might want to show "No updates" if nothing happens
+                    // But avoiding spamming "No updates" on automatic checks is better.
                 });
             }
         });
