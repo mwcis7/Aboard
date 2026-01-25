@@ -246,3 +246,40 @@
 #insert-image-box .flip-handle.active::after {
     background-color: #34C759;
 }
+
+
+/* Insert Image Responsive Styles */
+@media (max-width: 480px) {
+    #insert-image-modal .modal-content {
+        width: 95%;
+        max-height: 85vh;
+    }
+    
+    .image-source-tabs {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    
+    .image-source-tab {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-height: 44px;
+    }
+    
+    .image-upload-zone {
+        padding: 20px;
+    }
+}
+
+/* Touch device improvements */
+@media (hover: none) and (pointer: coarse) {
+    .image-source-tab {
+        min-height: 44px;
+    }
+    
+    .image-upload-btn,
+    .image-action-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
