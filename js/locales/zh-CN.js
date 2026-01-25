@@ -20,7 +20,8 @@ window.translations = {
         apply: '应用',
         reset: '重置',
         start: '开始',
-        stop: '停止'
+        stop: '停止',
+        preview: '试听'
     },
 
     // Recovery dialog
@@ -158,6 +159,7 @@ window.translations = {
         coordinate: '坐标系',
         coordinateOriginHint: '在移动模式下双击选中坐标系中心可拖动移动',
         image: '上传图片',
+        imagePrefix: '图片',
         density: '密度',
         densityLabel: '密度：当前',
         size: '大小',
@@ -531,6 +533,8 @@ window.translations = {
         showDate: '显示日期',
         showTime: '显示时间',
         settings: '设置',
+        am: '上午',
+        pm: '下午',
         fullscreenDisplay: '全屏显示',
         displayOptions: '显示选项',
         dateAndTime: '日期和时间',
@@ -590,8 +594,13 @@ window.translations = {
         fullscreenFontSizeLabel: '全屏字体大小：当前',
         soundSettings: '声音设置',
         playSound: '倒计时结束时播放提示音',
+        preview: '试听',
+        moreSettings: '更多设置',
+        playbackSpeed: '播放倍速',
         loopPlayback: '循环播放',
         loopCount: '循环次数',
+        loopInterval: '循环间隔',
+        seconds: '秒',
         uploadCustomAudio: '上传自定义音频',
         soundPresets: {
             classBell: '开始铃声(10s)',

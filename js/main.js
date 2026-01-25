@@ -419,9 +419,8 @@ class DrawingBoard {
                 // Pointer events provide coalesced events for higher precision (smoother curves)
                 if (e.getCoalescedEvents) {
                     const events = e.getCoalescedEvents();
-                    for (let event of events) {
-                        this.drawingEngine.draw(event);
-                    }
+                    // Use optimized batch drawing
+                    this.drawingEngine.drawBatch(events);
                 } else {
                     this.drawingEngine.draw(e);
                 }
@@ -1557,10 +1556,11 @@ class DrawingBoard {
                         const diff = this.settingsManager.getSettingsDiff(newSettings);
                         this.showConfigDiffModal(diff, newSettings);
                     } catch (err) {
+                        const errorMsg = window.i18n ? window.i18n.t('settings.importError') : '配置文件无效';
                         if (this.settingsManager.toastManager) {
-                            this.settingsManager.toastManager.show('配置文件无效', 'error');
+                            this.settingsManager.toastManager.show(errorMsg, 'error');
                         } else {
-                            alert('配置文件无效');
+                            alert(errorMsg);
                         }
                     }
                 }
@@ -3893,10 +3893,11 @@ class DrawingBoard {
         }
         
         const imageId = `img_${Date.now()}`;
+        const imgPrefix = window.i18n ? window.i18n.t('background.imagePrefix') : 'Image ';
         this.uploadedImages.push({
             id: imageId,
             data: imageData,
-            name: `图片${this.uploadedImages.length + 1}`
+            name: `${imgPrefix}${this.uploadedImages.length + 1}`
         });
         
         try {

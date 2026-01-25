@@ -20,7 +20,8 @@ window.translations = {
         apply: 'Apply',
         reset: 'Reset',
         start: 'Start',
-        stop: 'Stop'
+        stop: 'Stop',
+        preview: 'Preview'
     },
 
     // Recovery dialog
@@ -158,6 +159,7 @@ window.translations = {
         coordinate: 'Coordinate',
         coordinateOriginHint: 'Double-click coordinate center in Move mode to drag origin',
         image: 'Upload Image',
+        imagePrefix: 'Image ',
         density: 'Density',
         densityLabel: 'Density: Current',
         size: 'Size',
@@ -533,6 +535,8 @@ window.translations = {
         showDate: 'Show Date',
         showTime: 'Show Time',
         settings: 'Settings',
+        am: 'AM',
+        pm: 'PM',
         fullscreenDisplay: 'Fullscreen',
         displayOptions: 'Display Options',
         dateAndTime: 'Date & Time',
@@ -592,8 +596,13 @@ window.translations = {
         fullscreenFontSizeLabel: 'Fullscreen Font Size: Current',
         soundSettings: 'Sound Settings',
         playSound: 'Play sound when timer ends',
+        preview: 'Preview',
+        moreSettings: 'More Settings',
+        playbackSpeed: 'Playback Speed',
         loopPlayback: 'Loop Playback',
         loopCount: 'Loop Count',
+        loopInterval: 'Loop Interval',
+        seconds: 'sec',
         uploadCustomAudio: 'Upload Custom Audio',
         soundPresets: {
             classBell: 'Class Bell (10s)',
