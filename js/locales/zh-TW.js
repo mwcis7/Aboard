@@ -593,8 +593,12 @@ window.translations = {
         fullscreenFontSizeLabel: '全螢幕字體大小：目前',
         soundSettings: '聲音設定',
         playSound: '倒計時結束時播放提示音',
+        preview: '試聽',
+        moreSettings: '更多設定',
+        playbackSpeed: '播放倍速',
         loopPlayback: '循環播放',
         loopCount: '循環次數',
+        loopInterval: '循環間隔',
         uploadCustomAudio: '上傳自定義音頻',
         soundPresets: {
             classBell: '開始鈴聲(10s)',
