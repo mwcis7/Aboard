@@ -637,17 +637,22 @@ class TimerInstance {
         
         // Update content with title if available, applying custom colors
         const modeText = this.mode === 'stopwatch' ? window.i18n.t('timer.stopwatch') : window.i18n.t('timer.countdown');
-        const titleHTML = this.title ? `<div class="timer-fullscreen-title" style="color: ${this.textColor};">${this.title}</div>` : '';
+
+        // Force black background and white text for fullscreen as requested
+        const fsTextColor = '#ffffff';
+        const fsBgColor = '#000000';
+
+        const titleHTML = this.title ? `<div class="timer-fullscreen-title" style="color: ${fsTextColor};">${this.title}</div>` : '';
         
         this.fullscreenContent.innerHTML = `
-            <div class="timer-fullscreen-mode" style="font-size: ${modeFontSize}px; color: ${this.textColor};">${modeText}</div>
+            <div class="timer-fullscreen-mode" style="font-size: ${modeFontSize}px; color: ${fsTextColor};">${modeText}</div>
             ${titleHTML}
-            <div class="timer-fullscreen-time" style="font-size: ${timeFontSize}px; color: ${this.textColor};">${timeString}</div>
+            <div class="timer-fullscreen-time" style="font-size: ${timeFontSize}px; color: ${fsTextColor};">${timeString}</div>
         `;
         
         // Apply background color to fullscreen modal
         if (this.fullscreenModal) {
-            this.fullscreenModal.style.backgroundColor = this.bgColor;
+            this.fullscreenModal.style.backgroundColor = fsBgColor;
         }
     }
     
