@@ -66,15 +66,20 @@ class AnnouncementManager {
         
         // Get content array from i18n and convert links to clickable
         const content = window.i18n.t('settings.announcement.content');
-        if (Array.isArray(content)) {
-            // Convert links to HTML anchor tags
-            const htmlContent = content.map(line => {
-                // Match URLs in the text
-                return line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
-            }).join('<br>');
-            this.contentElement.innerHTML = htmlContent;
+        if (window.RichTextParser) {
+            this.contentElement.innerHTML = window.RichTextParser.parse(content);
         } else {
-            this.contentElement.textContent = content;
+            // Fallback if RichTextParser is not loaded
+            if (Array.isArray(content)) {
+                // Convert links to HTML anchor tags
+                const htmlContent = content.map(line => {
+                    // Match URLs in the text
+                    return line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+                }).join('<br>');
+                this.contentElement.innerHTML = htmlContent;
+            } else {
+                this.contentElement.textContent = content;
+            }
         }
         
         // Show modal
@@ -91,15 +96,19 @@ class AnnouncementManager {
         const settingsContent = document.getElementById('settings-announcement-content');
         if (settingsContent) {
             const content = window.i18n.t('settings.announcement.content');
-            if (Array.isArray(content)) {
-                // Convert links to HTML anchor tags
-                const htmlContent = content.map(line => {
-                    // Match URLs in the text
-                    return line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #007AFF; text-decoration: none;">$1</a>');
-                }).join('<br>');
-                settingsContent.innerHTML = htmlContent;
+            if (window.RichTextParser) {
+                settingsContent.innerHTML = window.RichTextParser.parse(content);
             } else {
-                settingsContent.textContent = content;
+                if (Array.isArray(content)) {
+                    // Convert links to HTML anchor tags
+                    const htmlContent = content.map(line => {
+                        // Match URLs in the text
+                        return line.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: #007AFF; text-decoration: none;">$1</a>');
+                    }).join('<br>');
+                    settingsContent.innerHTML = htmlContent;
+                } else {
+                    settingsContent.textContent = content;
+                }
             }
         }
     }

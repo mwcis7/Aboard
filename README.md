@@ -50,12 +50,13 @@ graph LR
 ```
 
 ## 最近更新 (Recent Updates)
+- **配置管理**：支持导出和导入应用配置（JSON格式），并在导入时智能对比差异，让个性化设置轻松迁移。
+- **性能优化**：实现了功能模块的按需加载（Lazy Loading），大幅提升首屏加载速度。
+- **UI 优化**：统一了导出弹窗和时间设置弹窗的界面风格，视觉体验更一致。
 - **帮助系统扩展**：为教具和时间显示设置添加了帮助内容，支持8种语言（简体中文、繁体中文、英语、日语、韩语、法语、德语、西班牙语）。
 - **帮助按钮优化**：调整帮助按钮位置至标题右侧，帮助弹窗置于最高层级（z-index: 99999）。
 - **触控优化**：增强全局触控设备兼容性，添加最小44x44px触控目标尺寸，移除触控高亮效果。
-- **性能优化**：优化CSS过渡动画，使用具体属性替代`transition: all`，修复多处空指针异常。
 - **触控手势增强**：使用 Pointer Events API 实现更可靠的双指捏合缩放，支持触控笔+手指组合手势，兼容各种触控设备。
-- **项目清理**：移除了开发过程中的临时文件和备份文件，更新了 .gitignore 配置。
 - **形状预览优化**：修复了形状绘制时预览线条比实际线条细的问题，实现了所见即所得。
 - **插入图片修复**：修复了插入图片功能无法正常显示编辑框的严重Bug。
 - **箭头设置增强**：将粗细标签统一为线条粗细，增加了箭头大小的上限（100px），并实现了箭头大小不小于线条粗细的动态约束。
@@ -177,6 +178,7 @@ graph LR
   - 自动检测浏览器语言
   - 在设置-通用中可随时切换语言
   - 切换语言后立即生效
+- **配置管理**：支持导出当前配置为 JSON 文件，并在导入时智能对比差异，方便配置迁移和备份。
 
 ### 💾 数据管理
 - **点名器导入**：支持从 .xlsx, .xls, .csv 文件导入名单，自动识别列名。
@@ -319,6 +321,7 @@ php -S localhost:8080
 - ✅ 触摸事件优化，支持多点触控拖动
 
 ### 性能优化
+- **按需加载 (Lazy Loading)**：对非首屏必需的模块（如计时器、导出等）实现延迟加载，减少初始加载时间
 - Canvas context的`desynchronized`模式减少渲染延迟
 - 单路径渲染减少绘制调用次数
 - 防抖处理窗口resize事件
@@ -358,7 +361,9 @@ Aboard/
 │       ├── line-style-modal.css # 线条样式设置弹窗样式
 │       ├── random-picker.css # 点名器样式
 │       ├── scoreboard.css # 计分板样式
-│       └── insert-image.css # 插入图片样式
+│       ├── insert-image.css # 插入图片样式
+│       ├── toast.css      # 消息提示样式
+│       └── diff.css       # 设置对比样式
 ├── js/
 │   ├── main.js            # 主应用入口
 │   ├── drawing.js         # 绘图引擎模块
@@ -368,7 +373,6 @@ Aboard/
 │   ├── insert-image.js    # 插入图片模块（画布贴图功能，支持翻转）
 │   ├── stroke-controls.js # 笔迹控制模块
 │   ├── selection.js       # 选择工具模块
-│   ├── settings.js        # 设置管理模块
 │   ├── announcement.js    # 公告管理模块
 │   ├── export.js          # 导出功能模块
 │   ├── time-display.js    # 时间显示模块
@@ -404,12 +408,16 @@ Aboard/
 │       ├── shape-drawing.js # 形状绘制模块（支持直线、矩形、圆形）
 │       ├── random-picker.js # 点名器模块
 │       ├── scoreboard.js  # 计分板模块
+│       ├── settings-manager.js # 设置管理模块
+│       ├── toast-manager.js # 消息提示模块
 │       ├── line-style-modal.js # 线条样式设置弹窗模块
 │       ├── i18n.js        # 国际化核心模块
 │       ├── help-system.js # 帮助系统模块
 │       ├── browser-check.js # 浏览器兼容性检查
 │       ├── gif-manager.js # GIF动图管理模块
-│       └── libgif.js      # GIF解析库
+│       ├── libgif.js      # GIF解析库
+│       ├── storage-manager.js # 存储管理模块
+│       └── project-manager.js # 项目管理模块
 ├── img/                    # 图片资源目录
 │   ├── ruler_1.png        # 直尺样式1
 │   ├── ruler_2.png        # 直尺样式2
@@ -453,6 +461,9 @@ Aboard/
 - **InsertImageManager** - 插入图片管理，处理画布贴图功能，支持翻转
 - **ImageControls** - 图片控制，处理背景图片的编辑和翻转
 - **DrawingBoard** - 主应用类，集成所有模块并协调交互
+- **StorageManager** - 存储管理，使用 IndexedDB 处理大容量数据存储
+- **ProjectManager** - 项目管理，处理项目的导入导出
+- **ToastManager** - 消息提示，提供统一的 UI 反馈
 
 ### 性能优化
 - Canvas context的`desynchronized`模式减少渲染延迟

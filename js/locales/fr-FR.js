@@ -516,6 +516,21 @@ window.translations = {
         colorSettings: 'Paramètres de couleur',
         textColor: 'Couleur du texte',
         bgColor: 'Couleur d\'arrière-plan',
+        soundSettings: 'Paramètres audio',
+        playSound: 'Jouer un son à la fin du compte à rebours',
+        preview: 'Aperçu',
+        moreSettings: 'Plus de paramètres',
+        playbackSpeed: 'Vitesse de lecture',
+        loopPlayback: 'Lecture en boucle',
+        loopCount: 'Nombre de boucles',
+        loopInterval: 'Intervalle de boucle',
+        uploadCustomAudio: 'Télécharger audio personnalisé',
+        soundPresets: {
+            classBell: 'Cloche de classe (10s)',
+            examEnd: 'Fin de l\'examen (4s)',
+            gentle: 'Doux (17s)',
+            digitalBeep: 'Bip numérique (4s)'
+        },
         colors: {
             black: 'Noir',
             white: 'Blanc',
@@ -525,7 +540,15 @@ window.translations = {
             yellow: 'Jaune',
             orange: 'Orange',
             purple: 'Violet',
-            transparent: 'Transparent'
+            transparent: 'Transparent',
+            darkGray: 'Gris foncé (Défaut)',
+            lightGray: 'Gris clair',
+            lightRed: 'Rouge clair',
+            lightBlue: 'Bleu clair',
+            lightGreen: 'Vert clair',
+            lightYellow: 'Jaune clair',
+            lightOrange: 'Orange clair',
+            whiteDefault: 'Blanc (Défaut)'
         },
         customColor: 'Couleur personnalisée',
         start: 'Démarrer',

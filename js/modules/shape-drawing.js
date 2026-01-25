@@ -79,7 +79,7 @@ class ShapeDrawingManager {
     }
     
     setDashDensity(density) {
-        this.dashDensity = Math.max(5, Math.min(40, density));
+        this.dashDensity = Math.max(1, Math.min(100, density));
         this.saveSettings();
     }
     
@@ -320,12 +320,15 @@ class ShapeDrawingManager {
     applyLineStyle(ctx) {
         ctx.setLineDash([]);
         
+        // Calculate visual spacing based on density value
+        const spacing = Math.max(2, 400 / Math.max(1, this.dashDensity));
+
         switch(this.lineStyle) {
             case 'dashed':
-                ctx.setLineDash([this.dashDensity, this.dashDensity / 2]);
+                ctx.setLineDash([spacing, spacing * 0.6]);
                 break;
             case 'dotted':
-                ctx.setLineDash([2, this.dashDensity / 2]);
+                ctx.setLineDash([2, spacing * 0.6]);
                 break;
             case 'solid':
             case 'wavy':

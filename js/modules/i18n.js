@@ -1028,15 +1028,6 @@ class I18n {
             loopCountLabel.textContent = this.t('timer.loopCount');
         }
         
-        // Upload custom audio button
-        const uploadAudioLabel = document.querySelector('label[for="timer-sound-upload"]');
-        if (uploadAudioLabel) {
-            const textNode = Array.from(uploadAudioLabel.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
-            if (textNode) {
-                textNode.textContent = '\n                                ' + this.t('timer.uploadCustomAudio') + '\n                            ';
-            }
-        }
-        
         // Timer color button titles
         document.querySelectorAll('#timer-settings-modal .color-btn').forEach(btn => {
             const colorValue = btn.getAttribute('data-timer-text-color') || btn.getAttribute('data-timer-bg-color');
@@ -1087,141 +1078,8 @@ class I18n {
     }
     
     updateLabelFormats() {
-        // Update Time Display Settings labels to format: "Font Size: Current 16px"
-        const tdFontSizeLabel = document.querySelector('label[for="td-time-font-size-slider"], label:has(#td-time-font-size-value)');
-        if (tdFontSizeLabel) {
-            const valueSpan = document.getElementById('td-time-font-size-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                tdFontSizeLabel.innerHTML = this.t('timeDisplay.fontSizeLabel') + ' <span id="td-time-font-size-value">' + currentValue + '</span>px';
-            }
-        }
-        
-        const tdOpacityLabel = document.querySelector('label[for="td-time-opacity-slider"], label:has(#td-time-opacity-value)');
-        if (tdOpacityLabel) {
-            const valueSpan = document.getElementById('td-time-opacity-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                tdOpacityLabel.innerHTML = this.t('timeDisplay.opacityLabel') + ' <span id="td-time-opacity-value">' + currentValue + '</span>%';
-            }
-        }
-        
-        const tdFullscreenLabel = document.querySelector('label[for="td-time-fullscreen-font-size-slider"], label:has(#td-time-fullscreen-font-size-value)');
-        if (tdFullscreenLabel) {
-            const valueSpan = document.getElementById('td-time-fullscreen-font-size-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                tdFullscreenLabel.innerHTML = this.t('timeDisplay.fullscreenFontSizeLabel') + ' <span id="td-time-fullscreen-font-size-value">' + currentValue + '</span>%';
-            }
-        }
-        
-        // Update Settings modal labels
-        const timeFontSizeLabel = document.querySelector('label:has(#time-font-size-value)');
-        if (timeFontSizeLabel) {
-            const valueSpan = document.getElementById('time-font-size-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                timeFontSizeLabel.innerHTML = this.t('timeDisplay.fontSizeLabel') + ' <span id="time-font-size-value">' + currentValue + '</span>px';
-            }
-        }
-        
-        const timeOpacityLabel = document.querySelector('label:has(#time-opacity-value)');
-        if (timeOpacityLabel) {
-            const valueSpan = document.getElementById('time-opacity-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                timeOpacityLabel.innerHTML = this.t('timeDisplay.opacityLabel') + ' <span id="time-opacity-value">' + currentValue + '</span>%';
-            }
-        }
-        
-        const timeFullscreenLabel = document.querySelector('label:has(#time-fullscreen-font-size-value)');
-        if (timeFullscreenLabel) {
-            const valueSpan = document.getElementById('time-fullscreen-font-size-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                timeFullscreenLabel.innerHTML = this.t('timeDisplay.fullscreenFontSizeLabel') + ' <span id="time-fullscreen-font-size-value">' + currentValue + '</span>%';
-            }
-        }
-        
-        // Update background opacity label
-        const bgOpacityLabel = document.querySelector('label:has(#bg-opacity-value)');
-        if (bgOpacityLabel) {
-            const valueSpan = document.getElementById('bg-opacity-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                bgOpacityLabel.innerHTML = this.t('background.opacityLabel') + ' <span id="bg-opacity-value">' + currentValue + '</span>%';
-            }
-        }
-        
-        // Update pattern intensity label
-        const patternIntensityLabel = document.querySelector('label:has(#pattern-intensity-value)');
-        if (patternIntensityLabel) {
-            const valueSpan = document.getElementById('pattern-intensity-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                patternIntensityLabel.innerHTML = this.t('background.contrastLabel') + ' <span id="pattern-intensity-value">' + currentValue + '</span>%';
-            }
-        }
-        
-        // Update pen size label
-        const penSizeLabel = document.querySelector('label:has(#pen-size-value)');
-        if (penSizeLabel) {
-            const valueSpan = document.getElementById('pen-size-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                penSizeLabel.innerHTML = this.t('tools.pen.sizeLabel') + ' <span id="pen-size-value">' + currentValue + '</span>px';
-            }
-        }
-        
-        // Update eraser size label
-        const eraserSizeLabel = document.querySelector('label:has(#eraser-size-value)');
-        if (eraserSizeLabel) {
-            const valueSpan = document.getElementById('eraser-size-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                eraserSizeLabel.innerHTML = this.t('tools.eraser.sizeLabel') + ' <span id="eraser-size-value">' + currentValue + '</span>px';
-            }
-        }
-        
-        // Update pattern density label
-        const densityLabel = document.querySelector('label:has(#pattern-density-value)');
-        if (densityLabel) {
-            const valueSpan = document.getElementById('pattern-density-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                densityLabel.innerHTML = this.t('background.densityLabel') + ' <span id="pattern-density-value">' + currentValue + '</span>%';
-            }
-        }
-        
-        // Update background image size label
-        const imageSizeLabel = document.querySelector('label:has(#bg-image-size-value)');
-        if (imageSizeLabel) {
-            const valueSpan = document.getElementById('bg-image-size-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                imageSizeLabel.innerHTML = this.t('background.sizeLabel') + ' <span id="bg-image-size-value">' + currentValue + '</span>%';
-            }
-        }
-        
-        // Update toolbar size label
-        const toolbarSizeLabel = document.querySelector('label:has(#toolbar-size-value)');
-        if (toolbarSizeLabel) {
-            const valueSpan = document.getElementById('toolbar-size-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                toolbarSizeLabel.innerHTML = this.t('settings.display.toolbarSizeLabel') + ' <span id="toolbar-size-value">' + currentValue + '</span>px';
-            }
-        }
-        
-        // Update config scale label
-        const configScaleLabel = document.querySelector('label:has(#config-scale-value)');
-        if (configScaleLabel) {
-            const valueSpan = document.getElementById('config-scale-value');
-            if (valueSpan) {
-                const currentValue = valueSpan.textContent;
-                configScaleLabel.innerHTML = this.t('settings.display.configScaleLabel') + ' <span id="config-scale-value">' + currentValue + '</span>%';
-            }
-        }
+        // This method is now empty as labels are handled by data-i18n attributes on span elements.
+        // The value spans (e.g., #pen-size-value) are preserved in the DOM, so event listeners remain intact.
     }
     
     translateAboutContent() {

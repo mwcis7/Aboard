@@ -3,24 +3,28 @@
 
 // Single Timer Instance Class
 class TimerInstance {
-    constructor(id, mode, duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, manager, title = '', textColor = '#333333', bgColor = '#FFFFFF') {
-        this.id = id;
-        this.mode = mode; // 'stopwatch' or 'countdown'
-        this.manager = manager;
-        this.title = title; // Timer title
+    constructor(options) {
+        this.id = options.id;
+        this.mode = options.mode; // 'stopwatch' or 'countdown'
+        this.manager = options.manager;
+        this.title = options.title || ''; // Timer title
         
         // Color settings
-        this.textColor = textColor;
-        this.bgColor = bgColor;
+        this.textColor = options.textColor || '#333333';
+        this.bgColor = options.bgColor || '#FFFFFF';
+        this.fullscreenTextColor = options.fullscreenTextColor || '#FFFFFF'; // Default white text
+        this.fullscreenBgColor = options.fullscreenBgColor || '#000000';     // Default black bg
         
         // Timer state
         this.isRunning = false;
         this.isPaused = false;
         this.startTime = 0;
         
+        const duration = options.duration || 0;
+
         // For stopwatch mode, duration is the starting time
         // For countdown mode, duration is the total time
-        if (mode === 'stopwatch') {
+        if (this.mode === 'stopwatch') {
             this.elapsedTime = duration; // Start from this time
         } else {
             this.elapsedTime = 0;
@@ -31,13 +35,16 @@ class TimerInstance {
         this.intervalId = null;
         
         // Sound settings
-        this.playSound = playSound;
-        this.selectedSound = selectedSound;
-        this.customSoundUrl = customSoundUrl;
-        this.loopSound = loopSound;
-        this.loopCount = loopCount;
+        this.playSound = options.playSound;
+        this.selectedSound = options.selectedSound;
+        this.customSoundUrl = options.customSoundUrl;
+        this.loopSound = options.loopSound;
+        this.loopCount = options.loopCount;
+        this.loopInterval = options.loopInterval || 0;
+        this.playbackSpeed = options.playbackSpeed || 1.0;
         this.currentAudio = null; // Track the current audio element
         this.currentLoopIteration = 0; // Track current loop iteration
+        this.loopTimeoutId = null; // Track loop timeout
         
         // UI elements
         this.displayElement = null;
@@ -501,17 +508,35 @@ class TimerInstance {
             this.currentAudio = null;
         }
         
+        // Clear any pending loop timeout
+        if (this.loopTimeoutId) {
+            clearTimeout(this.loopTimeoutId);
+            this.loopTimeoutId = null;
+        }
+
         const audio = new Audio(soundUrl);
+        // Apply playback speed
+        audio.playbackRate = this.playbackSpeed;
+
         this.currentAudio = audio;
         
         audio.addEventListener('ended', () => {
             if (this.loopSound && this.currentLoopIteration < this.loopCount - 1) {
                 this.currentLoopIteration++;
-                // Play again for the next loop
-                this.playSound_Internal(soundUrl);
+
+                // Handle loop interval
+                if (this.loopInterval > 0) {
+                    this.loopTimeoutId = setTimeout(() => {
+                        this.playSound_Internal(soundUrl);
+                    }, this.loopInterval * 1000);
+                } else {
+                    // Play immediately
+                    this.playSound_Internal(soundUrl);
+                }
             } else {
                 this.currentAudio = null;
                 this.currentLoopIteration = 0;
+                this.loopTimeoutId = null;
             }
         });
         
@@ -614,17 +639,22 @@ class TimerInstance {
         
         // Update content with title if available, applying custom colors
         const modeText = this.mode === 'stopwatch' ? window.i18n.t('timer.stopwatch') : window.i18n.t('timer.countdown');
-        const titleHTML = this.title ? `<div class="timer-fullscreen-title" style="color: ${this.textColor};">${this.title}</div>` : '';
+
+        // Use configured fullscreen colors
+        const fsTextColor = this.fullscreenTextColor;
+        const fsBgColor = this.fullscreenBgColor;
+
+        const titleHTML = this.title ? `<div class="timer-fullscreen-title" style="color: ${fsTextColor};">${this.title}</div>` : '';
         
         this.fullscreenContent.innerHTML = `
-            <div class="timer-fullscreen-mode" style="font-size: ${modeFontSize}px; color: ${this.textColor};">${modeText}</div>
+            <div class="timer-fullscreen-mode" style="font-size: ${modeFontSize}px; color: ${fsTextColor};">${modeText}</div>
             ${titleHTML}
-            <div class="timer-fullscreen-time" style="font-size: ${timeFontSize}px; color: ${this.textColor};">${timeString}</div>
+            <div class="timer-fullscreen-time" style="font-size: ${timeFontSize}px; color: ${fsTextColor};">${timeString}</div>
         `;
         
         // Apply background color to fullscreen modal
         if (this.fullscreenModal) {
-            this.fullscreenModal.style.backgroundColor = this.bgColor;
+            this.fullscreenModal.style.backgroundColor = fsBgColor;
         }
     }
     
@@ -654,6 +684,12 @@ class TimerInstance {
             this.currentAudio = null;
         }
         
+        // Clear any pending loop timeout
+        if (this.loopTimeoutId) {
+            clearTimeout(this.loopTimeoutId);
+            this.loopTimeoutId = null;
+        }
+
         // Remove event listeners
         if (this.mouseMoveHandler) {
             document.removeEventListener('mousemove', this.mouseMoveHandler);
@@ -674,7 +710,7 @@ class TimerInstance {
         this.manager.removeTimer(this.id);
     }
     
-    updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, title = '', textColor = null, bgColor = null) {
+    updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, loopInterval, playbackSpeed, title = '', textColor = null, bgColor = null, fullscreenTextColor = null, fullscreenBgColor = null) {
         this.countdownDuration = duration;
         
         if (this.mode === 'stopwatch') {
@@ -688,11 +724,15 @@ class TimerInstance {
         this.customSoundUrl = customSoundUrl;
         this.loopSound = loopSound;
         this.loopCount = loopCount;
+        this.loopInterval = loopInterval;
+        this.playbackSpeed = playbackSpeed;
         this.title = title;
         
         // Update colors if provided
         if (textColor) this.textColor = textColor;
         if (bgColor) this.bgColor = bgColor;
+        if (fullscreenTextColor) this.fullscreenTextColor = fullscreenTextColor;
+        if (fullscreenBgColor) this.fullscreenBgColor = fullscreenBgColor;
         
         // Apply colors to display element
         if (this.displayElement) {
@@ -764,6 +804,40 @@ class TimerManager {
         this.renderCustomSounds();
     }
     
+    updateMainPreviewButtonState() {
+        const previewBtn = document.getElementById('timer-sound-preview-btn');
+        if (!previewBtn) return;
+
+        const soundCheckbox = document.getElementById('timer-sound-checkbox');
+        const activeSoundBtn = document.querySelector('.sound-preset-btn.active');
+
+        if (soundCheckbox && soundCheckbox.checked && activeSoundBtn) {
+            previewBtn.disabled = false;
+        } else {
+            previewBtn.disabled = true;
+        }
+    }
+
+    updateMoreSettingsState() {
+        const moreSettingsBtn = document.getElementById('timer-more-settings-btn');
+        if (!moreSettingsBtn) return;
+
+        const loopCheckbox = document.getElementById('timer-loop-checkbox');
+        const speedSlider = document.getElementById('timer-playback-speed');
+        const intervalInput = document.getElementById('timer-loop-interval');
+
+        const isLoop = loopCheckbox && loopCheckbox.checked;
+        const isSpeedChanged = speedSlider && parseFloat(speedSlider.value) !== 1.0;
+        const isIntervalSet = intervalInput && parseInt(intervalInput.value) > 0;
+
+        // Active if any setting is non-default
+        if (isLoop || isSpeedChanged || (isLoop && isIntervalSet)) {
+            moreSettingsBtn.classList.add('active-settings');
+        } else {
+            moreSettingsBtn.classList.remove('active-settings');
+        }
+    }
+
     preloadSounds() {
         // Preload all preset sounds for immediate playback
         Object.keys(this.sounds).forEach(key => {
@@ -902,6 +976,26 @@ class TimerManager {
                 } else {
                     soundSettingsContent.style.display = 'none';
                 }
+                this.updateMainPreviewButtonState();
+            });
+        }
+
+        // Main preview button
+        const mainPreviewBtn = document.getElementById('timer-sound-preview-btn');
+        if (mainPreviewBtn) {
+            mainPreviewBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // Find active preset
+                const activeSoundBtn = document.querySelector('.sound-preset-btn.active');
+                if (activeSoundBtn) {
+                    const soundUrl = activeSoundBtn.dataset.url;
+                    const soundKey = activeSoundBtn.dataset.sound;
+                    if (soundUrl) {
+                        this.previewSoundByUrl(soundUrl, mainPreviewBtn);
+                    } else if (soundKey && this.sounds[soundKey]) {
+                        this.previewSound(soundKey, mainPreviewBtn);
+                    }
+                }
             });
         }
         
@@ -917,6 +1011,7 @@ class TimerManager {
                 if (button.dataset.sound) {
                     document.querySelectorAll('.sound-preset-btn').forEach(b => b.classList.remove('active'));
                     button.classList.add('active');
+                    this.updateMainPreviewButtonState();
                 }
             });
         });
@@ -953,6 +1048,16 @@ class TimerManager {
             });
         }
         
+        // More Settings Toggle
+        const moreSettingsBtn = document.getElementById('timer-more-settings-btn');
+        const moreSettingsContent = document.getElementById('timer-more-settings-content');
+        if (moreSettingsBtn && moreSettingsContent) {
+            moreSettingsBtn.addEventListener('click', () => {
+                const isExpanded = moreSettingsBtn.classList.toggle('expanded');
+                moreSettingsContent.style.display = isExpanded ? 'block' : 'none';
+            });
+        }
+
         // Loop checkbox
         const loopCheckbox = document.getElementById('timer-loop-checkbox');
         const loopCountGroup = document.getElementById('sound-loop-count-group');
@@ -963,9 +1068,31 @@ class TimerManager {
                 } else {
                     loopCountGroup.style.display = 'none';
                 }
+                this.updateMoreSettingsState();
             });
         }
-        
+
+        // Loop interval input
+        const loopIntervalInput = document.getElementById('timer-loop-interval');
+        if (loopIntervalInput) {
+            loopIntervalInput.addEventListener('change', () => {
+                this.updateMoreSettingsState();
+            });
+            loopIntervalInput.addEventListener('input', () => {
+                this.updateMoreSettingsState();
+            });
+        }
+
+        // Speed slider
+        const speedSlider = document.getElementById('timer-playback-speed');
+        const speedValue = document.getElementById('timer-playback-speed-value');
+        if (speedSlider && speedValue) {
+            speedSlider.addEventListener('input', (e) => {
+                speedValue.textContent = `${e.target.value}x`;
+                this.updateMoreSettingsState();
+            });
+        }
+
         // Timer color picker buttons
         document.querySelectorAll('.color-btn[data-timer-text-color]').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -983,6 +1110,23 @@ class TimerManager {
             });
         });
         
+        // Timer color picker buttons (Fullscreen)
+        document.querySelectorAll('.color-btn[data-timer-fs-text-color]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.color-btn[data-timer-fs-text-color]').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+            });
+        });
+
+        document.querySelectorAll('.color-btn[data-timer-fs-bg-color]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.color-btn[data-timer-fs-bg-color]').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+            });
+        });
+
         // Timer color settings checkbox toggle
         const timerColorCheckbox = document.getElementById('timer-color-checkbox');
         const timerColorSettings = document.getElementById('timer-color-settings');
@@ -996,6 +1140,25 @@ class TimerManager {
             });
         }
         
+        // Custom color pickers (Fullscreen)
+        const customFsTextColorPicker = document.getElementById('custom-timer-fs-text-color-picker');
+        if (customFsTextColorPicker) {
+            customFsTextColorPicker.addEventListener('input', (e) => {
+                document.querySelectorAll('.color-btn[data-timer-fs-text-color]').forEach(b => b.classList.remove('active'));
+                const parentBtn = e.target.closest('.color-picker-icon-btn');
+                if (parentBtn) parentBtn.classList.add('active-custom');
+            });
+        }
+
+        const customFsBgColorPicker = document.getElementById('custom-timer-fs-bg-color-picker');
+        if (customFsBgColorPicker) {
+            customFsBgColorPicker.addEventListener('input', (e) => {
+                document.querySelectorAll('.color-btn[data-timer-fs-bg-color]').forEach(b => b.classList.remove('active'));
+                const parentBtn = e.target.closest('.color-picker-icon-btn');
+                if (parentBtn) parentBtn.classList.add('active-custom');
+            });
+        }
+
         // Custom color pickers
         const customTextColorPicker = document.getElementById('custom-timer-text-color-picker');
         if (customTextColorPicker) {
@@ -1144,6 +1307,20 @@ class TimerManager {
                 loopCountGroup.style.display = 'none';
             }
             document.getElementById('timer-loop-count').value = '3';
+
+            // Reset new settings
+            document.getElementById('timer-playback-speed').value = '1.0';
+            document.getElementById('timer-playback-speed-value').textContent = '1.0x';
+            document.getElementById('timer-loop-interval').value = '1';
+
+            // Reset More Settings UI
+            const moreSettingsBtn = document.getElementById('timer-more-settings-btn');
+            const moreSettingsContent = document.getElementById('timer-more-settings-content');
+            if (moreSettingsBtn) moreSettingsBtn.classList.remove('expanded');
+            if (moreSettingsContent) moreSettingsContent.style.display = 'none';
+
+            this.updateMainPreviewButtonState();
+            this.updateMoreSettingsState();
         }
     }
     
@@ -1195,6 +1372,30 @@ class TimerManager {
                 loopCountInput.value = timer.loopCount;
             }
             
+            // Set new settings
+            const speedSlider = document.getElementById('timer-playback-speed');
+            const speedValue = document.getElementById('timer-playback-speed-value');
+            if (speedSlider) speedSlider.value = timer.playbackSpeed || 1.0;
+            if (speedValue) speedValue.textContent = `${timer.playbackSpeed || 1.0}x`;
+
+            const intervalInput = document.getElementById('timer-loop-interval');
+            if (intervalInput) intervalInput.value = timer.loopInterval || 0;
+
+            // Update More Settings State
+            const moreSettingsBtn = document.getElementById('timer-more-settings-btn');
+            const moreSettingsContent = document.getElementById('timer-more-settings-content');
+
+            // Always collapse by default when opening settings for a timer, user can expand if they want to see details
+            // OR: keep expanded if it has active settings?
+            // Let's reset expansion but set active state correctly
+
+            if (moreSettingsBtn) {
+                moreSettingsBtn.classList.remove('expanded');
+                if (moreSettingsContent) moreSettingsContent.style.display = 'none';
+            }
+
+            this.updateMoreSettingsState();
+
             if (timer.selectedSound) {
                 document.querySelectorAll('.sound-preset-btn').forEach(b => b.classList.remove('active'));
                 const soundBtn = document.querySelector(`.sound-preset-btn[data-sound="${timer.selectedSound}"]`);
@@ -1202,6 +1403,45 @@ class TimerManager {
                     soundBtn.classList.add('active');
                 }
             }
+
+            // Set colors (Widget)
+            // ... (handled implicitly by existing logic if I didn't break it? wait, existing logic is missing in search block, but I need to add Fullscreen color population)
+
+            // Set colors (Fullscreen)
+            // Reset all active states first
+            document.querySelectorAll('.color-btn[data-timer-fs-text-color]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.color-btn[data-timer-fs-bg-color]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.timer-color-picker-icon').forEach(b => b.classList.remove('active-custom'));
+
+            // Text Color (Fullscreen)
+            const fsTextColorBtn = document.querySelector(`.color-btn[data-timer-fs-text-color="${timer.fullscreenTextColor}"]`);
+            if (fsTextColorBtn) {
+                fsTextColorBtn.classList.add('active');
+            } else {
+                // Custom color
+                const picker = document.getElementById('custom-timer-fs-text-color-picker');
+                if (picker) {
+                    picker.value = timer.fullscreenTextColor;
+                    const parent = picker.closest('.color-picker-icon-btn');
+                    if (parent) parent.classList.add('active-custom');
+                }
+            }
+
+            // Bg Color (Fullscreen)
+            const fsBgColorBtn = document.querySelector(`.color-btn[data-timer-fs-bg-color="${timer.fullscreenBgColor}"]`);
+            if (fsBgColorBtn) {
+                fsBgColorBtn.classList.add('active');
+            } else {
+                // Custom color
+                const picker = document.getElementById('custom-timer-fs-bg-color-picker');
+                if (picker) {
+                    picker.value = timer.fullscreenBgColor;
+                    const parent = picker.closest('.color-picker-icon-btn');
+                    if (parent) parent.classList.add('active-custom');
+                }
+            }
+
+            this.updateMainPreviewButtonState();
         }
     }
     
@@ -1240,6 +1480,8 @@ class TimerManager {
         // Get loop settings
         const loopSound = document.getElementById('timer-loop-checkbox').checked;
         const loopCount = parseInt(document.getElementById('timer-loop-count').value) || 3;
+        const loopInterval = parseInt(document.getElementById('timer-loop-interval').value) || 0;
+        const playbackSpeed = parseFloat(document.getElementById('timer-playback-speed').value) || 1.0;
         
         // Get color settings - check custom pickers first, then preset buttons
         let textColor = '#333333';
@@ -1265,6 +1507,30 @@ class TimerManager {
             bgColor = activeBgColorBtn.dataset.timerBgColor;
         }
         
+        // Get Fullscreen color settings
+        let fsTextColor = '#FFFFFF';
+        let fsBgColor = '#000000';
+
+        const activeFsTextColorBtn = document.querySelector('.color-btn.active[data-timer-fs-text-color]');
+        const customFsTextColorPicker = document.getElementById('custom-timer-fs-text-color-picker');
+        const customFsTextPickerParent = customFsTextColorPicker?.closest('.color-picker-icon-btn');
+
+        if (customFsTextPickerParent && customFsTextPickerParent.classList.contains('active-custom')) {
+            fsTextColor = customFsTextColorPicker.value;
+        } else if (activeFsTextColorBtn) {
+            fsTextColor = activeFsTextColorBtn.dataset.timerFsTextColor;
+        }
+
+        const activeFsBgColorBtn = document.querySelector('.color-btn.active[data-timer-fs-bg-color]');
+        const customFsBgColorPicker = document.getElementById('custom-timer-fs-bg-color-picker');
+        const customFsBgPickerParent = customFsBgColorPicker?.closest('.color-picker-icon-btn');
+
+        if (customFsBgPickerParent && customFsBgPickerParent.classList.contains('active-custom')) {
+            fsBgColor = customFsBgColorPicker.value;
+        } else if (activeFsBgColorBtn) {
+            fsBgColor = activeFsBgColorBtn.dataset.timerFsBgColor;
+        }
+
         const duration = (hours * 3600 + minutes * 60 + seconds) * 1000;
         
         // Use custom modal instead of browser alert
@@ -1275,12 +1541,30 @@ class TimerManager {
         
         if (this.adjustingTimer) {
             // Update existing timer
-            this.adjustingTimer.updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, title, textColor, bgColor);
+            this.adjustingTimer.updateSettings(duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, loopInterval, playbackSpeed, title, textColor, bgColor, fsTextColor, fsBgColor);
             this.adjustingTimer = null;
         } else {
             // Create new timer
             const id = this.nextTimerId++;
-            const timer = new TimerInstance(id, mode, duration, playSound, selectedSound, customSoundUrl, loopSound, loopCount, this, title, textColor, bgColor);
+            const options = {
+                id: id,
+                mode: mode,
+                duration: duration,
+                playSound: playSound,
+                selectedSound: selectedSound,
+                customSoundUrl: customSoundUrl,
+                loopSound: loopSound,
+                loopCount: loopCount,
+                loopInterval: loopInterval,
+                playbackSpeed: playbackSpeed,
+                manager: this,
+                title: title,
+                textColor: textColor,
+                bgColor: bgColor,
+                fullscreenTextColor: fsTextColor,
+                fullscreenBgColor: fsBgColor
+            };
+            const timer = new TimerInstance(options);
             this.timers.set(id, timer);
         }
         
@@ -1300,12 +1584,16 @@ class TimerManager {
         
         // Reset all preview button states
         if (this.currentPreviewButton) {
-            this.currentPreviewButton.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                </svg>
-            `;
-            this.currentPreviewButton.title = '试听';
+            if (this.currentPreviewButton.id === 'timer-sound-preview-btn') {
+                this.currentPreviewButton.textContent = window.i18n.t('common.preview') || '试听';
+            } else {
+                this.currentPreviewButton.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                `;
+                this.currentPreviewButton.title = window.i18n.t('common.preview') || '试听';
+            }
             this.currentPreviewButton = null;
         }
     }
@@ -1328,13 +1616,17 @@ class TimerManager {
             this.currentPreviewButton = previewButton;
             
             // Update button to show pause icon
-            previewButton.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="6" y="4" width="4" height="16"></rect>
-                    <rect x="14" y="4" width="4" height="16"></rect>
-                </svg>
-            `;
-            previewButton.title = '暂停';
+            if (previewButton.id === 'timer-sound-preview-btn') {
+                previewButton.textContent = window.i18n.t('common.stop') || '停止';
+            } else {
+                previewButton.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                `;
+                previewButton.title = window.i18n.t('common.stop') || '停止';
+            }
             
             // Reset button when audio ends
             this.previewAudio.addEventListener('ended', () => {
@@ -1364,13 +1656,17 @@ class TimerManager {
             this.currentPreviewButton = previewButton;
             
             // Update button to show pause icon
-            previewButton.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="6" y="4" width="4" height="16"></rect>
-                    <rect x="14" y="4" width="4" height="16"></rect>
-                </svg>
-            `;
-            previewButton.title = '暂停';
+            if (previewButton.id === 'timer-sound-preview-btn') {
+                previewButton.textContent = window.i18n.t('common.stop') || '停止';
+            } else {
+                previewButton.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                `;
+                previewButton.title = window.i18n.t('common.stop') || '停止';
+            }
             
             // Reset button when audio ends
             this.previewAudio.addEventListener('ended', () => {

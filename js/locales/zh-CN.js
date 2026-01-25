@@ -20,7 +20,8 @@ window.translations = {
         apply: '应用',
         reset: '重置',
         start: '开始',
-        stop: '停止'
+        stop: '停止',
+        preview: '试听'
     },
 
     // Recovery dialog
@@ -71,6 +72,7 @@ window.translations = {
             colorAndSize: '颜色与粗细',
             colorPicker: '取色器',
             size: '线条粗细',
+            thickness: '笔粗细',
             sizeLabel: '线条粗细：当前',
             sizePx: 'px'
         },
@@ -157,6 +159,7 @@ window.translations = {
         coordinate: '坐标系',
         coordinateOriginHint: '在移动模式下双击选中坐标系中心可拖动移动',
         image: '上传图片',
+        imagePrefix: '图片',
         density: '密度',
         densityLabel: '密度：当前',
         size: '大小',
@@ -195,6 +198,17 @@ window.translations = {
     // Settings
     settings: {
         title: '设置',
+        exportSuccess: '配置已成功导出！',
+        exportFailed: '导出配置失败',
+        importSuccess: '配置已导入',
+        importError: '配置文件无效',
+        importNoChange: '没有检测到配置变更',
+        diff: {
+            current: '当前',
+            new: '新',
+            title: '导入配置确认',
+            message: '检测到以下设置将被更改：'
+        },
         tabs: {
             general: '通用',
             display: '显示',
@@ -213,6 +227,8 @@ window.translations = {
             themeColor: '主题色',
             showZoomControls: '显示缩放控件',
             showZoomControlsHint: '勾选后，在画布上方显示缩放控件',
+            showImportExportBtn: '显示导入导出按钮',
+            showImportExportBtnHint: '勾选后，在缩放控件旁显示导入导出按钮',
             showFullscreenBtn: '显示全屏按钮',
             showFullscreenBtnHint: '勾选后，在缩放控件旁显示全屏按钮',
             toolbarSize: '工具栏大小',
@@ -355,21 +371,21 @@ window.translations = {
             title: '公告',
             welcome: '欢迎使用 Aboard！',
             content: [
-                '欢迎使用 Aboard 白板应用！',
+            '**欢迎使用 Aboard 白板应用！**',
                 '',
-                '使用提示：',
+            '[color=#007AFF]使用提示：[/color]',
                 '• 点击底部工具栏选择不同工具进行绘画',
-                '• 使用 Ctrl+Z 撤销，Ctrl+Y 重做',
+            '• 使用 **Ctrl+Z** 撤销，**Ctrl+Y** 重做',
                 '• 点击右上角缩放按钮或使用鼠标滚轮缩放画布',
                 '• 点击背景按钮可以选择不同的背景图案',
                 '• 在设置中可以切换无限画布或分页模式',
                 '• 支持触控和鼠标操作',
                 '',
-                '链接：',
+            '[color=#007AFF]链接：[/color]',
                 '• GitHub 项目：https://github.com/lifeafter619/Aboard',
                 '• 作者博客：https://66619.eu.org',
                 '',
-                '祝您使用愉快！'
+            '[size=16px]**祝您使用愉快！**[/size]'
             ]
         },
         about: {
@@ -517,6 +533,8 @@ window.translations = {
         showDate: '显示日期',
         showTime: '显示时间',
         settings: '设置',
+        am: '上午',
+        pm: '下午',
         fullscreenDisplay: '全屏显示',
         displayOptions: '显示选项',
         dateAndTime: '日期和时间',
@@ -576,8 +594,13 @@ window.translations = {
         fullscreenFontSizeLabel: '全屏字体大小：当前',
         soundSettings: '声音设置',
         playSound: '倒计时结束时播放提示音',
+        preview: '试听',
+        moreSettings: '更多设置',
+        playbackSpeed: '播放倍速',
         loopPlayback: '循环播放',
         loopCount: '循环次数',
+        loopInterval: '循环间隔',
+        seconds: '秒',
         uploadCustomAudio: '上传自定义音频',
         soundPresets: {
             classBell: '开始铃声(10s)',

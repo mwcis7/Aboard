@@ -15,7 +15,18 @@ class TimeDisplayManager {
         // Default to true if no value is stored (first time load)
         const storedEnabled = localStorage.getItem('timeDisplayEnabled');
         this.enabled = storedEnabled === null ? true : storedEnabled === 'true';
-        this.timeFormat = localStorage.getItem('timeDisplayTimeFormat') || '24h';
+
+        // Auto-detect time format if not set
+        const storedTimeFormat = localStorage.getItem('timeDisplayTimeFormat');
+        if (storedTimeFormat) {
+            this.timeFormat = storedTimeFormat;
+        } else {
+            // Detect system preference
+            const dateString = new Date().toLocaleTimeString();
+            const is12Hour = /AM|PM/.test(dateString) || /上午|下午/.test(dateString);
+            this.timeFormat = is12Hour ? '12h' : '24h';
+        }
+
         this.dateFormat = localStorage.getItem('timeDisplayDateFormat') || 'auto'; // Default to auto
         this.color = localStorage.getItem('timeDisplayColor') || '#000000';
         this.bgColor = localStorage.getItem('timeDisplayBgColor') || '#FFFFFF';
@@ -145,7 +156,9 @@ class TimeDisplayManager {
                     const s = parseInt(parts[3]);
                     const period = parts[4].toUpperCase();
                     
-                    const ampm = period === 'PM' ? '下午' : '上午';
+                    const amText = window.i18n ? window.i18n.t('timeDisplay.am') : 'AM';
+                    const pmText = window.i18n ? window.i18n.t('timeDisplay.pm') : 'PM';
+                    const ampm = period === 'PM' ? pmText : amText;
                     return `${ampm} ${this.padZero(hour12)}:${this.padZero(m)}:${this.padZero(s)}`;
                 }
             } else {
@@ -166,7 +179,9 @@ class TimeDisplayManager {
         
         if (this.timeFormat === '12h') {
             const hour12 = hours % 12 || 12;
-            const ampm = hours >= 12 ? '下午' : '上午';
+            const amText = window.i18n ? window.i18n.t('timeDisplay.am') : 'AM';
+            const pmText = window.i18n ? window.i18n.t('timeDisplay.pm') : 'PM';
+            const ampm = hours >= 12 ? pmText : amText;
             return `${ampm} ${this.padZero(hour12)}:${this.padZero(minutes)}:${this.padZero(seconds)}`;
         } else {
             return `${this.padZero(hours)}:${this.padZero(minutes)}:${this.padZero(seconds)}`;

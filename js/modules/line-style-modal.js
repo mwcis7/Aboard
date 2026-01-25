@@ -92,8 +92,8 @@ class LineStyleModal {
                         <div class="line-style-modal-settings" id="modal-line-style-settings">
                             <!-- Dash Density Setting -->
                             <div class="line-style-modal-setting" id="modal-dash-density-setting" style="display: none;">
-                                <label><span data-i18n="tools.lineStyle.dashDensity">Dash Density</span>: <span id="modal-dash-density-value">10</span></label>
-                                <input type="range" id="modal-dash-density-slider" min="5" max="40" value="10" class="slider">
+                                <label><span data-i18n="tools.lineStyle.dashDensity">Dash Density</span>: <span id="modal-dash-density-value">50</span></label>
+                                <input type="range" id="modal-dash-density-slider" min="1" max="100" value="50" class="slider">
                             </div>
                             
                             <!-- Wave Density Setting -->
@@ -232,13 +232,13 @@ class LineStyleModal {
         
         if (this.currentMode === 'pen') {
             lineStyle = this.drawingEngine.penLineStyle || 'solid';
-            dashDensity = this.drawingEngine.penDashDensity || 10;
+            dashDensity = this.drawingEngine.penDashDensity || 50;
             waveDensity = 10;
             lineSpacing = this.drawingEngine.penMultiLineSpacing || 10;
             lineCount = this.drawingEngine.penMultiLineCount || 2;
         } else {
             lineStyle = this.shapeDrawingManager.lineStyle || 'solid';
-            dashDensity = this.shapeDrawingManager.dashDensity || 10;
+            dashDensity = this.shapeDrawingManager.dashDensity || 50;
             waveDensity = this.shapeDrawingManager.waveDensity || 10;
             lineSpacing = this.shapeDrawingManager.multiLineSpacing || 10;
             lineCount = this.shapeDrawingManager.multiLineCount || 2;
@@ -272,12 +272,21 @@ class LineStyleModal {
     }
     
     updateSettingsVisibility(lineStyle) {
+        const settingsContainer = document.getElementById('modal-line-style-settings');
         const dashSetting = document.getElementById('modal-dash-density-setting');
         const waveSetting = document.getElementById('modal-wave-density-setting');
         const countSetting = document.getElementById('modal-line-count-setting');
         const spacingSetting = document.getElementById('modal-line-spacing-setting');
         
-        // Hide all first
+        // Hide container if solid
+        if (lineStyle === 'solid') {
+            settingsContainer.style.display = 'none';
+            return;
+        } else {
+            settingsContainer.style.display = 'flex';
+        }
+
+        // Hide all settings first
         dashSetting.style.display = 'none';
         waveSetting.style.display = 'none';
         countSetting.style.display = 'none';
@@ -348,6 +357,10 @@ class LineStyleModal {
         // Draw based on style
         ctx.setLineDash([]);
         
+        // Calculate visual spacing based on density value
+        // Higher density value (1-100) -> Smaller spacing
+        const spacing = Math.max(2, 400 / Math.max(1, dashDensity));
+
         switch (lineStyle) {
             case 'solid':
                 ctx.beginPath();
@@ -357,7 +370,7 @@ class LineStyleModal {
                 break;
                 
             case 'dashed':
-                ctx.setLineDash([dashDensity, dashDensity / 2]);
+                ctx.setLineDash([spacing, spacing * 0.6]);
                 ctx.beginPath();
                 ctx.moveTo(startX, centerY);
                 ctx.lineTo(endX, centerY);
@@ -366,7 +379,7 @@ class LineStyleModal {
                 break;
                 
             case 'dotted':
-                ctx.setLineDash([3, dashDensity / 2]);
+                ctx.setLineDash([3, spacing * 0.6]);
                 ctx.beginPath();
                 ctx.moveTo(startX, centerY);
                 ctx.lineTo(endX, centerY);
@@ -538,9 +551,18 @@ class LineStyleModal {
     
     // Check if preview content overflows and show expand button if needed
     checkPreviewOverflow() {
+        // Fix for "label not updating" issue:
+        // Ensure we don't accidentally rely on or modify global DOM elements that might be used by main.js
+        // The checkPreviewOverflow function reads global values, which is fine as long as we don't break them.
+
         const lineStyle = this.getCurrentLineStyle();
-        const lineCount = parseInt(document.getElementById('modal-line-count-slider').value);
-        const lineSpacing = parseInt(document.getElementById('modal-line-spacing-slider').value);
+        // Use safer way to get values, fallback if modal elements are missing (defensive coding)
+        const lineCountEl = document.getElementById('modal-line-count-slider');
+        const lineSpacingEl = document.getElementById('modal-line-spacing-slider');
+
+        const lineCount = lineCountEl ? parseInt(lineCountEl.value) : 2;
+        const lineSpacing = lineSpacingEl ? parseInt(lineSpacingEl.value) : 10;
+
         const penSize = this.currentMode === 'pen' 
             ? (this.drawingEngine.penSize || 5)
             : (this.shapeDrawingManager.drawingEngine.penSize || 5);
@@ -636,6 +658,9 @@ class LineStyleModal {
         
         ctx.setLineDash([]);
         
+        // Calculate visual spacing based on density value
+        const spacing = Math.max(2, 400 / Math.max(1, dashDensity));
+
         switch (lineStyle) {
             case 'solid':
                 ctx.beginPath();
@@ -644,14 +669,14 @@ class LineStyleModal {
                 ctx.stroke();
                 break;
             case 'dashed':
-                ctx.setLineDash([dashDensity, dashDensity / 2]);
+                ctx.setLineDash([spacing, spacing * 0.6]);
                 ctx.beginPath();
                 ctx.moveTo(startX, centerY);
                 ctx.lineTo(endX, centerY);
                 ctx.stroke();
                 break;
             case 'dotted':
-                ctx.setLineDash([3, dashDensity / 2]);
+                ctx.setLineDash([3, spacing * 0.6]);
                 ctx.beginPath();
                 ctx.moveTo(startX, centerY);
                 ctx.lineTo(endX, centerY);

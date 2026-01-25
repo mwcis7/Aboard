@@ -11,6 +11,7 @@ class SettingsManager {
         this.unlimitedZoom = localStorage.getItem('unlimitedZoom') === 'true';
         this.infiniteCanvas = false; // Always use pagination mode
         this.showZoomControls = localStorage.getItem('showZoomControls') !== 'false';
+        this.showImportExportBtn = localStorage.getItem('showImportExportBtn') !== 'false';
         this.showFullscreenBtn = localStorage.getItem('showFullscreenBtn') !== 'false';
         this.patternPreferences = this.loadPatternPreferences();
         this.canvasWidth = parseInt(localStorage.getItem('canvasWidth')) || 1920;
@@ -18,6 +19,9 @@ class SettingsManager {
         this.canvasPreset = localStorage.getItem('canvasPreset') || 'custom';
         this.themeColor = localStorage.getItem('themeColor') || '#007AFF';
         this.globalFont = localStorage.getItem('globalFont') || 'system';
+
+        // Initialize Toast Manager
+        this.toastManager = new ToastManager();
     }
     
     loadPatternPreferences() {
@@ -208,6 +212,10 @@ class SettingsManager {
         document.getElementById('touch-zoom-checkbox').checked = this.touchZoomEnabled;
         document.getElementById('unlimited-zoom-checkbox').checked = this.unlimitedZoom;
         document.getElementById('show-zoom-controls-checkbox').checked = this.showZoomControls;
+        const showImportExportBtnCheckbox = document.getElementById('show-import-export-btn-checkbox');
+        if (showImportExportBtnCheckbox) {
+            showImportExportBtnCheckbox.checked = this.showImportExportBtn;
+        }
         
         // Canvas is always in pagination mode now
         
@@ -341,5 +349,216 @@ class SettingsManager {
                 // No reload - translations are applied dynamically
             });
         }
+    }
+
+    getCurrentSettingsState() {
+        return {
+            toolbarSize: this.toolbarSize,
+            configScale: this.configScale,
+            controlPosition: this.controlPosition,
+            edgeSnapEnabled: this.edgeSnapEnabled,
+            touchZoomEnabled: this.touchZoomEnabled,
+            unlimitedZoom: this.unlimitedZoom,
+            showZoomControls: this.showZoomControls,
+            showImportExportBtn: this.showImportExportBtn,
+            showFullscreenBtn: this.showFullscreenBtn,
+            patternPreferences: this.patternPreferences,
+            canvasWidth: this.canvasWidth,
+            canvasHeight: this.canvasHeight,
+            canvasPreset: this.canvasPreset,
+            themeColor: this.themeColor,
+            globalFont: this.globalFont,
+            // Also include toolbar customization
+            toolbarOrder: localStorage.getItem('toolbarOrder'),
+            toolbarVisibility: localStorage.getItem('toolbarVisibility'),
+            // Control button visibility
+            controlSettings: {
+                zoom: localStorage.getItem('controlShowZoom') !== 'false',
+                pagination: localStorage.getItem('controlShowPagination') !== 'false',
+                time: localStorage.getItem('controlShowTime') !== 'false',
+                fullscreen: localStorage.getItem('controlShowFullscreen') !== 'false',
+                download: localStorage.getItem('controlShowDownload') !== 'false'
+            }
+        };
+    }
+
+    exportSettings() {
+        const settings = this.getCurrentSettingsState();
+
+        const jsonStr = JSON.stringify(settings, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `aboard-config-${Date.now()}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        // Use custom Toast instead of alert
+        const successMsg = window.i18n ? window.i18n.t('settings.exportSuccess') : '配置已成功导出！';
+        this.toastManager.show(successMsg, 'success');
+    }
+
+    deepCompare(obj1, obj2, path = '') {
+        const diffs = [];
+
+        // Handle null/undefined
+        if (obj1 === obj2) return diffs;
+        if (!obj1 || !obj2) {
+            diffs.push({ key: path, old: obj1, new: obj2 });
+            return diffs;
+        }
+
+        // Handle JSON strings (like toolbarOrder) - Check BEFORE primitives because strings are primitives
+        try {
+            if (typeof obj1 === 'string' && (obj1.startsWith('[') || obj1.startsWith('{'))) {
+                const parsed1 = JSON.parse(obj1);
+                // Try to parse obj2 if it's a string, otherwise use it as is
+                const parsed2 = typeof obj2 === 'string' ? JSON.parse(obj2) : obj2;
+                return this.deepCompare(parsed1, parsed2, path);
+            }
+        } catch (e) {
+            // Not JSON, continue
+        }
+
+        // Handle case where obj1 is object/array but obj2 is stringified JSON
+        if (typeof obj1 === 'object' && typeof obj2 === 'string' && (obj2.startsWith('[') || obj2.startsWith('{'))) {
+            try {
+                const parsed2 = JSON.parse(obj2);
+                return this.deepCompare(obj1, parsed2, path);
+            } catch (e) {}
+        }
+
+        // Handle primitives
+        if (typeof obj1 !== 'object' || typeof obj2 !== 'object') {
+            if (obj1 !== obj2) {
+                diffs.push({ key: path, old: obj1, new: obj2 });
+            }
+            return diffs;
+        }
+
+        // Get all keys
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+        const allKeys = new Set([...keys1, ...keys2]);
+
+        for (const key of allKeys) {
+            const newPath = path ? `${path}.${key}` : key;
+            const subDiffs = this.deepCompare(obj1[key], obj2[key], newPath);
+            diffs.push(...subDiffs);
+        }
+
+        return diffs;
+    }
+
+    getSettingsDiff(newSettings) {
+        const currentSettings = this.getCurrentSettingsState();
+
+        // Use deep comparison
+        const diffs = this.deepCompare(currentSettings, newSettings);
+
+        // Filter out unchanged values explicitly (though deepCompare should handle it)
+        return diffs.filter(d => JSON.stringify(d.old) !== JSON.stringify(d.new));
+    }
+
+    getSettingLabel(key) {
+        const i18n = window.i18n;
+        if (!i18n) return key;
+
+        // Handle nested keys
+        if (key.startsWith('patternPreferences.')) {
+            // Pattern preferences don't have individual labels in locale files usually,
+            // but we can look up the pattern name in background settings
+            const pattern = key.split('.')[1];
+            // Try to find specific pattern name
+            const patternName = i18n.t(`background.${pattern}`);
+            if (patternName !== `background.${pattern}`) {
+                return `${i18n.t('settings.background.preference')} - ${patternName}`;
+            }
+        }
+
+        if (key.startsWith('controlSettings.')) {
+            const control = key.split('.')[1];
+            return `${i18n.t('settings.general.controlButtonSettings')} - ${i18n.t(`settings.general.controlButtons.${control}`)}`;
+        }
+
+        if (key.startsWith('toolbarVisibility.')) {
+            const tool = key.split('.')[1];
+            // tool might be 'pen', 'eraser' etc.
+            // mapping: settings.general.toolbarTools.pen
+            return `${i18n.t('settings.general.toolbarCustomization')} - ${i18n.t(`settings.general.toolbarTools.${tool}`) || tool}`;
+        }
+
+        if (key.startsWith('toolbarOrder')) {
+            return i18n.t('settings.general.toolbarCustomization');
+        }
+
+        // Map internal keys to translation keys
+        const map = {
+            'toolbarSize': 'settings.display.toolbarSize',
+            'configScale': 'settings.display.configScale',
+            'controlPosition': 'settings.general.controlPosition',
+            'edgeSnapEnabled': 'settings.general.edgeSnap',
+            'touchZoomEnabled': 'settings.general.touchZoom',
+            'unlimitedZoom': 'settings.canvas.unlimitedZoom',
+            'showZoomControls': 'settings.display.showZoomControls',
+            'showImportExportBtn': 'settings.display.showImportExportBtn',
+            'showFullscreenBtn': 'settings.display.showFullscreenBtn',
+            'canvasWidth': 'settings.canvas.customSize.width',
+            'canvasHeight': 'settings.canvas.customSize.height',
+            'canvasPreset': 'settings.canvas.size',
+            'themeColor': 'settings.display.themeColor',
+            'globalFont': 'settings.general.globalFont',
+            'patternPreferences': 'settings.background.preference',
+            'toolbarOrder': 'settings.general.toolbarCustomization',
+            'toolbarVisibility': 'settings.general.toolbarCustomization',
+            'controlSettings': 'settings.general.controlButtonSettings'
+        };
+
+        if (map[key]) {
+            return i18n.t(map[key]);
+        }
+
+        return key;
+    }
+
+    applySettings(newSettings) {
+        const keys = [
+            'toolbarSize', 'configScale', 'controlPosition', 'edgeSnapEnabled',
+            'touchZoomEnabled', 'unlimitedZoom', 'showZoomControls', 'showImportExportBtn', 'showFullscreenBtn',
+            'canvasWidth', 'canvasHeight', 'canvasPreset', 'themeColor', 'globalFont',
+            'patternPreferences'
+        ];
+
+        keys.forEach(key => {
+            if (newSettings[key] !== undefined) {
+                this[key] = newSettings[key];
+
+                // Update localStorage
+                if (key === 'patternPreferences') {
+                    localStorage.setItem('patternPreferences', JSON.stringify(this[key]));
+                } else {
+                    localStorage.setItem(key, this[key]);
+                }
+            }
+        });
+
+        // Handle special storage items
+        if (newSettings.toolbarOrder) localStorage.setItem('toolbarOrder', newSettings.toolbarOrder);
+        if (newSettings.toolbarVisibility) localStorage.setItem('toolbarVisibility', newSettings.toolbarVisibility);
+
+        if (newSettings.controlSettings) {
+            localStorage.setItem('controlShowZoom', newSettings.controlSettings.zoom);
+            localStorage.setItem('controlShowPagination', newSettings.controlSettings.pagination);
+            localStorage.setItem('controlShowTime', newSettings.controlSettings.time);
+            localStorage.setItem('controlShowFullscreen', newSettings.controlSettings.fullscreen);
+            localStorage.setItem('controlShowDownload', newSettings.controlSettings.download);
+        }
+
+        // Apply changes visually
+        this.loadSettings();
     }
 }

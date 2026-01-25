@@ -1,0 +1,106 @@
+/* Project Module Styles */
+
+/* Export Modal Tabs - Button Group Style */
+.export-tab-nav {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.export-tab-btn {
+    padding: 10px 20px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    text-align: center;
+}
+
+.export-tab-btn:hover {
+    background-color: #f0f0f0;
+    border-color: var(--theme-color);
+}
+
+.export-tab-btn.active {
+    background-color: var(--theme-color);
+    color: #ffffff;
+    border-color: var(--theme-color);
+}
+
+.export-tab-btn.active::after {
+    display: none; /* Remove underline style */
+}
+
+.export-tab-content {
+    display: none;
+}
+
+.export-tab-content.active {
+    display: block;
+}
+
+/* Config Diff Modal */
+.diff-list {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.diff-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.diff-item:last-child {
+    border-bottom: none;
+}
+
+.diff-key {
+    font-weight: 600;
+    color: #333;
+}
+
+.diff-values {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.diff-old {
+    color: #999;
+    text-decoration: line-through;
+}
+
+.diff-arrow {
+    color: #666;
+}
+
+.diff-new {
+    color: var(--theme-color);
+    font-weight: 500;
+}
+
+.config-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Import Button in History Controls */
+#import-project-btn {
+    display: flex; /* Matches other history-btn */
+}

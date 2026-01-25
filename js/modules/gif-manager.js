@@ -131,7 +131,22 @@ class GifManager {
         return id;
     }
 
-    _initSuperGif(imgElement, container, id, options) {
+    async _initSuperGif(imgElement, container, id, options) {
+        // Ensure SuperGif is loaded
+        if (!window.SuperGif) {
+            try {
+                if (window.ScriptLoader) {
+                    await ScriptLoader.load('js/modules/libgif.js');
+                } else {
+                    console.error('ScriptLoader not found');
+                    return;
+                }
+            } catch (e) {
+                console.error('Failed to load libgif.js', e);
+                return;
+            }
+        }
+
         // SuperGif requires the img element to be in the DOM initially or passed directly
         container.appendChild(imgElement);
 
