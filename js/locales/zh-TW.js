@@ -124,6 +124,13 @@ window.translations = {
             waveDensity: '波浪密度',
             lineSpacing: '線條間距',
             lineCount: '線條數量'
+        },
+        text: {
+            insertTitle: '插入文字',
+            placeholder: '在此輸入文字',
+            size: '大小',
+            color: '顏色',
+            font: '字體'
         }
     },
 

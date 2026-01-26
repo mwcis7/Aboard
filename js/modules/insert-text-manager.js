@@ -60,6 +60,16 @@ class InsertTextManager {
 
                         <div class="text-input-controls">
                             <div class="text-control-group">
+                                <label data-i18n="tools.text.font">Font</label>
+                                <select id="insert-text-font-select" class="format-select">
+                                    <option value="sans-serif">Sans Serif</option>
+                                    <option value="serif">Serif</option>
+                                    <option value="monospace">Monospace</option>
+                                    <option value="cursive">Cursive</option>
+                                </select>
+                            </div>
+
+                            <div class="text-control-group">
                                 <label><span data-i18n="tools.text.size">Size</span>: <span id="insert-text-size-value">48</span>px</label>
                                 <input type="range" id="insert-text-size-slider" min="12" max="200" value="48" class="slider">
                             </div>
@@ -67,18 +77,24 @@ class InsertTextManager {
                             <div class="text-control-group">
                                 <label data-i18n="tools.text.color">Color</label>
                                 <div class="color-picker-row">
-                                    <button class="color-btn active" data-text-color="#000000" style="background-color: #000000;"></button>
-                                    <button class="color-btn" data-text-color="#FF0000" style="background-color: #FF0000;"></button>
-                                    <button class="color-btn" data-text-color="#0000FF" style="background-color: #0000FF;"></button>
-                                    <button class="color-btn" data-text-color="#008000" style="background-color: #008000;"></button>
-                                    <button class="color-btn" data-text-color="#FFA500" style="background-color: #FFA500;"></button>
-                                    <label class="color-picker-icon-btn" for="insert-text-custom-color">
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
-                                            <polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon>
-                                        </svg>
-                                        <input type="color" id="insert-text-custom-color" class="custom-color-picker-input" value="#000000">
-                                    </label>
+                                    <div class="color-picker-main">
+                                        <button class="color-btn active" data-text-color="#000000" style="background-color: #000000;"></button>
+                                        <button class="color-btn" data-text-color="#FF0000" style="background-color: #FF0000;"></button>
+                                        <button class="color-btn" data-text-color="#0000FF" style="background-color: #0000FF;"></button>
+                                        <button class="color-btn" data-text-color="#008000" style="background-color: #008000;"></button>
+                                    </div>
+                                    <div class="color-picker-main">
+                                        <button class="color-btn" data-text-color="#FFA500" style="background-color: #FFA500;"></button>
+                                        <button class="color-btn" data-text-color="#800080" style="background-color: #800080;"></button>
+                                        <button class="color-btn" data-text-color="#FFC0CB" style="background-color: #FFC0CB;"></button>
+                                        <label class="color-picker-icon-btn" for="insert-text-custom-color">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
+                                                <polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon>
+                                            </svg>
+                                            <input type="color" id="insert-text-custom-color" class="custom-color-picker-input" value="#000000">
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -146,6 +162,41 @@ class InsertTextManager {
         if (window.i18n) {
             window.i18n.applyTranslations();
         }
+
+        // Populate fonts
+        this.populateFonts();
+    }
+
+    populateFonts() {
+        const select = document.getElementById('insert-text-font-select');
+        if (!select) return;
+
+        const fonts = [
+            { value: 'sans-serif', label: 'settings.general.fonts.sansSerif' },
+            { value: 'serif', label: 'settings.general.fonts.serif' },
+            { value: 'monospace', label: 'settings.general.fonts.monospace' },
+            { value: 'cursive', label: 'settings.general.fonts.cursive' },
+            { value: 'Microsoft YaHei', label: 'settings.general.fonts.yahei' },
+            { value: 'SimSun', label: 'settings.general.fonts.simsun' },
+            { value: 'SimHei', label: 'settings.general.fonts.simhei' },
+            { value: 'KaiTi', label: 'settings.general.fonts.kaiti' },
+            { value: 'FangSong', label: 'settings.general.fonts.fangsong' },
+            { value: 'Arial', label: 'settings.general.fonts.arial' },
+            { value: 'Times New Roman', label: 'settings.general.fonts.timesNewRoman' },
+            { value: 'Courier New', label: 'settings.general.fonts.courier' },
+            { value: 'Verdana', label: 'settings.general.fonts.verdana' },
+            { value: 'Georgia', label: 'settings.general.fonts.georgia' },
+            { value: 'Impact', label: 'settings.general.fonts.impact' }
+        ];
+
+        select.innerHTML = '';
+        fonts.forEach(font => {
+            const option = document.createElement('option');
+            option.value = font.value;
+            // Use translation if available
+            option.textContent = window.i18n ? window.i18n.t(font.label) : font.value;
+            select.appendChild(option);
+        });
     }
 
     setupEventListeners() {
@@ -159,7 +210,12 @@ class InsertTextManager {
         sizeSlider.addEventListener('input', (e) => {
             sizeValue.textContent = e.target.value;
             this.textConfig.fontSize = parseInt(e.target.value);
-            // Update modal preview if we implemented one, but for now just value
+        });
+
+        // Font Selection
+        const fontSelect = document.getElementById('insert-text-font-select');
+        fontSelect.addEventListener('change', (e) => {
+            this.textConfig.fontFamily = e.target.value;
         });
 
         // Color Picking
@@ -264,6 +320,10 @@ class InsertTextManager {
         document.getElementById('insert-text-size-value').textContent = '48';
         document.getElementById('insert-text-input').value = '';
 
+        // Reset font
+        const fontSelect = document.getElementById('insert-text-font-select');
+        if (fontSelect) fontSelect.value = 'sans-serif';
+
         // Reset active color to black
         document.querySelectorAll('#insert-text-modal .color-btn').forEach(b => b.classList.remove('active'));
         document.querySelector('.color-btn[data-text-color="#000000"]').classList.add('active');
@@ -275,13 +335,16 @@ class InsertTextManager {
 
     showModal(isEditing = false) {
         this.modal.classList.add('show');
+        // Re-populate fonts to ensure translations are up to date
+        this.populateFonts();
+
         const input = document.getElementById('insert-text-input');
 
         if (isEditing) {
             input.value = this.textConfig.text;
             document.getElementById('insert-text-size-slider').value = this.textConfig.fontSize;
             document.getElementById('insert-text-size-value').textContent = this.textConfig.fontSize;
-            // Update colors in UI to match current textConfig if needed, roughly
+            document.getElementById('insert-text-font-select').value = this.textConfig.fontFamily;
         }
 
         input.focus();
@@ -316,7 +379,6 @@ class InsertTextManager {
         this.textRotation = 0;
 
         // Calculate initial position (center of screen)
-        // Similar logic to InsertImageManager, but simplified: center of view
         const cx = window.innerWidth / 2;
         const cy = window.innerHeight / 2;
 
@@ -324,20 +386,13 @@ class InsertTextManager {
         const scaleX = canvasRect.width / (this.canvas.width / window.devicePixelRatio);
         const scaleY = canvasRect.height / (this.canvas.height / window.devicePixelRatio);
 
-        // Convert screen center to logical canvas coordinates
-        // Canvas coords = (Screen - Rect.left) / Scale
         this.textPosition.x = (cx - canvasRect.left) / scaleX;
         this.textPosition.y = (cy - canvasRect.top) / scaleY;
-
-        // Center the text box itself? We need dimensions first.
-        // We'll let updateOverlay render it, then we can adjust center if needed.
-        // For now, start at center point.
 
         this.updateOverlay();
 
         // Adjust to center the box
         const boxRect = this.controlBox.getBoundingClientRect();
-        // Convert width/height back to logical units
         const logicalW = boxRect.width / scaleX;
         const logicalH = boxRect.height / scaleY;
 
@@ -359,9 +414,6 @@ class InsertTextManager {
 
         this.controlBox.style.left = `${screenX}px`;
         this.controlBox.style.top = `${screenY}px`;
-        // No fixed width/height for text box, it grows with content, unless we want to enforce bounding box.
-        // Let's set the content and let CSS handle size.
-        // But we need to apply scaling.
 
         this.textContentDiv.style.fontSize = `${this.textConfig.fontSize * this.textScale * scaleX}px`; // Apply zoom scale to font
         this.textContentDiv.style.color = this.textConfig.color;
@@ -378,15 +430,6 @@ class InsertTextManager {
 
     stampText() {
         this.ctx.save();
-
-        // We need to match what is seen on screen.
-        // Position: textPosition is top-left in logical coords.
-        // Rotation: around center of box.
-        // Scale: applied to font size.
-
-        // 1. Get dimensions of the box (unrotated)
-        // We need to approximate the dimensions as rendered by the browser
-        // Or re-measure using ctx.measureText
 
         const fontSize = this.textConfig.fontSize * this.textScale;
         this.ctx.font = `${fontSize}px ${this.textConfig.fontFamily}`;
@@ -415,18 +458,6 @@ class InsertTextManager {
 
         // Draw text
         lines.forEach((line, i) => {
-            // Adjust for padding? The DOM box has 4px padding.
-            // Let's assume textPosition includes that if we derived it correctly.
-            // Actually, textPosition is the top-left of the box.
-            // The text starts at +4px, +4px?
-            // Let's refine based on visual check. DOM has 4px padding.
-            // But if we want WYSIWYG, we should offset by padding.
-            // Note: Canvas text rendering is precise, DOM is not.
-            // Let's ignore padding for now or add a small offset.
-
-            // Wait, we need to handle the box size properly.
-            // The DOM box grows with text.
-            // Let's add padding offset.
             const padding = 4;
             this.ctx.fillText(line, this.textPosition.x + padding, this.textPosition.y + padding + (i * lineHeight));
         });
@@ -479,28 +510,14 @@ class InsertTextManager {
         this.resizeHandle = handle;
         this.resizeStartPos = this.getClientPos(e);
         this.resizeStartScale = this.textScale;
-        // Store center point or opposite corner?
-        // Text resizing usually scales font size.
-        // We can simulate scaling by dragging.
     }
 
     resize(e) {
         const pos = this.getClientPos(e);
         const scale = this.getCanvasScale(); // Screen pixels per Logical unit
 
-        // We use distance from start to determine scale change
         const dy = (pos.y - this.resizeStartPos.y) / scale;
         const dx = (pos.x - this.resizeStartPos.x) / scale;
-
-        // Simplified scaling: Dragging outwards increases scale
-        // We can use the logic from InsertImageManager but applied to textScale.
-        // Since text width/height are coupled to font size, we essentially just scale font size.
-
-        // Distance moved
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        // Direction: if moving away from center?
-        // Let's simply use Y movement or diagonal projection.
-        // Or simpler: If dragging Top-Right, moving Right or Up increases size.
 
         let change = 0;
         if (this.resizeHandle.includes('right') || this.resizeHandle.includes('bottom')) {
