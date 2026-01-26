@@ -30,6 +30,7 @@ class DrawingBoard {
         this.randomPickerManager = null;
         this.scoreboardManager = null;
         this.insertImageManager = null;
+        this.insertTextManager = null;
         this.projectManager = null;
         this.exportManager = null;
 
@@ -1209,6 +1210,18 @@ class DrawingBoard {
                     this.timerManager = new TimerManager();
                 }
                 this.timerManager.showSettingsModal();
+                this.closeFeaturePanel();
+            });
+        }
+
+        // Insert Text Feature Button
+        const insertTextBtn = document.getElementById('insert-text-feature-btn');
+        if (insertTextBtn) {
+            insertTextBtn.addEventListener('click', () => {
+                if (!this.insertTextManager) {
+                    this.insertTextManager = new InsertTextManager(this.canvas, this.ctx, this.historyManager, this.drawingEngine);
+                }
+                this.insertTextManager.trigger();
                 this.closeFeaturePanel();
             });
         }

@@ -468,7 +468,8 @@ window.translations = {
         timer: '计时',
         randomPicker: '点名器',
         scoreboard: '计分板',
-        insertImage: '插入图片'
+        insertImage: '插入图片',
+        insertText: '插入文字'
     },
 
     // Random Picker

@@ -14,7 +14,8 @@ class HelpSystem {
             'scoreboard-feature-btn': 'help.features.scoreboard',
             'teaching-tools-modal': 'help.features.teachingTools',
             'time-display-settings-modal': 'help.features.timeDisplay',
-            'time-display-area': 'help.features.timeDisplay'
+            'time-display-area': 'help.features.timeDisplay',
+            'insert-text-modal': 'help.features.insertText'
         };
     }
 
@@ -58,7 +59,8 @@ class HelpSystem {
             'random-picker-settings-modal',
             'timer-settings-modal',
             'teaching-tools-modal',
-            'time-display-settings-modal'
+            'time-display-settings-modal',
+            'insert-text-modal'
         ];
         
         // MutationObserver to detect when settings modals are created/shown
@@ -90,7 +92,7 @@ class HelpSystem {
     }
     
     checkExistingModals() {
-        const modalIds = ['random-picker-settings-modal', 'timer-settings-modal', 'teaching-tools-modal', 'time-display-settings-modal'];
+        const modalIds = ['random-picker-settings-modal', 'timer-settings-modal', 'teaching-tools-modal', 'time-display-settings-modal', 'insert-text-modal'];
         modalIds.forEach(id => {
             const modal = document.getElementById(id);
             if (modal) this.injectIntoModal(modal);
