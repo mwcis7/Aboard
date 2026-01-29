@@ -267,21 +267,36 @@ graph LR
 
 点击上方按钮即可快速部署到 Cloudflare Pages，享受赛博活佛的全球CDN加速。
 
-### 本地服务器（不建议直接运行html文件）
-如果需要完整功能（如加载公告），建议使用HTTP服务器运行：
+### 本地运行（推荐方式）
+
+> ⚠️ **注意**：直接双击打开 `index.html` 文件会导致显示异常（由于浏览器安全限制，本地文件无法使用 `fetch` 加载资源）。请使用以下方法运行本地服务器。
+
+#### 使用 npm（需要安装 Node.js）
 
 ```bash
-# 使用Python
-python3 -m http.server 8080
-
-# 使用Node.js
-npx http-server -p 8080
-
-# 使用PHP
-php -S localhost:8080
+# 进入项目目录后执行
+npm start
 ```
 
 然后在浏览器访问 `http://localhost:8080`
+
+#### 使用 Python（无需安装额外依赖）
+
+```bash
+python3 -m http.server 8080
+```
+
+然后在浏览器访问 `http://localhost:8080`
+
+#### 其他方式
+
+```bash
+# 使用 Node.js（无需克隆项目）
+npx serve -l 8080
+
+# 使用 PHP
+php -S localhost:8080
+```
 
 ## 📖 使用指南
 
