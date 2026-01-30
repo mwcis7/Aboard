@@ -19,9 +19,144 @@ class SettingsManager {
         this.canvasPreset = localStorage.getItem('canvasPreset') || 'custom';
         this.themeColor = localStorage.getItem('themeColor') || '#007AFF';
         this.globalFont = localStorage.getItem('globalFont') || 'system';
+        this.customFonts = this.loadCustomFonts();
 
         // Initialize Toast Manager
         this.toastManager = new ToastManager();
+        
+        // Load custom fonts to document
+        this.loadCustomFontsToDocument();
+    }
+    
+    // Load custom fonts from localStorage
+    loadCustomFonts() {
+        const saved = localStorage.getItem('customFonts');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.warn('Failed to load custom fonts:', e);
+            }
+        }
+        return [];
+    }
+    
+    // Save custom fonts to localStorage
+    saveCustomFonts() {
+        try {
+            localStorage.setItem('customFonts', JSON.stringify(this.customFonts));
+        } catch (e) {
+            const msg = window.i18n ? window.i18n.t('tools.text.storageQuotaExceeded') : 'Storage quota exceeded. Please delete some custom fonts.';
+            if (this.toastManager) {
+                this.toastManager.show(msg, 'error');
+            }
+            console.warn('Failed to save custom fonts:', e);
+        }
+    }
+    
+    // Load custom fonts into the document
+    loadCustomFontsToDocument() {
+        this.customFonts.forEach(font => {
+            this.addFontToDocument(font.name, font.data);
+        });
+    }
+    
+    // Add a font to the document
+    addFontToDocument(name, data) {
+        const fontFace = new FontFace(name, `url(${data})`);
+        return fontFace.load().then(loadedFace => {
+            document.fonts.add(loadedFace);
+            return loadedFace;
+        }).catch(err => {
+            console.warn(`Failed to load custom font ${name}:`, err);
+            return null;
+        });
+    }
+    
+    // Handle font file upload
+    handleFontUpload(file) {
+        if (!file) return;
+        
+        // Check file size (limit to 2MB)
+        const maxSize = 2 * 1024 * 1024;
+        if (file.size > maxSize) {
+            const msg = window.i18n ? window.i18n.t('tools.text.fontTooLarge') : 'Font file is too large. Maximum size is 2MB.';
+            if (this.toastManager) {
+                this.toastManager.show(msg, 'error');
+            }
+            return;
+        }
+        
+        const extension = file.name.split('.').pop().toLowerCase();
+        const validExtensions = ['ttf', 'otf', 'woff', 'woff2'];
+        
+        if (!validExtensions.includes(extension)) {
+            const msg = window.i18n ? window.i18n.t('tools.text.invalidFontFormat') : 'Invalid font format. Please use TTF, OTF, WOFF, or WOFF2 files.';
+            if (this.toastManager) {
+                this.toastManager.show(msg, 'error');
+            }
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const fontData = e.target.result;
+            const lastDotIndex = file.name.lastIndexOf('.');
+            const fontName = lastDotIndex > 0 ? file.name.substring(0, lastDotIndex) : file.name;
+            
+            const exists = this.customFonts.find(f => f.name === fontName);
+            if (!exists) {
+                this.customFonts.push({ name: fontName, data: fontData });
+                this.saveCustomFonts();
+                this.addFontToDocument(fontName, fontData);
+                this.populateGlobalFontSelect();
+                
+                // Select the newly uploaded font
+                const select = document.getElementById('global-font-select');
+                if (select) {
+                    select.value = fontName;
+                    this.setGlobalFont(fontName);
+                }
+                
+                const msg = window.i18n ? window.i18n.t('tools.text.fontUploadSuccess') : 'Font uploaded successfully!';
+                if (this.toastManager) {
+                    this.toastManager.show(msg, 'success');
+                }
+            } else {
+                const msg = window.i18n ? window.i18n.t('tools.text.fontExists') : 'This font already exists.';
+                if (this.toastManager) {
+                    this.toastManager.show(msg, 'warning');
+                }
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+    
+    // Populate global font select with custom fonts
+    populateGlobalFontSelect() {
+        const select = document.getElementById('global-font-select');
+        if (!select) return;
+        
+        // Remove existing custom font optgroup if any
+        const existingOptgroup = select.querySelector('optgroup');
+        if (existingOptgroup) {
+            existingOptgroup.remove();
+        }
+        
+        // Add custom fonts if any
+        if (this.customFonts.length > 0) {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = window.i18n ? window.i18n.t('tools.text.customFonts') : 'Custom Fonts';
+            
+            this.customFonts.forEach(font => {
+                const option = document.createElement('option');
+                option.value = font.name;
+                option.textContent = font.name;
+                optgroup.appendChild(option);
+            });
+            
+            select.appendChild(optgroup);
+        }
     }
     
     loadPatternPreferences() {
@@ -162,7 +297,17 @@ class SettingsManager {
     
     updateConfigScale() {
         const configArea = document.getElementById('config-area');
-        configArea.style.transform = `translateX(-50%) scale(${this.configScale})`;
+        // Check if the config area has been manually positioned (has explicit left/top styles)
+        const hasCustomPosition = configArea.style.left && configArea.style.left !== 'auto' && 
+                                   configArea.style.left !== '' && !configArea.style.left.includes('50%');
+        
+        if (hasCustomPosition) {
+            // Config area has been dragged - only apply scale without translateX
+            configArea.style.transform = `scale(${this.configScale})`;
+        } else {
+            // Config area is in default center position - use translateX to center
+            configArea.style.transform = `translateX(-50%) scale(${this.configScale})`;
+        }
         localStorage.setItem('configScale', this.configScale);
     }
     
@@ -331,7 +476,13 @@ class SettingsManager {
                 fontFamily = 'FangSong, "仿宋", Georgia, serif';
                 break;
             default:
-                fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+                // Check if it's a custom font
+                const customFont = this.customFonts.find(f => f.name === this.globalFont);
+                if (customFont) {
+                    fontFamily = `"${this.globalFont}", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+                } else {
+                    fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+                }
         }
         document.body.style.fontFamily = fontFamily;
     }

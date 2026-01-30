@@ -1334,7 +1334,7 @@ class DrawingBoard {
             this.settingsManager.updateToolbarSize();
         });
         toolbarSizeInput.addEventListener('input', (e) => {
-            const value = Math.max(40, Math.min(80, parseInt(e.target.value) || 40));
+            const value = Math.max(30, Math.min(100, parseInt(e.target.value) || 40));
             e.target.value = value;
             toolbarSizeSlider.value = value;
             this.settingsManager.toolbarSize = value;
@@ -1352,7 +1352,7 @@ class DrawingBoard {
             this.settingsManager.updateConfigScale();
         });
         configScaleInput.addEventListener('input', (e) => {
-            const value = Math.max(80, Math.min(120, parseInt(e.target.value) || 100));
+            const value = Math.max(50, Math.min(150, parseInt(e.target.value) || 100));
             e.target.value = value;
             configScaleSlider.value = value;
             this.settingsManager.configScale = value / 100;
@@ -1419,6 +1419,19 @@ class DrawingBoard {
         document.getElementById('global-font-select').addEventListener('change', (e) => {
             this.settingsManager.setGlobalFont(e.target.value);
         });
+        
+        // Global font upload
+        const globalFontUpload = document.getElementById('global-font-upload');
+        if (globalFontUpload) {
+            globalFontUpload.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    this.settingsManager.handleFontUpload(e.target.files[0]);
+                }
+            });
+        }
+        
+        // Populate custom fonts on load
+        this.settingsManager.populateGlobalFontSelect();
         
         // Canvas mode buttons removed - pagination is always active
         

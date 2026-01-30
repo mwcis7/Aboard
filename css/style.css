@@ -177,12 +177,12 @@ button, a, input[type="button"], input[type="submit"] {
     bottom: 100px; /* Position above toolbar (toolbar is at bottom: 20px + estimated height ~60px + gap 20px) */
     transform: translateX(-50%);
     z-index: 2000; /* Ensure it's above image controls overlay */
-    padding: 12px 16px;
+    padding: 10px 12px;
     background-color: #ffffff;
-    border-radius: 16px;
+    border-radius: 14px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    min-width: 320px;
-    max-width: 600px; /* Prevent excessive width */
+    min-width: 280px;
+    max-width: 550px; /* Prevent excessive width */
     max-height: calc(100vh - 120px); /* Prevent touching top - leave space for positioning */
     overflow-y: auto; /* Add scroll if content exceeds max height */
     display: none;
@@ -395,8 +395,8 @@ button, a, input[type="button"], input[type="submit"] {
 .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     background: var(--theme-color);
     cursor: pointer;
@@ -404,8 +404,8 @@ button, a, input[type="button"], input[type="submit"] {
 }
 
 .slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     background: var(--theme-color);
     cursor: pointer;
