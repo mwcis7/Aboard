@@ -395,8 +395,8 @@ button, a, input[type="button"], input[type="submit"] {
 .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: var(--theme-color);
     cursor: pointer;
@@ -404,8 +404,8 @@ button, a, input[type="button"], input[type="submit"] {
 }
 
 .slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: var(--theme-color);
     cursor: pointer;
@@ -450,13 +450,28 @@ button, a, input[type="button"], input[type="submit"] {
 /* Vertical toolbar layout (when snapped to left or right) */
 #toolbar.vertical {
     flex-direction: column;
-    gap: 8px;
-    padding: 20px 12px;
+    gap: 6px;
+    padding: 12px 8px;
 }
 
 #toolbar.vertical .tool-btn {
     min-width: auto;
-    width: 60px;
+    width: 44px;
+    padding: 8px 6px;
+}
+
+/* Hide text labels in vertical mode to save space */
+#toolbar.vertical .tool-btn span {
+    display: none;
+}
+
+/* Hide text labels when user explicitly disables text via setting */
+#toolbar.hide-text .tool-btn span {
+    display: none;
+}
+
+#toolbar.hide-text .tool-btn {
+    min-width: 50px;
     padding: 10px 8px;
 }
 

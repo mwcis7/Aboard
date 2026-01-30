@@ -257,6 +257,8 @@ window.translations = {
             configScale: 'Config Panel Size',
             configScaleLabel: 'Config Panel Size: Current',
             configScaleHint: 'Adjust properties panel size',
+            showToolbarText: 'Show Toolbar Text',
+            showToolbarTextHint: 'Whether to show text labels on toolbar buttons',
             themeColorHint: 'Color of toolbar when selected',
             colorOptions: {
                 blue: 'Blue',

@@ -1521,6 +1521,14 @@ class DrawingBoard {
             this.updateFullscreenBtnVisibility();
         });
         
+        // Show/hide toolbar text
+        const showToolbarTextCheckbox = document.getElementById('show-toolbar-text-checkbox');
+        if (showToolbarTextCheckbox) {
+            showToolbarTextCheckbox.addEventListener('change', (e) => {
+                this.settingsManager.setShowToolbarText(e.target.checked);
+            });
+        }
+        
         // Toolbar customization handlers
         this.initToolbarCustomization();
         
@@ -1923,6 +1931,7 @@ class DrawingBoard {
         // Ensure all toolbars and panels stay within viewport after window resize
         const EDGE_SPACING = 10; // Minimum spacing from viewport edges
         const panels = [
+            document.getElementById('toolbar'),
             document.getElementById('history-controls'),
             document.getElementById('config-area'),
             document.getElementById('time-display-area'),
@@ -1944,7 +1953,10 @@ class DrawingBoard {
             let bottom = computedStyle.bottom;
             
             // Check if panel has been dragged (has explicit positioning)
-            const hasCenteredPosition = left === '50%' || computedStyle.transform.includes('translateX');
+            // Include both translateX (horizontal centering) and translateY (vertical centering) checks
+            const hasCenteredPosition = left === '50%' || 
+                                        computedStyle.transform.includes('translateX') || 
+                                        computedStyle.transform.includes('translateY');
             const hasExplicitPosition = !hasCenteredPosition && (left !== 'auto' || top !== 'auto' || right !== 'auto' || bottom !== 'auto');
             
             // Skip panels that are centered and haven't been dragged
@@ -2180,7 +2192,13 @@ class DrawingBoard {
             
             this.draggedElement.style.left = `${x}px`;
             this.draggedElement.style.top = `${y}px`;
-            this.draggedElement.style.transform = 'none';
+            // For config-area, preserve the scale transform while dragging
+            if (this.draggedElement.id === 'config-area') {
+                const scale = this.settingsManager.configScale || 1;
+                this.draggedElement.style.transform = `scale(${scale})`;
+            } else {
+                this.draggedElement.style.transform = 'none';
+            }
             this.draggedElement.style.right = 'auto';
             this.draggedElement.style.bottom = 'auto';
         };

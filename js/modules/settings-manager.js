@@ -13,6 +13,7 @@ class SettingsManager {
         this.showZoomControls = localStorage.getItem('showZoomControls') !== 'false';
         this.showImportExportBtn = localStorage.getItem('showImportExportBtn') !== 'false';
         this.showFullscreenBtn = localStorage.getItem('showFullscreenBtn') !== 'false';
+        this.showToolbarText = localStorage.getItem('showToolbarText') !== 'false'; // Default true
         this.patternPreferences = this.loadPatternPreferences();
         this.canvasWidth = parseInt(localStorage.getItem('canvasWidth')) || 1920;
         this.canvasHeight = parseInt(localStorage.getItem('canvasHeight')) || 1080;
@@ -240,6 +241,20 @@ class SettingsManager {
         const toolbar = document.getElementById('toolbar');
         const buttons = toolbar.querySelectorAll('.tool-btn');
         const windowWidth = window.innerWidth;
+        const isVertical = toolbar.classList.contains('vertical');
+        
+        // If user has disabled toolbar text, always hide it
+        if (!this.showToolbarText) {
+            toolbar.classList.add('hide-text');
+            return;
+        } else {
+            toolbar.classList.remove('hide-text');
+        }
+        
+        // If toolbar is vertical (docked to side), text is hidden via CSS
+        if (isVertical) {
+            return;
+        }
         
         // Constants for responsive sizing
         const ICON_ONLY_SIZE_RATIO = 0.8; // Size multiplier when text is hidden
@@ -293,6 +308,12 @@ class SettingsManager {
                 }
             }
         });
+    }
+    
+    setShowToolbarText(show) {
+        this.showToolbarText = show;
+        localStorage.setItem('showToolbarText', show);
+        this.updateToolbarTextVisibility();
     }
     
     updateConfigScale() {
@@ -360,6 +381,13 @@ class SettingsManager {
         if (showImportExportBtnCheckbox) {
             showImportExportBtnCheckbox.checked = this.showImportExportBtn;
         }
+        
+        // Load toolbar text visibility setting
+        const showToolbarTextCheckbox = document.getElementById('show-toolbar-text-checkbox');
+        if (showToolbarTextCheckbox) {
+            showToolbarTextCheckbox.checked = this.showToolbarText;
+        }
+        this.updateToolbarTextVisibility();
         
         // Canvas is always in pagination mode now
         

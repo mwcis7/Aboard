@@ -255,6 +255,8 @@ window.translations = {
             configScale: '属性栏大小',
             configScaleLabel: '属性栏大小：当前',
             configScaleHint: '调整弹出具体属性面板的大小',
+            showToolbarText: '显示工具栏文字',
+            showToolbarTextHint: '是否在工具栏按钮中显示文字标签',
             themeColorHint: '工具栏被选中时的颜色',
             colorOptions: {
                 blue: '蓝色',
