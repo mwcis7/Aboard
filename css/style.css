@@ -455,24 +455,26 @@ button, a, input[type="button"], input[type="submit"] {
 }
 
 #toolbar.vertical .tool-btn {
-    min-width: auto;
-    width: 44px;
-    padding: 8px 6px;
+    min-width: auto !important;
+    width: 44px !important;
+    height: 44px !important;
+    padding: 8px !important;
+    justify-content: center;
 }
 
 /* Hide text labels in vertical mode to save space */
 #toolbar.vertical .tool-btn span {
-    display: none;
+    display: none !important;
 }
 
 /* Hide text labels when user explicitly disables text via setting */
 #toolbar.hide-text .tool-btn span {
-    display: none;
+    display: none !important;
 }
 
 #toolbar.hide-text .tool-btn {
-    min-width: 50px;
-    padding: 10px 8px;
+    min-width: 50px !important;
+    padding: 10px !important;
 }
 
 .tool-btn {

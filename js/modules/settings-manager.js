@@ -243,7 +243,19 @@ class SettingsManager {
         const windowWidth = window.innerWidth;
         const isVertical = toolbar.classList.contains('vertical');
         
-        // If user has disabled toolbar text, always hide it
+        // Clear any inline styles first so CSS rules take effect
+        buttons.forEach(btn => {
+            const span = btn.querySelector('span');
+            if (span) {
+                span.style.display = '';
+            }
+            btn.style.minWidth = '';
+            btn.style.padding = '';
+            btn.style.width = '';
+            btn.style.height = '';
+        });
+        
+        // If user has disabled toolbar text, add class and return (CSS handles hiding)
         if (!this.showToolbarText) {
             toolbar.classList.add('hide-text');
             return;
@@ -267,19 +279,6 @@ class SettingsManager {
         const toolbarPadding = parseFloat(toolbarStyle.paddingLeft) + parseFloat(toolbarStyle.paddingRight);
         const gap = parseFloat(toolbarStyle.gap) || DEFAULT_GAP;
         
-        // Store original display values before measuring
-        const originalDisplayValues = new Map();
-        buttons.forEach(btn => {
-            const span = btn.querySelector('span');
-            if (span) {
-                originalDisplayValues.set(span, window.getComputedStyle(span).display);
-                // Temporarily show to measure
-                if (originalDisplayValues.get(span) === 'none') {
-                    span.style.display = 'inline';
-                }
-            }
-        });
-        
         buttons.forEach((btn, index) => {
             const btnWidth = btn.offsetWidth;
             totalWidthWithText += btnWidth;
@@ -293,21 +292,16 @@ class SettingsManager {
         const fitsWithText = totalWidthWithText + SCREEN_MARGIN * 2 <= windowWidth;
         
         // Show or hide text based on available space
-        buttons.forEach(btn => {
-            const span = btn.querySelector('span');
-            if (span) {
-                if (fitsWithText) {
-                    // Restore original display or use default
-                    const originalDisplay = originalDisplayValues.get(span);
-                    span.style.display = (originalDisplay !== 'none') ? originalDisplay : 'inline';
-                    btn.style.minWidth = `${this.toolbarSize}px`;
-                } else {
+        if (!fitsWithText) {
+            buttons.forEach(btn => {
+                const span = btn.querySelector('span');
+                if (span) {
                     span.style.display = 'none';
-                    // When text is hidden, reduce min-width to icon-only size
-                    btn.style.minWidth = `${this.toolbarSize * ICON_ONLY_SIZE_RATIO}px`;
                 }
-            }
-        });
+                // When text is hidden, reduce min-width to icon-only size
+                btn.style.minWidth = `${this.toolbarSize * ICON_ONLY_SIZE_RATIO}px`;
+            });
+        }
     }
     
     setShowToolbarText(show) {
@@ -322,10 +316,12 @@ class SettingsManager {
         const hasBeenDragged = configArea.dataset.userDragged === 'true';
         
         if (hasBeenDragged) {
-            // Config area has been dragged - only apply scale without translateX
+            // Config area has been dragged - only apply scale with top-left origin to prevent jump
+            configArea.style.transformOrigin = 'top left';
             configArea.style.transform = `scale(${this.configScale})`;
         } else {
             // Config area is in default center position - use translateX to center
+            configArea.style.transformOrigin = 'center bottom';
             configArea.style.transform = `translateX(-50%) scale(${this.configScale})`;
         }
         localStorage.setItem('configScale', this.configScale);

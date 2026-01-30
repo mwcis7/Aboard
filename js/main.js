@@ -2065,6 +2065,8 @@ class DrawingBoard {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
+            // Calculate offset in scaled coordinates (what we see on screen)
+            // getBoundingClientRect returns already-scaled dimensions
             this.dragOffset.x = clientX - rect.left;
             this.dragOffset.y = clientY - rect.top;
             
@@ -2193,8 +2195,10 @@ class DrawingBoard {
             this.draggedElement.style.left = `${x}px`;
             this.draggedElement.style.top = `${y}px`;
             // For config-area, preserve the scale transform while dragging
+            // Use transform-origin: top left to prevent position jump due to scaling
             if (this.draggedElement.id === 'config-area') {
                 const scale = this.settingsManager.configScale || 1;
+                this.draggedElement.style.transformOrigin = 'top left';
                 this.draggedElement.style.transform = `scale(${scale})`;
             } else {
                 this.draggedElement.style.transform = 'none';
@@ -2255,6 +2259,53 @@ class DrawingBoard {
         this.setTool('pen', false);
     }
     
+    positionConfigArea() {
+        // Position config-area above the toolbar
+        const configArea = document.getElementById('config-area');
+        const toolbar = document.getElementById('toolbar');
+        
+        // Only position if config-area hasn't been dragged by user
+        if (configArea.dataset.userDragged === 'true') {
+            return;
+        }
+        
+        const toolbarRect = toolbar.getBoundingClientRect();
+        const isVertical = toolbar.classList.contains('vertical');
+        
+        // Reset inline styles first to get proper dimensions
+        configArea.style.left = '';
+        configArea.style.top = '';
+        configArea.style.bottom = '';
+        configArea.style.right = '';
+        configArea.style.transform = '';
+        configArea.style.transformOrigin = '';
+        
+        const scale = this.settingsManager.configScale || 1;
+        
+        if (isVertical) {
+            // Toolbar is on left or right side
+            const toolbarMidY = toolbarRect.top + toolbarRect.height / 2;
+            if (toolbarRect.left < window.innerWidth / 2) {
+                // Toolbar on left side - position config to the right of toolbar
+                configArea.style.left = `${toolbarRect.right + 10}px`;
+            } else {
+                // Toolbar on right side - position config to the left of toolbar
+                configArea.style.right = `${window.innerWidth - toolbarRect.left + 10}px`;
+                configArea.style.left = 'auto';
+            }
+            configArea.style.top = `${toolbarMidY}px`;
+            configArea.style.transformOrigin = 'center center';
+            configArea.style.transform = `translateY(-50%) scale(${scale})`;
+        } else {
+            // Toolbar is horizontal (bottom)
+            configArea.style.left = '50%';
+            configArea.style.bottom = `${window.innerHeight - toolbarRect.top + 10}px`;
+            configArea.style.top = 'auto';
+            configArea.style.transformOrigin = 'center bottom';
+            configArea.style.transform = `translateX(-50%) scale(${scale})`;
+        }
+    }
+    
     positionFeatureArea() {
         // Position feature-area above the "更多" button
         const featureArea = document.getElementById('feature-area');
@@ -2297,8 +2348,9 @@ class DrawingBoard {
             if (isSameTool && isConfigVisible) {
                 configArea.classList.remove('show');
             } else {
-                // Show config panel
+                // Show config panel and position it above toolbar
                 configArea.classList.add('show');
+                this.positionConfigArea();
                 // Don't close feature-area when selecting shape - allow multiple panels to be open
                 if (tool !== 'shape') {
                     featureArea.classList.remove('show');
