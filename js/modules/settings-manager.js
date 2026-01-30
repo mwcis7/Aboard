@@ -208,28 +208,40 @@ class SettingsManager {
         const toolbar = document.getElementById('toolbar');
         const buttons = toolbar.querySelectorAll('.tool-btn');
         
-        // Size ratios for responsive toolbar scaling
-        // Buttons size automatically based on icon and text size - no fixed minWidth
-        const PADDING_VERTICAL_RATIO = 5;    // Vertical padding = toolbarSize / 5
-        const PADDING_HORIZONTAL_RATIO = 4;  // Horizontal padding = toolbarSize / 4
-        const SVG_SIZE_RATIO = 2;            // Icon size = toolbarSize / 2
-        const FONT_SIZE_RATIO = 4.5;         // Font size = toolbarSize / 4.5
+        // Square buttons with dynamic sizing based on toolbarSize
+        // Padding = 15% leaves 70% content area (after accounting for border)
+        // Content = icon (50%) + gap (5%) + text (variable)
+        const PADDING_RATIO = 0.15;          // Padding = 15% of button size
+        const ICON_SIZE_RATIO = 0.5;         // Icon = 50% of button size (main content)
+        const FONT_SIZE_RATIO = 0.18;        // Font = 18% of button size
+        const GAP_RATIO = 0.05;              // Gap = 5% of button size
+        
+        const buttonSize = this.toolbarSize;
+        const padding = buttonSize * PADDING_RATIO;
+        const iconSize = buttonSize * ICON_SIZE_RATIO;
+        const fontSize = buttonSize * FONT_SIZE_RATIO;
+        const gap = buttonSize * GAP_RATIO;
         
         buttons.forEach(btn => {
-            btn.style.padding = `${this.toolbarSize / PADDING_VERTICAL_RATIO}px ${this.toolbarSize / PADDING_HORIZONTAL_RATIO}px`;
-            // Remove fixed minWidth - let button size follow content naturally
-            btn.style.minWidth = '';
+            // Square button with fixed size
+            btn.style.width = `${buttonSize}px`;
+            btn.style.height = `${buttonSize}px`;
+            btn.style.minWidth = `${buttonSize}px`;
+            btn.style.padding = `${padding}px`;
+            btn.style.gap = `${gap}px`;
+            btn.style.boxSizing = 'border-box';
             
             const svg = btn.querySelector('svg');
             if (svg) {
-                const svgSize = this.toolbarSize / SVG_SIZE_RATIO;
-                svg.style.width = `${svgSize}px`;
-                svg.style.height = `${svgSize}px`;
+                svg.style.width = `${iconSize}px`;
+                svg.style.height = `${iconSize}px`;
+                svg.style.flexShrink = '0';
             }
             
             const span = btn.querySelector('span');
             if (span) {
-                span.style.fontSize = `${this.toolbarSize / FONT_SIZE_RATIO}px`;
+                span.style.fontSize = `${fontSize}px`;
+                span.style.lineHeight = '1';
             }
         });
         
@@ -245,16 +257,13 @@ class SettingsManager {
         const windowWidth = window.innerWidth;
         const isVertical = toolbar.classList.contains('vertical');
         
-        // Clear any inline styles first so CSS rules take effect
+        // Don't clear sizing styles - only manage text visibility via CSS classes
+        // The updateToolbarSize() function handles all sizing
         buttons.forEach(btn => {
             const span = btn.querySelector('span');
             if (span) {
                 span.style.display = '';
             }
-            btn.style.minWidth = '';
-            btn.style.padding = '';
-            btn.style.width = '';
-            btn.style.height = '';
         });
         
         // If user has disabled toolbar text, add class and return (CSS handles hiding)
