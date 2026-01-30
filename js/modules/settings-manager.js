@@ -3,7 +3,7 @@
 
 class SettingsManager {
     constructor() {
-        this.toolbarSize = parseInt(localStorage.getItem('toolbarSize')) || 40;
+        this.toolbarSize = parseInt(localStorage.getItem('toolbarSize')) || 35;
         this.configScale = parseFloat(localStorage.getItem('configScale')) || 1.0;
         this.controlPosition = localStorage.getItem('controlPosition') || 'top-right';
         this.edgeSnapEnabled = localStorage.getItem('edgeSnapEnabled') !== 'false';
@@ -209,14 +209,16 @@ class SettingsManager {
         const buttons = toolbar.querySelectorAll('.tool-btn');
         
         // Size ratios for responsive toolbar scaling
+        // Buttons size automatically based on icon and text size - no fixed minWidth
         const PADDING_VERTICAL_RATIO = 5;    // Vertical padding = toolbarSize / 5
-        const PADDING_HORIZONTAL_RATIO = 3;  // Horizontal padding = toolbarSize / 3
+        const PADDING_HORIZONTAL_RATIO = 4;  // Horizontal padding = toolbarSize / 4
         const SVG_SIZE_RATIO = 2;            // Icon size = toolbarSize / 2
         const FONT_SIZE_RATIO = 4.5;         // Font size = toolbarSize / 4.5
         
         buttons.forEach(btn => {
             btn.style.padding = `${this.toolbarSize / PADDING_VERTICAL_RATIO}px ${this.toolbarSize / PADDING_HORIZONTAL_RATIO}px`;
-            btn.style.minWidth = `${this.toolbarSize}px`;
+            // Remove fixed minWidth - let button size follow content naturally
+            btn.style.minWidth = '';
             
             const svg = btn.querySelector('svg');
             if (svg) {
@@ -269,7 +271,6 @@ class SettingsManager {
         }
         
         // Constants for responsive sizing
-        const ICON_ONLY_SIZE_RATIO = 0.8; // Size multiplier when text is hidden
         const SCREEN_MARGIN = 40; // Margin from screen edge
         const DEFAULT_GAP = 12; // Default gap between buttons if not specified in CSS
         
@@ -298,8 +299,7 @@ class SettingsManager {
                 if (span) {
                     span.style.display = 'none';
                 }
-                // When text is hidden, reduce min-width to icon-only size
-                btn.style.minWidth = `${this.toolbarSize * ICON_ONLY_SIZE_RATIO}px`;
+                // Let button size naturally follow content - no fixed minWidth
             });
         }
     }

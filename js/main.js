@@ -373,6 +373,10 @@ class DrawingBoard {
                     return;
                 }
                 this.drawingEngine.startDrawing(e);
+                // Show eraser cursor only when actually erasing on canvas
+                if (this.drawingEngine.currentTool === 'eraser') {
+                    this.showEraserCursor();
+                }
             }
         });
         
@@ -446,6 +450,10 @@ class DrawingBoard {
             this.stopDraggingCoordinateOrigin();
             this.handleDrawingComplete();
             this.drawingEngine.stopPanning();
+            // Hide eraser cursor when erasing stops
+            if (this.drawingEngine.currentTool === 'eraser') {
+                this.hideEraserCursor();
+            }
         });
         
         document.addEventListener('pointercancel', (e) => {
@@ -457,6 +465,10 @@ class DrawingBoard {
                 if (this.isPinching && this.activePointers.size < 2) {
                     this.handlePointerPinchEnd();
                 }
+            }
+            // Hide eraser cursor when pointer is cancelled
+            if (this.drawingEngine.currentTool === 'eraser') {
+                this.hideEraserCursor();
             }
         });
         
@@ -479,16 +491,15 @@ class DrawingBoard {
         });
         
         this.canvas.addEventListener('mouseenter', (e) => {
-            if (this.drawingEngine.currentTool === 'eraser') {
+            // Only show eraser cursor when actively erasing (mouse button down)
+            if (this.drawingEngine.currentTool === 'eraser' && this.drawingEngine.isDrawing) {
                 this.showEraserCursor();
             }
         });
         
         this.canvas.addEventListener('mouseleave', () => {
-            // Don't hide eraser cursor if we're still drawing
-            if (!this.drawingEngine.isDrawing) {
-                this.hideEraserCursor();
-            }
+            // Hide eraser cursor when leaving canvas
+            this.hideEraserCursor();
         });
         
         // Touch events - Only for gestures (Pinch Zoom)
@@ -2332,9 +2343,8 @@ class DrawingBoard {
         
         // Update drawing engine tool
         this.drawingEngine.setTool(tool);
-        if (tool === 'eraser') {
-            this.showEraserCursor();
-        } else {
+        // Don't show eraser cursor when selecting tool - only show when actually erasing on canvas
+        if (tool !== 'eraser') {
             this.hideEraserCursor();
         }
         
