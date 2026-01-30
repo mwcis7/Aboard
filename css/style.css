@@ -2717,7 +2717,9 @@ button, a, input[type="button"], input[type="submit"] {
 }
 
 /* High-resolution touchscreen optimizations (4K displays, large tablets, interactive whiteboards) */
-@media (min-width: 1200px) and (min-resolution: 150dpi) {
+@media (min-width: 1200px) and (min-resolution: 150dpi),
+       (min-width: 1200px) and (-webkit-min-device-pixel-ratio: 1.5),
+       (min-width: 1200px) and (min-resolution: 1.5dppx) {
     :root {
         --touch-target-size: 52px;
     }

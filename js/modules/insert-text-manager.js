@@ -61,23 +61,35 @@ class InsertTextManager {
 
     // Save custom fonts to localStorage
     saveCustomFonts() {
-        localStorage.setItem('customFonts', JSON.stringify(this.customFonts));
+        try {
+            localStorage.setItem('customFonts', JSON.stringify(this.customFonts));
+        } catch (e) {
+            // Handle storage quota exceeded
+            const msg = window.i18n ? window.i18n.t('tools.text.storageQuotaExceeded') : 'Storage quota exceeded. Please delete some custom fonts.';
+            if (window.toastManager) {
+                window.toastManager.show(msg, 'error');
+            }
+            console.warn('Failed to save custom fonts to localStorage:', e);
+        }
     }
 
     // Load custom fonts into the document
     loadCustomFontsToDocument() {
-        this.customFonts.forEach(font => {
-            this.addFontToDocument(font.name, font.data);
+        const loadPromises = this.customFonts.map(font => {
+            return this.addFontToDocument(font.name, font.data);
         });
+        return Promise.all(loadPromises);
     }
 
     // Add a font to the document
     addFontToDocument(name, data) {
         const fontFace = new FontFace(name, `url(${data})`);
-        fontFace.load().then(loadedFace => {
+        return fontFace.load().then(loadedFace => {
             document.fonts.add(loadedFace);
+            return loadedFace;
         }).catch(err => {
             console.warn(`Failed to load custom font ${name}:`, err);
+            return null;
         });
     }
 
@@ -85,7 +97,18 @@ class InsertTextManager {
     handleFontUpload(file) {
         if (!file) return;
         
-        const validTypes = ['font/ttf', 'font/otf', 'font/woff', 'font/woff2', 'application/x-font-ttf', 'application/x-font-otf', 'application/font-woff', 'application/font-woff2'];
+        // Check file size (limit to 2MB to avoid localStorage issues)
+        const maxSize = 2 * 1024 * 1024; // 2MB
+        if (file.size > maxSize) {
+            const msg = window.i18n ? window.i18n.t('tools.text.fontTooLarge') : 'Font file is too large. Maximum size is 2MB.';
+            if (window.toastManager) {
+                window.toastManager.show(msg, 'error');
+            } else {
+                alert(msg);
+            }
+            return;
+        }
+        
         const extension = file.name.split('.').pop().toLowerCase();
         const validExtensions = ['ttf', 'otf', 'woff', 'woff2'];
         
@@ -102,7 +125,9 @@ class InsertTextManager {
         const reader = new FileReader();
         reader.onload = (e) => {
             const fontData = e.target.result;
-            const fontName = file.name.replace(/\.(ttf|otf|woff|woff2)$/i, '');
+            // Extract font name by removing the extension (handle multiple dots in filename)
+            const lastDotIndex = file.name.lastIndexOf('.');
+            const fontName = lastDotIndex > 0 ? file.name.substring(0, lastDotIndex) : file.name;
             
             // Check if font already exists
             const exists = this.customFonts.find(f => f.name === fontName);
@@ -155,19 +180,19 @@ class InsertTextManager {
                             <div class="text-control-group">
                                 <label data-i18n="tools.text.font">Font</label>
                                 <div class="font-selection-row">
-                                    <select id="insert-text-font-select" class="format-select">
+                                    <select id="insert-text-font-select" class="format-select" aria-label="Font selection">
                                         <option value="sans-serif">Sans Serif</option>
                                         <option value="serif">Serif</option>
                                         <option value="monospace">Monospace</option>
                                         <option value="cursive">Cursive</option>
                                     </select>
-                                    <label class="font-upload-btn" for="insert-text-font-upload" data-i18n-title="tools.text.uploadFont">
+                                    <label class="font-upload-btn" for="insert-text-font-upload" data-i18n-title="tools.text.uploadFont" aria-label="Upload custom font">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                             <polyline points="17 8 12 3 7 8"></polyline>
                                             <line x1="12" y1="3" x2="12" y2="15"></line>
                                         </svg>
-                                        <input type="file" id="insert-text-font-upload" accept=".ttf,.otf,.woff,.woff2" style="display: none;">
+                                        <input type="file" id="insert-text-font-upload" accept=".ttf,.otf,.woff,.woff2" style="display: none;" aria-label="Upload font file">
                                     </label>
                                 </div>
                             </div>
@@ -175,13 +200,13 @@ class InsertTextManager {
                             <div class="text-control-group">
                                 <label data-i18n="tools.text.style">Style</label>
                                 <div class="text-style-buttons">
-                                    <button id="insert-text-bold-btn" class="text-style-btn" data-i18n-title="tools.text.bold">
+                                    <button id="insert-text-bold-btn" class="text-style-btn" data-i18n-title="tools.text.bold" aria-label="Bold" aria-pressed="false">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
                                             <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
                                             <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
                                         </svg>
                                     </button>
-                                    <button id="insert-text-italic-btn" class="text-style-btn" data-i18n-title="tools.text.italic">
+                                    <button id="insert-text-italic-btn" class="text-style-btn" data-i18n-title="tools.text.italic" aria-label="Italic" aria-pressed="false">
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <line x1="19" y1="4" x2="10" y2="4"></line>
                                             <line x1="14" y1="20" x2="5" y2="20"></line>
@@ -373,6 +398,7 @@ class InsertTextManager {
             boldBtn.addEventListener('click', () => {
                 this.textConfig.bold = !this.textConfig.bold;
                 boldBtn.classList.toggle('active', this.textConfig.bold);
+                boldBtn.setAttribute('aria-pressed', this.textConfig.bold.toString());
             });
         }
 
@@ -382,6 +408,7 @@ class InsertTextManager {
             italicBtn.addEventListener('click', () => {
                 this.textConfig.italic = !this.textConfig.italic;
                 italicBtn.classList.toggle('active', this.textConfig.italic);
+                italicBtn.setAttribute('aria-pressed', this.textConfig.italic.toString());
             });
         }
 

@@ -133,7 +133,9 @@ window.translations = {
             customFonts: 'Fuentes personalizadas',
             fontUploadSuccess: '¡Fuente cargada exitosamente!',
             fontExists: 'Esta fuente ya existe.',
-            invalidFontFormat: 'Formato de fuente no válido. Use archivos TTF, OTF, WOFF o WOFF2.'
+            invalidFontFormat: 'Formato de fuente no válido. Use archivos TTF, OTF, WOFF o WOFF2.',
+            fontTooLarge: 'El archivo de fuente es demasiado grande. El tamaño máximo es 2MB.',
+            storageQuotaExceeded: 'Cuota de almacenamiento excedida. Elimine algunas fuentes personalizadas.'
         }
     },
 

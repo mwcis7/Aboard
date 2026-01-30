@@ -135,7 +135,9 @@ window.translations = {
             customFonts: '사용자 정의 글꼴',
             fontUploadSuccess: '글꼴이 업로드되었습니다!',
             fontExists: '이 글꼴은 이미 존재합니다.',
-            invalidFontFormat: '잘못된 글꼴 형식입니다. TTF, OTF, WOFF 또는 WOFF2 파일을 사용하세요.'
+            invalidFontFormat: '잘못된 글꼴 형식입니다. TTF, OTF, WOFF 또는 WOFF2 파일을 사용하세요.',
+            fontTooLarge: '글꼴 파일이 너무 큽니다. 최대 2MB까지 허용됩니다.',
+            storageQuotaExceeded: '저장 공간이 초과되었습니다. 사용자 정의 글꼴을 삭제해 주세요.'
         }
     },
 

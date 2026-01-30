@@ -139,7 +139,9 @@ window.translations = {
             customFonts: 'Custom Fonts',
             fontUploadSuccess: 'Font uploaded successfully!',
             fontExists: 'This font already exists.',
-            invalidFontFormat: 'Invalid font format. Please use TTF, OTF, WOFF, or WOFF2 files.'
+            invalidFontFormat: 'Invalid font format. Please use TTF, OTF, WOFF, or WOFF2 files.',
+            fontTooLarge: 'Font file is too large. Maximum size is 2MB.',
+            storageQuotaExceeded: 'Storage quota exceeded. Please delete some custom fonts.'
         }
     },
 

@@ -135,7 +135,9 @@ window.translations = {
             customFonts: 'Benutzerdefinierte Schriftarten',
             fontUploadSuccess: 'Schriftart erfolgreich hochgeladen!',
             fontExists: 'Diese Schriftart existiert bereits.',
-            invalidFontFormat: 'Ungültiges Schriftartformat. Bitte verwenden Sie TTF-, OTF-, WOFF- oder WOFF2-Dateien.'
+            invalidFontFormat: 'Ungültiges Schriftartformat. Bitte verwenden Sie TTF-, OTF-, WOFF- oder WOFF2-Dateien.',
+            fontTooLarge: 'Die Schriftartdatei ist zu groß. Maximale Größe beträgt 2MB.',
+            storageQuotaExceeded: 'Speicherplatz überschritten. Bitte löschen Sie einige benutzerdefinierte Schriftarten.'
         }
     },
 

@@ -19,14 +19,6 @@
     box-sizing: border-box;
 }
 
-@media (min-width: 1200px) and (min-resolution: 150dpi) {
-    .text-input-area {
-        min-height: 150px;
-        padding: 20px;
-        font-size: 20px;
-    }
-}
-
 .text-input-area:focus {
     outline: none;
     border-color: var(--theme-color);
@@ -158,44 +150,10 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
-@media (min-width: 1200px) and (min-resolution: 150dpi) {
-    .touch-friendly-slider::-webkit-slider-thumb {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .touch-friendly-slider::-moz-range-thumb {
-        width: 36px;
-        height: 36px;
-    }
-}
-
 /* Touch targets for better touchscreen support */
 .touch-target {
     min-width: 44px;
     min-height: 44px;
-}
-
-@media (min-width: 1200px) and (min-resolution: 150dpi) {
-    .touch-target {
-        min-width: 52px;
-        min-height: 52px;
-    }
-    
-    .text-style-btn {
-        width: 56px;
-        height: 56px;
-    }
-    
-    .font-upload-btn {
-        width: 52px;
-        height: 52px;
-    }
-    
-    .font-selection-row .format-select {
-        min-height: 52px;
-        font-size: 18px;
-    }
 }
 
 .text-input-buttons {
@@ -208,14 +166,6 @@
     min-height: 44px;
     padding: 12px 24px;
     font-size: 16px;
-}
-
-@media (min-width: 1200px) and (min-resolution: 150dpi) {
-    .text-input-buttons .confirm-btn {
-        min-height: 52px;
-        padding: 14px 28px;
-        font-size: 18px;
-    }
 }
 
 /* Overlay */
@@ -232,30 +182,27 @@
 /* Control Box */
 #insert-text-box {
     position: absolute;
-    /* Border is optional for text, but good for seeing the bounding box while editing */
     border: 1px dashed rgba(0, 122, 255, 0.5);
     pointer-events: all;
     cursor: move;
     transform-origin: center center;
-    /* Use flexbox to center text vertically/horizontally if needed,
-       but for text insertion usually we want top-left alignment or center */
     display: flex;
     align-items: flex-start;
     justify-content: flex-start;
-    white-space: pre-wrap; /* Preserve line breaks */
-    padding: 4px; /* Internal padding */
+    white-space: pre-wrap;
+    padding: 4px;
 }
 
 /* Internal text element to hold the content */
 #insert-text-content {
     width: 100%;
     height: 100%;
-    pointer-events: none; /* Let clicks pass to box for drag, unless we want text selection */
+    pointer-events: none;
     user-select: none;
     line-height: 1.2;
 }
 
-/* Resize Handles - Reusing style but namespaced */
+/* Resize Handles */
 #insert-text-box .resize-handle {
     position: absolute;
     background-color: var(--theme-color);
@@ -268,24 +215,10 @@
     z-index: 10;
 }
 
-@media (min-width: 1200px) and (min-resolution: 150dpi) {
-    #insert-text-box .resize-handle {
-        width: 20px;
-        height: 20px;
-    }
-}
-
 #insert-text-box .resize-handle.top-left { top: -8px; left: -8px; cursor: nw-resize; }
 #insert-text-box .resize-handle.top-right { top: -8px; right: -8px; cursor: ne-resize; }
 #insert-text-box .resize-handle.bottom-left { bottom: -8px; left: -8px; cursor: sw-resize; }
 #insert-text-box .resize-handle.bottom-right { bottom: -8px; right: -8px; cursor: se-resize; }
-
-@media (min-width: 1200px) and (min-resolution: 150dpi) {
-    #insert-text-box .resize-handle.top-left { top: -10px; left: -10px; }
-    #insert-text-box .resize-handle.top-right { top: -10px; right: -10px; }
-    #insert-text-box .resize-handle.bottom-left { bottom: -10px; left: -10px; }
-    #insert-text-box .resize-handle.bottom-right { bottom: -10px; right: -10px; }
-}
 
 /* Rotation Handle */
 #insert-text-box .rotate-handle {
@@ -307,14 +240,6 @@
     z-index: 10;
 }
 
-@media (min-width: 1200px) and (min-resolution: 150dpi) {
-    #insert-text-box .rotate-handle {
-        width: 52px;
-        height: 52px;
-        top: -60px;
-    }
-}
-
 #insert-text-box .rotate-handle:hover {
     transform: translateX(-50%) scale(1.1);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
@@ -330,17 +255,10 @@
     top: 44px;
     left: 50%;
     width: 2px;
-    height: 20px; /* Connect to box */
+    height: 20px;
     background-color: var(--theme-color);
     transform: translateX(-50%);
     pointer-events: none;
-}
-
-@media (min-width: 1200px) and (min-resolution: 150dpi) {
-    #insert-text-box .rotate-handle::after {
-        top: 52px;
-        height: 24px;
-    }
 }
 
 /* Toolbar */
@@ -359,14 +277,6 @@
     z-index: 10;
 }
 
-@media (min-width: 1200px) and (min-resolution: 150dpi) {
-    #insert-text-box .text-controls-toolbar {
-        bottom: -85px;
-        gap: 12px;
-        padding: 14px;
-    }
-}
-
 #insert-text-box .text-control-btn {
     width: 48px;
     height: 48px;
@@ -379,13 +289,6 @@
     justify-content: center;
     transition: all 0.2s ease;
     color: #333;
-}
-
-@media (min-width: 1200px) and (min-resolution: 150dpi) {
-    #insert-text-box .text-control-btn {
-        width: 56px;
-        height: 56px;
-    }
 }
 
 #insert-text-box .text-control-btn:hover {
@@ -421,4 +324,81 @@
     background-color: #005ecb;
 }
 
-/* Edit button specific style if needed */
+/* High-resolution touchscreen optimizations - consolidated media query */
+@media (min-width: 1200px) and (min-resolution: 150dpi),
+       (min-width: 1200px) and (-webkit-min-device-pixel-ratio: 1.5),
+       (min-width: 1200px) and (min-resolution: 1.5dppx) {
+    .text-input-area {
+        min-height: 150px;
+        padding: 20px;
+        font-size: 20px;
+    }
+    
+    .touch-friendly-slider::-webkit-slider-thumb {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .touch-friendly-slider::-moz-range-thumb {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .touch-target {
+        min-width: 52px;
+        min-height: 52px;
+    }
+    
+    .text-style-btn {
+        width: 56px;
+        height: 56px;
+    }
+    
+    .font-upload-btn {
+        width: 52px;
+        height: 52px;
+    }
+    
+    .font-selection-row .format-select {
+        min-height: 52px;
+        font-size: 18px;
+    }
+    
+    .text-input-buttons .confirm-btn {
+        min-height: 52px;
+        padding: 14px 28px;
+        font-size: 18px;
+    }
+    
+    #insert-text-box .resize-handle {
+        width: 20px;
+        height: 20px;
+    }
+    
+    #insert-text-box .resize-handle.top-left { top: -10px; left: -10px; }
+    #insert-text-box .resize-handle.top-right { top: -10px; right: -10px; }
+    #insert-text-box .resize-handle.bottom-left { bottom: -10px; left: -10px; }
+    #insert-text-box .resize-handle.bottom-right { bottom: -10px; right: -10px; }
+    
+    #insert-text-box .rotate-handle {
+        width: 52px;
+        height: 52px;
+        top: -60px;
+    }
+    
+    #insert-text-box .rotate-handle::after {
+        top: 52px;
+        height: 24px;
+    }
+    
+    #insert-text-box .text-controls-toolbar {
+        bottom: -85px;
+        gap: 12px;
+        padding: 14px;
+    }
+    
+    #insert-text-box .text-control-btn {
+        width: 56px;
+        height: 56px;
+    }
+}

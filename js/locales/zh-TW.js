@@ -138,7 +138,9 @@ window.translations = {
             customFonts: '自訂字體',
             fontUploadSuccess: '字體上傳成功！',
             fontExists: '該字體已存在。',
-            invalidFontFormat: '無效的字體格式。請使用 TTF、OTF、WOFF 或 WOFF2 檔案。'
+            invalidFontFormat: '無效的字體格式。請使用 TTF、OTF、WOFF 或 WOFF2 檔案。',
+            fontTooLarge: '字體檔案過大，最大允許 2MB。',
+            storageQuotaExceeded: '儲存空間不足，請刪除一些自訂字體。'
         }
     },
 

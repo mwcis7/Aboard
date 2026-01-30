@@ -135,7 +135,9 @@ window.translations = {
             customFonts: 'カスタムフォント',
             fontUploadSuccess: 'フォントがアップロードされました！',
             fontExists: 'このフォントは既に存在します。',
-            invalidFontFormat: '無効なフォント形式です。TTF、OTF、WOFF、またはWOFF2ファイルを使用してください。'
+            invalidFontFormat: '無効なフォント形式です。TTF、OTF、WOFF、またはWOFF2ファイルを使用してください。',
+            fontTooLarge: 'フォントファイルが大きすぎます。最大2MBまでです。',
+            storageQuotaExceeded: 'ストレージ容量を超えました。カスタムフォントを削除してください。'
         }
     },
 
