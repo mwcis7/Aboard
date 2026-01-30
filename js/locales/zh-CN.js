@@ -21,7 +21,8 @@ window.translations = {
         reset: '重置',
         start: '开始',
         stop: '停止',
-        preview: '试听'
+        preview: '试听',
+        settings: '设置'
     },
 
     // Recovery dialog

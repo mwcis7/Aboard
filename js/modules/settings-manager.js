@@ -297,11 +297,10 @@ class SettingsManager {
     
     updateConfigScale() {
         const configArea = document.getElementById('config-area');
-        // Check if the config area has been manually positioned (has explicit left/top styles)
-        const hasCustomPosition = configArea.style.left && configArea.style.left !== 'auto' && 
-                                   configArea.style.left !== '' && !configArea.style.left.includes('50%');
+        // Check if the config area has been manually dragged (tracked via data attribute)
+        const hasBeenDragged = configArea.dataset.userDragged === 'true';
         
-        if (hasCustomPosition) {
+        if (hasBeenDragged) {
             // Config area has been dragged - only apply scale without translateX
             configArea.style.transform = `scale(${this.configScale})`;
         } else {

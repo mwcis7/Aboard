@@ -21,7 +21,8 @@ window.translations = {
         reset: 'Reset',
         start: 'Start',
         stop: 'Stop',
-        preview: 'Preview'
+        preview: 'Preview',
+        settings: 'Settings'
     },
 
     // Recovery dialog

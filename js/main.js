@@ -2196,6 +2196,11 @@ class DrawingBoard {
                     this.draggedElement.classList.add('user-positioned');
                 }
                 
+                // Mark config-area as user-dragged to prevent scale reset
+                if (this.draggedElement.id === 'config-area') {
+                    this.draggedElement.dataset.userDragged = 'true';
+                }
+                
                 this.isDraggingPanel = false;
                 this.draggedElement = null;
             }
