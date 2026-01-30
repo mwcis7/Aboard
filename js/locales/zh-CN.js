@@ -131,7 +131,15 @@ window.translations = {
             placeholder: '在此输入文字',
             size: '大小',
             color: '颜色',
-            font: '字体'
+            font: '字体',
+            style: '样式',
+            bold: '粗体',
+            italic: '斜体',
+            uploadFont: '上传字体',
+            customFonts: '自定义字体',
+            fontUploadSuccess: '字体上传成功！',
+            fontExists: '该字体已存在。',
+            invalidFontFormat: '无效的字体格式。请使用 TTF、OTF、WOFF 或 WOFF2 文件。'
         }
     },
 

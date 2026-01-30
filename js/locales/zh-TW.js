@@ -130,7 +130,15 @@ window.translations = {
             placeholder: '在此輸入文字',
             size: '大小',
             color: '顏色',
-            font: '字體'
+            font: '字體',
+            style: '樣式',
+            bold: '粗體',
+            italic: '斜體',
+            uploadFont: '上傳字體',
+            customFonts: '自訂字體',
+            fontUploadSuccess: '字體上傳成功！',
+            fontExists: '該字體已存在。',
+            invalidFontFormat: '無效的字體格式。請使用 TTF、OTF、WOFF 或 WOFF2 檔案。'
         }
     },
 

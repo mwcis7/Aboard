@@ -119,6 +119,21 @@ window.translations = {
             waveDensity: 'Densité des ondes',
             lineSpacing: 'Espacement des lignes',
             lineCount: 'Nombre de lignes'
+        },
+        text: {
+            insertTitle: 'Insérer du texte',
+            placeholder: 'Entrez le texte ici',
+            size: 'Taille',
+            color: 'Couleur',
+            font: 'Police',
+            style: 'Style',
+            bold: 'Gras',
+            italic: 'Italique',
+            uploadFont: 'Télécharger police',
+            customFonts: 'Polices personnalisées',
+            fontUploadSuccess: 'Police téléchargée avec succès !',
+            fontExists: 'Cette police existe déjà.',
+            invalidFontFormat: 'Format de police invalide. Veuillez utiliser des fichiers TTF, OTF, WOFF ou WOFF2.'
         }
     },
 
@@ -440,7 +455,8 @@ window.translations = {
         timer: 'Minuteur',
         randomPicker: 'Sélecteur',
         scoreboard: 'Tableau',
-        insertImage: 'Image'
+        insertImage: 'Image',
+        insertText: 'Texte'
     },
 
     // Teaching Tools

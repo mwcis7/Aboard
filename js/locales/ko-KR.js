@@ -121,6 +121,21 @@ window.translations = {
             waveDensity: '물결 밀도',
             lineSpacing: '선 간격',
             lineCount: '선 개수'
+        },
+        text: {
+            insertTitle: '텍스트 삽입',
+            placeholder: '여기에 텍스트 입력',
+            size: '크기',
+            color: '색상',
+            font: '글꼴',
+            style: '스타일',
+            bold: '굵게',
+            italic: '기울임',
+            uploadFont: '글꼴 업로드',
+            customFonts: '사용자 정의 글꼴',
+            fontUploadSuccess: '글꼴이 업로드되었습니다!',
+            fontExists: '이 글꼴은 이미 존재합니다.',
+            invalidFontFormat: '잘못된 글꼴 형식입니다. TTF, OTF, WOFF 또는 WOFF2 파일을 사용하세요.'
         }
     },
 
@@ -431,7 +446,8 @@ window.translations = {
         timer: '타이머',
         randomPicker: '추첨기',
         scoreboard: '점수판',
-        insertImage: '이미지 삽입'
+        insertImage: '이미지 삽입',
+        insertText: '텍스트 삽입'
     },
 
     // Teaching Tools

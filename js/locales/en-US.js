@@ -131,7 +131,15 @@ window.translations = {
             placeholder: 'Enter text here',
             size: 'Size',
             color: 'Color',
-            font: 'Font'
+            font: 'Font',
+            style: 'Style',
+            bold: 'Bold',
+            italic: 'Italic',
+            uploadFont: 'Upload Font',
+            customFonts: 'Custom Fonts',
+            fontUploadSuccess: 'Font uploaded successfully!',
+            fontExists: 'This font already exists.',
+            invalidFontFormat: 'Invalid font format. Please use TTF, OTF, WOFF, or WOFF2 files.'
         }
     },
 
