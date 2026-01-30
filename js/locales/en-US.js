@@ -125,6 +125,13 @@ window.translations = {
             waveDensity: 'Wave Density',
             lineSpacing: 'Line Spacing',
             lineCount: 'Line Count'
+        },
+        text: {
+            insertTitle: 'Insert Text',
+            placeholder: 'Enter text here',
+            size: 'Size',
+            color: 'Color',
+            font: 'Font'
         }
     },
 
@@ -470,7 +477,8 @@ window.translations = {
         timer: 'Timer',
         randomPicker: 'Picker',
         scoreboard: 'Score',
-        insertImage: 'Insert Image'
+        insertImage: 'Insert Image',
+        insertText: 'Insert Text'
     },
 
     // Random Picker

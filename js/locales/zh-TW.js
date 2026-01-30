@@ -124,6 +124,13 @@ window.translations = {
             waveDensity: '波浪密度',
             lineSpacing: '線條間距',
             lineCount: '線條數量'
+        },
+        text: {
+            insertTitle: '插入文字',
+            placeholder: '在此輸入文字',
+            size: '大小',
+            color: '顏色',
+            font: '字體'
         }
     },
 
@@ -469,7 +476,8 @@ window.translations = {
         timer: '計時',
         randomPicker: '點名器',
         scoreboard: '計分板',
-        insertImage: '插入圖片'
+        insertImage: '插入圖片',
+        insertText: '插入文字'
     },
 
     // Random Picker
