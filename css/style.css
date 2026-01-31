@@ -431,8 +431,9 @@ button, a, input[type="button"], input[type="submit"] {
     transform: translateX(-50%);
     z-index: 1000;
     display: flex;
-    gap: 12px;
-    padding: 12px 20px;
+    /* gap and padding are controlled by JS updateToolbarSize() for dynamic scaling */
+    gap: 8px;
+    padding: 8px 12px;
     background-color: #ffffff;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -450,8 +451,7 @@ button, a, input[type="button"], input[type="submit"] {
 /* Vertical toolbar layout (when snapped to left or right) */
 #toolbar.vertical {
     flex-direction: column;
-    gap: 6px;
-    padding: 12px 8px;
+    /* gap and padding are controlled by JS updateToolbarSize() */
 }
 
 #toolbar.vertical .tool-btn {

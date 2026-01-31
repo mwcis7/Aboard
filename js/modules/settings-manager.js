@@ -209,26 +209,43 @@ class SettingsManager {
         const buttons = toolbar.querySelectorAll('.tool-btn');
         
         // Square buttons with dynamic sizing based on toolbarSize
-        // Padding = 15% leaves 70% content area (after accounting for border)
-        // Content = icon (50%) + gap (5%) + text (variable)
-        const PADDING_RATIO = 0.15;          // Padding = 15% of button size
-        const ICON_SIZE_RATIO = 0.5;         // Icon = 50% of button size (main content)
-        const FONT_SIZE_RATIO = 0.18;        // Font = 18% of button size
-        const GAP_RATIO = 0.05;              // Gap = 5% of button size
+        // All proportions scale with buttonSize for consistent appearance
+        const BUTTON_PADDING_RATIO = 0.12;   // Button padding = 12% of button size
+        const ICON_SIZE_RATIO = 0.5;         // Icon = 50% of button size
+        const FONT_SIZE_RATIO = 0.16;        // Font = 16% of button size
+        const BUTTON_GAP_RATIO = 0.04;       // Button internal gap = 4% of button size
+        
+        // Toolbar container padding and gap also scale with button size
+        const TOOLBAR_PADDING_RATIO = 0.25;  // Toolbar padding = 25% of button size
+        const TOOLBAR_GAP_RATIO = 0.2;       // Toolbar gap = 20% of button size
+        // Secondary axis uses smaller padding to keep toolbar compact
+        const TOOLBAR_PADDING_SECONDARY_RATIO = 0.6; // Secondary padding = 60% of primary
         
         const buttonSize = this.toolbarSize;
-        const padding = buttonSize * PADDING_RATIO;
+        const buttonPadding = Math.max(2, buttonSize * BUTTON_PADDING_RATIO);
         const iconSize = buttonSize * ICON_SIZE_RATIO;
-        const fontSize = buttonSize * FONT_SIZE_RATIO;
-        const gap = buttonSize * GAP_RATIO;
+        const fontSize = Math.max(6, buttonSize * FONT_SIZE_RATIO);
+        const buttonGap = Math.max(1, buttonSize * BUTTON_GAP_RATIO);
+        
+        // Scale toolbar container padding and gap
+        const toolbarPadding = Math.max(4, buttonSize * TOOLBAR_PADDING_RATIO);
+        const toolbarPaddingSecondary = toolbarPadding * TOOLBAR_PADDING_SECONDARY_RATIO;
+        const toolbarGap = Math.max(2, buttonSize * TOOLBAR_GAP_RATIO);
+        const isVertical = toolbar.classList.contains('vertical');
+        
+        // Apply toolbar container styles (vertical: more padding on Y axis, horizontal: more on X axis)
+        toolbar.style.padding = isVertical 
+            ? `${toolbarPadding}px ${toolbarPaddingSecondary}px` 
+            : `${toolbarPaddingSecondary}px ${toolbarPadding}px`;
+        toolbar.style.gap = `${toolbarGap}px`;
         
         buttons.forEach(btn => {
             // Square button with fixed size
             btn.style.width = `${buttonSize}px`;
             btn.style.height = `${buttonSize}px`;
             btn.style.minWidth = `${buttonSize}px`;
-            btn.style.padding = `${padding}px`;
-            btn.style.gap = `${gap}px`;
+            btn.style.padding = `${buttonPadding}px`;
+            btn.style.gap = `${buttonGap}px`;
             btn.style.boxSizing = 'border-box';
             
             const svg = btn.querySelector('svg');
