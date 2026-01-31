@@ -17,7 +17,7 @@ class SelectionManager {
         this.selectedStrokes = [];
         
         // Current selection type and index
-        this.selectionType = null; // 'stroke', 'text', or 'image'
+        this.selectionType = null; // 'stroke' or 'text' (text selection prepared for future text manager integration)
         this.selectedIndex = null;
         
         // Dragging state
@@ -220,6 +220,11 @@ class SelectionManager {
         });
     }
     
+    // Normalize angle to 0-360 degrees
+    normalizeAngle(angle) {
+        return ((angle % 360) + 360) % 360;
+    }
+    
     getClientPos(e) {
         if (e.touches && e.touches.length > 0) {
             return { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -274,8 +279,9 @@ class SelectionManager {
         const coords = this.getCanvasCoordinates(e);
         
         // Try to select something at this point
-        // First, check for text objects
-        if (this.textManager && this.textManager.textObjects.length > 0) {
+        // First, check for text objects (requires TextInsertionManager to be set via setTextManager)
+        // Note: Currently text insertion stamps pixels onto canvas, but this is prepared for future integration
+        if (this.textManager && this.textManager.textObjects && this.textManager.textObjects.length > 0) {
             const textIndex = this.textManager.hitTestText(coords.x, coords.y);
             if (textIndex >= 0) {
                 this.selectText(textIndex);
@@ -595,7 +601,7 @@ class SelectionManager {
         
         if (this.selectionType === 'stroke') {
             const stroke = this.drawingEngine.strokes[this.selectedIndex];
-            stroke.rotation = ((this.rotateStartRotation + angleDelta) % 360 + 360) % 360;
+            stroke.rotation = this.normalizeAngle(this.rotateStartRotation + angleDelta);
             
             const bounds = stroke.originalBounds || this.drawingEngine.getStrokeBounds(stroke);
             const strokeCenterX = bounds.x + bounds.width / 2;
@@ -614,7 +620,7 @@ class SelectionManager {
             }
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
-            textObj.rotation = ((this.rotateStartRotation + angleDelta) % 360 + 360) % 360;
+            textObj.rotation = this.normalizeAngle(this.rotateStartRotation + angleDelta);
         }
         
         this.updateControlBox();
