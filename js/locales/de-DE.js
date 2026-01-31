@@ -292,7 +292,8 @@ window.translations = {
                 pagination: 'Seitennummerierung-Tasten',
                 time: 'Zeitanzeige',
                 fullscreen: 'Vollbild-Taste',
-                download: 'Download-Taste'
+                import: 'Import-Taste',
+                export: 'Export-Taste'
             },
             controlPosition: 'Position der Steuerungstasten',
             controlPositionHint: 'Wählen Sie die Position der Zoom- und Seitensteuerung',

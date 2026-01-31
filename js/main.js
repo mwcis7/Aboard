@@ -3242,7 +3242,8 @@ class DrawingBoard {
             pagination: localStorage.getItem('controlShowPagination') !== 'false',
             time: localStorage.getItem('controlShowTime') !== 'false',
             fullscreen: localStorage.getItem('controlShowFullscreen') !== 'false',
-            download: localStorage.getItem('controlShowDownload') !== 'false'
+            import: localStorage.getItem('controlShowImport') !== 'false',
+            export: localStorage.getItem('controlShowExport') !== 'false'
         };
         
         // Load saved order
@@ -3262,13 +3263,15 @@ class DrawingBoard {
         const paginationCheckbox = document.getElementById('control-show-pagination');
         const timeCheckbox = document.getElementById('control-show-time');
         const fullscreenCheckbox = document.getElementById('control-show-fullscreen');
-        const downloadCheckbox = document.getElementById('control-show-download');
+        const importCheckbox = document.getElementById('control-show-import');
+        const exportCheckbox = document.getElementById('control-show-export');
         
         if (zoomCheckbox) zoomCheckbox.checked = controlSettings.zoom;
         if (paginationCheckbox) paginationCheckbox.checked = controlSettings.pagination;
         if (timeCheckbox) timeCheckbox.checked = controlSettings.time;
         if (fullscreenCheckbox) fullscreenCheckbox.checked = controlSettings.fullscreen;
-        if (downloadCheckbox) downloadCheckbox.checked = controlSettings.download;
+        if (importCheckbox) importCheckbox.checked = controlSettings.import;
+        if (exportCheckbox) exportCheckbox.checked = controlSettings.export;
         
         // Apply initial visibility
         this.applyControlButtonVisibility(controlSettings);
@@ -3302,9 +3305,16 @@ class DrawingBoard {
             });
         }
         
-        if (downloadCheckbox) {
-            downloadCheckbox.addEventListener('change', (e) => {
-                localStorage.setItem('controlShowDownload', e.target.checked);
+        if (importCheckbox) {
+            importCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowImport', e.target.checked);
+                this.applyControlButtonVisibility();
+            });
+        }
+        
+        if (exportCheckbox) {
+            exportCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowExport', e.target.checked);
                 this.applyControlButtonVisibility();
             });
         }
@@ -3403,7 +3413,7 @@ class DrawingBoard {
     
     // Reorder actual control buttons in the UI based on order
     reorderControlButtons(order) {
-        const controlArea = document.getElementById('top-left-container');
+        const controlArea = document.getElementById('history-controls');
         if (!controlArea || !order) return;
         
         // Map control names to their element IDs
@@ -3412,7 +3422,8 @@ class DrawingBoard {
             pagination: ['pagination-controls'],
             time: ['time-display-area'],
             fullscreen: ['fullscreen-btn'],
-            download: ['export-btn-top']
+            import: ['import-project-btn'],
+            export: ['export-btn-top']
         };
         
         // Get all control elements and store them
@@ -3447,7 +3458,8 @@ class DrawingBoard {
                 pagination: localStorage.getItem('controlShowPagination') !== 'false',
                 time: localStorage.getItem('controlShowTime') !== 'false',
                 fullscreen: localStorage.getItem('controlShowFullscreen') !== 'false',
-                download: localStorage.getItem('controlShowDownload') !== 'false'
+                import: localStorage.getItem('controlShowImport') !== 'false',
+                export: localStorage.getItem('controlShowExport') !== 'false'
             };
         }
         
@@ -3486,9 +3498,13 @@ class DrawingBoard {
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         if (fullscreenBtn) fullscreenBtn.style.display = settings.fullscreen ? 'flex' : 'none';
         
-        // Download button (correct ID is export-btn-top)
+        // Import button
+        const importBtn = document.getElementById('import-project-btn');
+        if (importBtn) importBtn.style.display = settings.import ? 'flex' : 'none';
+        
+        // Export button
         const exportBtnTop = document.getElementById('export-btn-top');
-        if (exportBtnTop) exportBtnTop.style.display = settings.download ? 'flex' : 'none';
+        if (exportBtnTop) exportBtnTop.style.display = settings.export ? 'flex' : 'none';
     }
     
     toggleFullscreen() {

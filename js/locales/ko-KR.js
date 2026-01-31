@@ -299,7 +299,8 @@ window.translations = {
                 pagination: '페이지 매김 버튼',
                 time: '시간 표시',
                 fullscreen: '전체 화면 버튼',
-                download: '다운로드 버튼'
+                import: '가져오기 버튼',
+                export: '내보내기 버튼'
             },
             controlPosition: '컨트롤 버튼 위치',
             controlPositionHint: '확대/축소 및 페이지 매김 컨트롤 표시 위치 선택',

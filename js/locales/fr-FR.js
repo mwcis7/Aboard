@@ -290,7 +290,8 @@ window.translations = {
                 pagination: 'Boutons de pagination',
                 time: 'Affichage de l\'heure',
                 fullscreen: 'Bouton plein écran',
-                download: 'Bouton de téléchargement'
+                import: 'Bouton d\'importation',
+                export: 'Bouton d\'exportation'
             },
             controlPosition: 'Position du bouton de contrôle',
             controlPositionHint: 'Choisir où afficher les contrôles de zoom et de pagination',

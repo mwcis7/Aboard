@@ -299,7 +299,8 @@ window.translations = {
                 pagination: 'ページネーションボタン',
                 time: '時刻表示',
                 fullscreen: 'フルスクリーンボタン',
-                download: 'ダウンロードボタン'
+                import: 'インポートボタン',
+                export: 'エクスポートボタン'
             },
             controlPosition: 'コントロールボタンの位置',
             controlPositionHint: 'ズームとページネーションコントロールの表示位置を選択',

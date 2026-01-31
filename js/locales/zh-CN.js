@@ -324,7 +324,8 @@ window.translations = {
                 pagination: '分页按钮',
                 time: '时间显示',
                 fullscreen: '全屏按钮',
-                download: '下载按钮'
+                import: '导入按钮',
+                export: '导出按钮'
             },
             controlPosition: '控制按钮位置',
             controlPositionHint: '选择缩放和分页控件在屏幕上的显示位置',
@@ -435,7 +436,6 @@ window.translations = {
         },
         more: {
             title: '更多设置',
-            description: '时间显示相关设置请点击右下角时间区域进入设置界面',
             showTimeDisplay: '显示时间和日期',
             showTimeDisplayHint: '在右上角显示当前时间和日期'
         },

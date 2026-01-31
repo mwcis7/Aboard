@@ -324,7 +324,8 @@ window.translations = {
                 pagination: 'Pagination Buttons',
                 time: 'Time Display',
                 fullscreen: 'Fullscreen Button',
-                download: 'Download Button'
+                import: 'Import Button',
+                export: 'Export Button'
             },
             controlPosition: 'Control Position',
             controlPositionHint: 'Position of zoom and pagination controls',
@@ -437,7 +438,6 @@ window.translations = {
         },
         more: {
             title: 'More Settings',
-            description: 'For time display settings, click the time area in the bottom-right corner',
             showTimeDisplay: 'Show Date & Time',
             showTimeDisplayHint: 'Display current date and time in top-right corner'
         },

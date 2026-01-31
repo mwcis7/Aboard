@@ -702,11 +702,18 @@
                                         <span data-i18n="settings.general.controlButtons.fullscreen">全屏按钮</span>
                                     </label>
                                 </div>
-                                <div class="control-button-item" data-control="download" draggable="true">
+                                <div class="control-button-item" data-control="import" draggable="true">
                                     <span class="drag-handle">☰</span>
                                     <label class="checkbox-label">
-                                        <input type="checkbox" id="control-show-download" checked>
-                                        <span data-i18n="settings.general.controlButtons.download">下载按钮</span>
+                                        <input type="checkbox" id="control-show-import" checked>
+                                        <span data-i18n="settings.general.controlButtons.import">导入按钮</span>
+                                    </label>
+                                </div>
+                                <div class="control-button-item" data-control="export" draggable="true">
+                                    <span class="drag-handle">☰</span>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="control-show-export" checked>
+                                        <span data-i18n="settings.general.controlButtons.export">导出按钮</span>
                                     </label>
                                 </div>
                             </div>
@@ -749,11 +756,11 @@
                             <p class="settings-hint" data-i18n="settings.display.showFullscreenBtnHint">勾选后，在缩放控件旁显示全屏按钮</p>
                         </div>
                         <div class="settings-group">
-                            <label><span data-i18n="settings.display.toolbarSizeLabel">工具栏大小：当前</span> <span id="toolbar-size-value">40</span>px</label>
+                            <label><span data-i18n="settings.display.toolbarSizeLabel">工具栏大小：当前</span> <span id="toolbar-size-value">50</span>px</label>
                             <p class="settings-hint" data-i18n="settings.display.toolbarSizeHint">调整底部工具栏的大小</p>
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <input type="range" id="toolbar-size-slider" min="30" max="100" value="40" class="slider" step="5" style="flex: 1;">
-                                <input type="number" id="toolbar-size-input" min="30" max="100" value="40" step="5" style="width: 60px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
+                                <input type="range" id="toolbar-size-slider" min="30" max="100" value="50" class="slider" step="5" style="flex: 1;">
+                                <input type="number" id="toolbar-size-input" min="30" max="100" value="50" step="5" style="width: 60px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
                             </div>
                         </div>
                         <div class="settings-group">
@@ -970,8 +977,6 @@
                     <!-- More settings -->
                     <div id="more-settings" class="settings-tab-content">
                         <h3 data-i18n="settings.more.title">更多设置</h3>
-                        <p class="settings-hint" style="margin-bottom: 16px;" data-i18n="settings.more.description">时间显示相关设置请点击右下角时间区域进入设置界面</p>
-
                         <!-- Configuration Export/Import -->
                         <div class="settings-group">
                             <label>配置管理</label>

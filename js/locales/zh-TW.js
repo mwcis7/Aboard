@@ -323,7 +323,8 @@ window.translations = {
                 pagination: '分頁按鈕',
                 time: '時間顯示',
                 fullscreen: '全螢幕按鈕',
-                download: '下載按鈕'
+                import: '匯入按鈕',
+                export: '匯出按鈕'
             },
             controlPosition: '控制按鈕位置',
             controlPositionHint: '選擇縮放和分頁控件在屏幕上的顯示位置',
