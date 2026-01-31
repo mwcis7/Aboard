@@ -1120,6 +1120,7 @@ button, a, input[type="button"], input[type="submit"] {
     right: 20px;
     z-index: 1000;
     display: none;
+    cursor: move;
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
@@ -2418,9 +2419,9 @@ button, a, input[type="button"], input[type="submit"] {
     border-radius: 16px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     min-width: 240px;
+    cursor: move;
     max-width: 280px;
     display: none;
-    cursor: move;
     touch-action: none;
     will-change: transform, left, top;
 }

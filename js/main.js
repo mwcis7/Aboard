@@ -2062,6 +2062,7 @@ class DrawingBoard {
         const timeDisplayArea = document.getElementById('time-display-area');
         const featureArea = document.getElementById('feature-area');
         const toolbar = document.getElementById('toolbar');
+        const paginationControls = document.getElementById('pagination-controls');
         
         // Unified start handler for mouse and touch events
         const handleDragStart = (e, element) => {
@@ -2090,7 +2091,7 @@ class DrawingBoard {
             e.preventDefault();
         };
         
-        [historyControls, configArea, timeDisplayArea, featureArea, toolbar].forEach(element => {
+        [historyControls, configArea, timeDisplayArea, featureArea, toolbar, paginationControls].filter(Boolean).forEach(element => {
             // Mouse events
             element.addEventListener('mousedown', (e) => handleDragStart(e, element));
             // Touch events - improve compatibility with large-screen touch devices
