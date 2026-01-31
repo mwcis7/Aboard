@@ -34,7 +34,8 @@ button, a, input[type="button"], input[type="submit"] {
 }
 
 /* Minimum touch target size for primary navigation buttons (44x44px recommended by WCAG) */
-.tool-btn, .history-btn, .feature-btn, .timer-action-btn, .timer-control-btn {
+/* NOTE: .tool-btn size is controlled by JS updateToolbarSize() - do NOT set min-height/min-width here */
+.history-btn, .feature-btn, .timer-action-btn, .timer-control-btn {
     min-height: var(--touch-target-size);
     min-width: var(--touch-target-size);
 }
@@ -177,12 +178,12 @@ button, a, input[type="button"], input[type="submit"] {
     bottom: 100px; /* Position above toolbar (toolbar is at bottom: 20px + estimated height ~60px + gap 20px) */
     transform: translateX(-50%);
     z-index: 2000; /* Ensure it's above image controls overlay */
-    padding: 12px 16px;
+    padding: 10px 12px;
     background-color: #ffffff;
-    border-radius: 16px;
+    border-radius: 14px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    min-width: 320px;
-    max-width: 600px; /* Prevent excessive width */
+    min-width: 280px;
+    max-width: 550px; /* Prevent excessive width */
     max-height: calc(100vh - 120px); /* Prevent touching top - leave space for positioning */
     overflow-y: auto; /* Add scroll if content exceeds max height */
     display: none;
@@ -395,8 +396,8 @@ button, a, input[type="button"], input[type="submit"] {
 .slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: var(--theme-color);
     cursor: pointer;
@@ -404,8 +405,8 @@ button, a, input[type="button"], input[type="submit"] {
 }
 
 .slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: var(--theme-color);
     cursor: pointer;
@@ -431,8 +432,9 @@ button, a, input[type="button"], input[type="submit"] {
     transform: translateX(-50%);
     z-index: 1000;
     display: flex;
-    gap: 12px;
-    padding: 12px 20px;
+    /* gap and padding are controlled by JS updateToolbarSize() for dynamic scaling */
+    gap: 8px;
+    padding: 8px 12px;
     background-color: #ffffff;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -450,58 +452,68 @@ button, a, input[type="button"], input[type="submit"] {
 /* Vertical toolbar layout (when snapped to left or right) */
 #toolbar.vertical {
     flex-direction: column;
-    gap: 8px;
-    padding: 20px 12px;
+    /* gap and padding are controlled by JS updateToolbarSize() */
 }
 
 #toolbar.vertical .tool-btn {
-    min-width: auto;
-    width: 60px;
-    padding: 10px 8px;
+    /* Size is controlled by JS updateToolbarSize() */
+    justify-content: center;
+}
+
+/* Hide text labels in vertical mode to save space */
+#toolbar.vertical .tool-btn span {
+    display: none !important;
+}
+
+/* Hide text labels when user explicitly disables text via setting */
+#toolbar.hide-text .tool-btn span {
+    display: none !important;
+}
+
+#toolbar.hide-text .tool-btn {
+    /* Size is controlled by JS, just need to center the icon */
+    justify-content: center;
 }
 
 .tool-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    padding: 12px 16px;
+    justify-content: center;
+    /* gap, padding, width, height are set by JS updateToolbarSize() */
     border: 2px solid transparent;
     border-radius: 12px;
     background-color: transparent;
     cursor: pointer;
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     color: #666;
-    min-width: 70px;
+    box-sizing: border-box;
 }
 
-/* Button size variants */
+/* Button size variants - now fully controlled by JS updateToolbarSize() */
+/* These are fallback defaults if JS hasn't run yet */
 #toolbar.size-small .tool-btn {
-    padding: 8px 12px;
-    min-width: 60px;
+    /* Sizing controlled by JS */
 }
 
 #toolbar.size-small .tool-btn svg {
-    width: 20px;
-    height: 20px;
+    /* Sizing controlled by JS */
 }
 
 #toolbar.size-small .tool-btn span {
-    font-size: 10px;
+    /* Sizing controlled by JS */
 }
 
 #toolbar.size-large .tool-btn {
-    padding: 16px 20px;
-    min-width: 80px;
+    /* Sizing controlled by JS */
 }
 
 #toolbar.size-large .tool-btn svg {
-    width: 28px;
-    height: 28px;
+    /* Sizing controlled by JS */
 }
 
 #toolbar.size-large .tool-btn span {
-    font-size: 14px;
+    /* Sizing controlled by JS */
 }
 
 .tool-btn svg {
@@ -992,6 +1004,52 @@ button, a, input[type="button"], input[type="submit"] {
     margin-top: 8px;
 }
 
+.control-button-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: grab;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.control-button-item:active {
+    cursor: grabbing;
+}
+
+.control-button-item.dragging {
+    opacity: 0.5;
+    background: #e3f2fd;
+}
+
+.control-button-item.drag-over {
+    border-color: #4285f4;
+    background: #e8f0fe;
+}
+
+.control-button-item .drag-handle {
+    color: #999;
+    font-size: 14px;
+    padding: 4px 8px;
+    cursor: grab;
+    user-select: none;
+}
+
+.control-button-item .drag-handle:active {
+    cursor: grabbing;
+}
+
+.control-button-item .checkbox-label {
+    flex: 1;
+    padding: 8px 12px;
+    margin: 0;
+    background: transparent;
+    border: none;
+}
+
 .control-button-settings .checkbox-label {
     padding: 8px 12px;
     background: #f8f9fa;
@@ -1062,6 +1120,7 @@ button, a, input[type="button"], input[type="submit"] {
     right: 20px;
     z-index: 1000;
     display: none;
+    cursor: move;
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
@@ -1327,8 +1386,7 @@ button, a, input[type="button"], input[type="submit"] {
     }
 
     .tool-btn {
-        padding: 10px 12px;
-        min-width: 60px;
+        /* Size controlled by JS */
     }
 
     .tool-btn span {
@@ -1870,17 +1928,15 @@ button, a, input[type="button"], input[type="submit"] {
     }
     
     .tool-btn {
-        padding: 10px 14px;
-        min-width: 60px;
+        /* Size controlled by JS */
     }
     
     .tool-btn svg {
-        width: 20px;
-        height: 20px;
+        /* Size controlled by JS */
     }
     
     .tool-btn span {
-        font-size: 11px;
+        /* Size controlled by JS */
     }
 }
 
@@ -1914,8 +1970,7 @@ button, a, input[type="button"], input[type="submit"] {
     }
     
     .tool-btn {
-        padding: 14px 18px;
-        min-width: 75px;
+        /* Size controlled by JS */
     }
     
     /* Settings groups with more space on large screens */
@@ -2364,11 +2419,42 @@ button, a, input[type="button"], input[type="submit"] {
     border-radius: 16px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     min-width: 240px;
+    cursor: move;
     max-width: 280px;
     display: none;
-    cursor: move;
     touch-action: none;
     will-change: transform, left, top;
+}
+
+/* Panel drag handle - a visible area for dragging panels */
+.panel-drag-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 40px; /* Leave room for close button */
+    height: 24px;
+    cursor: move;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.02), transparent);
+    border-radius: 16px 0 0 0;
+}
+
+.panel-drag-handle .drag-handle-dots {
+    color: #999;
+    font-size: 12px;
+    letter-spacing: 2px;
+    user-select: none;
+    pointer-events: none;
+}
+
+.panel-drag-handle:hover {
+    background: linear-gradient(to bottom, rgba(0,0,0,0.05), transparent);
+}
+
+.panel-drag-handle:hover .drag-handle-dots {
+    color: #666;
 }
 
 #time-display-area.show {
@@ -2457,18 +2543,16 @@ button, a, input[type="button"], input[type="submit"] {
     }
     
     #toolbar .tool-btn {
-        padding: 8px 10px;
-        min-width: 50px;
+        /* Size controlled by JS */
         flex-shrink: 0;
     }
     
     #toolbar .tool-btn svg {
-        width: 18px;
-        height: 18px;
+        /* Size controlled by JS */
     }
     
     #toolbar .tool-btn span {
-        font-size: 9px;
+        /* Size controlled by JS */
     }
     
     #config-area {
@@ -2563,8 +2647,7 @@ button, a, input[type="button"], input[type="submit"] {
     }
     
     #toolbar .tool-btn {
-        padding: 6px 10px;
-        min-width: 50px;
+        /* Size controlled by JS */
     }
     
     #toolbar .tool-btn span {
@@ -2681,8 +2764,7 @@ button, a, input[type="button"], input[type="submit"] {
     }
     
     .tool-btn {
-        padding: 16px 22px;
-        min-width: 85px;
+        /* Size controlled by JS */
     }
     
     .history-btn {
@@ -2713,5 +2795,112 @@ button, a, input[type="button"], input[type="submit"] {
             top: calc(10px + env(safe-area-inset-top));
             right: calc(10px + env(safe-area-inset-right));
         }
+    }
+}
+
+/* High-resolution touchscreen optimizations (4K displays, large tablets, interactive whiteboards) */
+@media (min-width: 1200px) and (min-resolution: 150dpi),
+       (min-width: 1200px) and (-webkit-min-device-pixel-ratio: 1.5),
+       (min-width: 1200px) and (min-resolution: 1.5dppx) {
+    :root {
+        --touch-target-size: 52px;
+    }
+    
+    /* Button size controlled by JS */
+    .tool-btn {
+        /* Size controlled by JS updateToolbarSize() */
+    }
+    
+    .tool-btn svg {
+        /* Size controlled by JS */
+    }
+    
+    .tool-btn span {
+        /* Size controlled by JS */
+    }
+    
+    .history-btn {
+        width: 52px;
+        height: 52px;
+    }
+    
+    /* Larger sliders for easier touch interaction */
+    .slider,
+    .slider-compact {
+        height: 10px;
+    }
+    
+    .slider::-webkit-slider-thumb,
+    .slider-compact::-webkit-slider-thumb {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .slider::-moz-range-thumb,
+    .slider-compact::-moz-range-thumb {
+        width: 32px;
+        height: 32px;
+    }
+    
+    /* Larger color buttons */
+    .color-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .color-picker-icon-btn {
+        width: 44px;
+        height: 44px;
+    }
+    
+    /* Larger input fields */
+    .zoom-input {
+        width: 70px;
+        height: 52px;
+        font-size: 16px;
+    }
+    
+    /* Larger modal buttons */
+    .confirm-btn {
+        min-height: 48px;
+        padding: 14px 28px;
+        font-size: 17px;
+    }
+    
+    /* Larger config panel options */
+    .pen-type-btn,
+    .shape-type-btn,
+    .eraser-type-btn {
+        padding: 14px;
+        font-size: 14px;
+    }
+    
+    /* Larger checkboxes and radio buttons */
+    input[type="checkbox"],
+    input[type="radio"] {
+        width: 22px;
+        height: 22px;
+    }
+    
+    /* Larger select dropdowns */
+    select.format-select {
+        min-height: 48px;
+        padding: 12px 16px;
+        font-size: 16px;
+    }
+    
+    /* Larger feature buttons in More panel */
+    .feature-btn {
+        padding: 16px;
+        min-width: 90px;
+    }
+    
+    .feature-btn svg {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .feature-btn span {
+        font-size: 13px;
     }
 }

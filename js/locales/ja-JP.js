@@ -121,6 +121,23 @@ window.translations = {
             waveDensity: '波の密度',
             lineSpacing: '線の間隔',
             lineCount: '線の数'
+        },
+        text: {
+            insertTitle: 'テキスト挿入',
+            placeholder: 'ここにテキストを入力',
+            size: 'サイズ',
+            color: '色',
+            font: 'フォント',
+            style: 'スタイル',
+            bold: '太字',
+            italic: '斜体',
+            uploadFont: 'フォントをアップロード',
+            customFonts: 'カスタムフォント',
+            fontUploadSuccess: 'フォントがアップロードされました！',
+            fontExists: 'このフォントは既に存在します。',
+            invalidFontFormat: '無効なフォント形式です。TTF、OTF、WOFF、またはWOFF2ファイルを使用してください。',
+            fontTooLarge: 'フォントファイルが大きすぎます。最大2MBまでです。',
+            storageQuotaExceeded: 'ストレージ容量を超えました。カスタムフォントを削除してください。'
         }
     },
 
@@ -282,7 +299,8 @@ window.translations = {
                 pagination: 'ページネーションボタン',
                 time: '時刻表示',
                 fullscreen: 'フルスクリーンボタン',
-                download: 'ダウンロードボタン'
+                import: 'インポートボタン',
+                export: 'エクスポートボタン'
             },
             controlPosition: 'コントロールボタンの位置',
             controlPositionHint: 'ズームとページネーションコントロールの表示位置を選択',
@@ -431,7 +449,8 @@ window.translations = {
         timer: 'タイマー',
         randomPicker: '抽選器',
         scoreboard: 'スコアボード',
-        insertImage: '画像を挿入'
+        insertImage: '画像を挿入',
+        insertText: 'テキスト挿入'
     },
 
     // Teaching Tools

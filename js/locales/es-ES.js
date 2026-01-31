@@ -119,6 +119,23 @@ window.translations = {
             waveDensity: 'Densidad de ondas',
             lineSpacing: 'Espaciado de líneas',
             lineCount: 'Número de líneas'
+        },
+        text: {
+            insertTitle: 'Insertar texto',
+            placeholder: 'Ingrese el texto aquí',
+            size: 'Tamaño',
+            color: 'Color',
+            font: 'Fuente',
+            style: 'Estilo',
+            bold: 'Negrita',
+            italic: 'Cursiva',
+            uploadFont: 'Cargar fuente',
+            customFonts: 'Fuentes personalizadas',
+            fontUploadSuccess: '¡Fuente cargada exitosamente!',
+            fontExists: 'Esta fuente ya existe.',
+            invalidFontFormat: 'Formato de fuente no válido. Use archivos TTF, OTF, WOFF o WOFF2.',
+            fontTooLarge: 'El archivo de fuente es demasiado grande. El tamaño máximo es 2MB.',
+            storageQuotaExceeded: 'Cuota de almacenamiento excedida. Elimine algunas fuentes personalizadas.'
         }
     },
 
@@ -273,7 +290,8 @@ window.translations = {
                 pagination: 'Botones de paginación',
                 time: 'Visualización de hora',
                 fullscreen: 'Botón de pantalla completa',
-                download: 'Botón de descarga'
+                import: 'Botón de importación',
+                export: 'Botón de exportación'
             },
             controlPosition: 'Posición del botón de control',
             controlPositionHint: 'Elegir dónde mostrar los controles de zoom y paginación',
@@ -440,7 +458,8 @@ window.translations = {
         timer: 'Temporizador',
         randomPicker: 'Selector',
         scoreboard: 'Marcador',
-        insertImage: 'Insertar imagen'
+        insertImage: 'Insertar imagen',
+        insertText: 'Insertar texto'
     },
 
     // Teaching Tools

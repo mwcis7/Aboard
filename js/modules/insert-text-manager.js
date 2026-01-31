@@ -14,8 +14,13 @@ class InsertTextManager {
             text: '',
             fontSize: 48,
             color: '#000000',
-            fontFamily: 'sans-serif'
+            fontFamily: 'sans-serif',
+            bold: false,
+            italic: false
         };
+
+        // Custom fonts storage
+        this.customFonts = this.loadCustomFonts();
 
         this.textPosition = { x: 0, y: 0 };
         this.textRotation = 0;
@@ -38,6 +43,119 @@ class InsertTextManager {
 
         this.createControls();
         this.setupEventListeners();
+        this.loadCustomFontsToDocument();
+    }
+
+    // Load custom fonts from localStorage
+    loadCustomFonts() {
+        const saved = localStorage.getItem('customFonts');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.warn('Failed to load custom fonts:', e);
+            }
+        }
+        return [];
+    }
+
+    // Save custom fonts to localStorage
+    saveCustomFonts() {
+        try {
+            localStorage.setItem('customFonts', JSON.stringify(this.customFonts));
+        } catch (e) {
+            // Handle storage quota exceeded
+            const msg = window.i18n ? window.i18n.t('tools.text.storageQuotaExceeded') : 'Storage quota exceeded. Please delete some custom fonts.';
+            if (window.toastManager) {
+                window.toastManager.show(msg, 'error');
+            }
+            console.warn('Failed to save custom fonts to localStorage:', e);
+        }
+    }
+
+    // Load custom fonts into the document
+    loadCustomFontsToDocument() {
+        const loadPromises = this.customFonts.map(font => {
+            return this.addFontToDocument(font.name, font.data);
+        });
+        return Promise.all(loadPromises);
+    }
+
+    // Add a font to the document
+    addFontToDocument(name, data) {
+        const fontFace = new FontFace(name, `url(${data})`);
+        return fontFace.load().then(loadedFace => {
+            document.fonts.add(loadedFace);
+            return loadedFace;
+        }).catch(err => {
+            console.warn(`Failed to load custom font ${name}:`, err);
+            return null;
+        });
+    }
+
+    // Handle font file upload
+    handleFontUpload(file) {
+        if (!file) return;
+        
+        // Check file size (limit to 2MB to avoid localStorage issues)
+        const maxSize = 2 * 1024 * 1024; // 2MB
+        if (file.size > maxSize) {
+            const msg = window.i18n ? window.i18n.t('tools.text.fontTooLarge') : 'Font file is too large. Maximum size is 2MB.';
+            if (window.toastManager) {
+                window.toastManager.show(msg, 'error');
+            } else {
+                alert(msg);
+            }
+            return;
+        }
+        
+        const extension = file.name.split('.').pop().toLowerCase();
+        const validExtensions = ['ttf', 'otf', 'woff', 'woff2'];
+        
+        if (!validExtensions.includes(extension)) {
+            const msg = window.i18n ? window.i18n.t('tools.text.invalidFontFormat') : 'Invalid font format. Please use TTF, OTF, WOFF, or WOFF2 files.';
+            if (window.toastManager) {
+                window.toastManager.show(msg, 'error');
+            } else {
+                alert(msg);
+            }
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const fontData = e.target.result;
+            // Extract font name by removing the extension (handle multiple dots in filename)
+            const lastDotIndex = file.name.lastIndexOf('.');
+            const fontName = lastDotIndex > 0 ? file.name.substring(0, lastDotIndex) : file.name;
+            
+            // Check if font already exists
+            const exists = this.customFonts.find(f => f.name === fontName);
+            if (!exists) {
+                this.customFonts.push({ name: fontName, data: fontData });
+                this.saveCustomFonts();
+                this.addFontToDocument(fontName, fontData);
+                this.populateFonts();
+                
+                // Select the newly uploaded font
+                const select = document.getElementById('insert-text-font-select');
+                if (select) {
+                    select.value = fontName;
+                    this.textConfig.fontFamily = fontName;
+                }
+                
+                const msg = window.i18n ? window.i18n.t('tools.text.fontUploadSuccess') : 'Font uploaded successfully!';
+                if (window.toastManager) {
+                    window.toastManager.show(msg, 'success');
+                }
+            } else {
+                const msg = window.i18n ? window.i18n.t('tools.text.fontExists') : 'This font already exists.';
+                if (window.toastManager) {
+                    window.toastManager.show(msg, 'warning');
+                }
+            }
+        };
+        reader.readAsDataURL(file);
     }
 
     createControls() {
@@ -61,33 +179,62 @@ class InsertTextManager {
                         <div class="text-input-controls">
                             <div class="text-control-group">
                                 <label data-i18n="tools.text.font">Font</label>
-                                <select id="insert-text-font-select" class="format-select">
-                                    <option value="sans-serif">Sans Serif</option>
-                                    <option value="serif">Serif</option>
-                                    <option value="monospace">Monospace</option>
-                                    <option value="cursive">Cursive</option>
-                                </select>
+                                <div class="font-selection-row">
+                                    <select id="insert-text-font-select" class="format-select" aria-label="Font selection">
+                                        <option value="sans-serif">Sans Serif</option>
+                                        <option value="serif">Serif</option>
+                                        <option value="monospace">Monospace</option>
+                                        <option value="cursive">Cursive</option>
+                                    </select>
+                                    <label class="font-upload-btn" for="insert-text-font-upload" data-i18n-title="tools.text.uploadFont" aria-label="Upload custom font">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="17 8 12 3 7 8"></polyline>
+                                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                                        </svg>
+                                        <input type="file" id="insert-text-font-upload" accept=".ttf,.otf,.woff,.woff2" style="display: none;" aria-label="Upload font file">
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="text-control-group">
+                                <label data-i18n="tools.text.style">Style</label>
+                                <div class="text-style-buttons">
+                                    <button id="insert-text-bold-btn" class="text-style-btn" data-i18n-title="tools.text.bold" aria-label="Bold" aria-pressed="false">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                            <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                                            <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
+                                        </svg>
+                                    </button>
+                                    <button id="insert-text-italic-btn" class="text-style-btn" data-i18n-title="tools.text.italic" aria-label="Italic" aria-pressed="false">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="19" y1="4" x2="10" y2="4"></line>
+                                            <line x1="14" y1="20" x2="5" y2="20"></line>
+                                            <line x1="15" y1="4" x2="9" y2="20"></line>
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
 
                             <div class="text-control-group">
                                 <label><span data-i18n="tools.text.size">Size</span>: <span id="insert-text-size-value">48</span>px</label>
-                                <input type="range" id="insert-text-size-slider" min="12" max="200" value="48" class="slider">
+                                <input type="range" id="insert-text-size-slider" min="12" max="200" value="48" class="slider touch-friendly-slider">
                             </div>
 
                             <div class="text-control-group">
                                 <label data-i18n="tools.text.color">Color</label>
                                 <div class="color-picker-row">
                                     <div class="color-picker-main">
-                                        <button class="color-btn active" data-text-color="#000000" style="background-color: #000000;"></button>
-                                        <button class="color-btn" data-text-color="#FF0000" style="background-color: #FF0000;"></button>
-                                        <button class="color-btn" data-text-color="#0000FF" style="background-color: #0000FF;"></button>
-                                        <button class="color-btn" data-text-color="#008000" style="background-color: #008000;"></button>
+                                        <button class="color-btn active touch-target" data-text-color="#000000" style="background-color: #000000;"></button>
+                                        <button class="color-btn touch-target" data-text-color="#FF0000" style="background-color: #FF0000;"></button>
+                                        <button class="color-btn touch-target" data-text-color="#0000FF" style="background-color: #0000FF;"></button>
+                                        <button class="color-btn touch-target" data-text-color="#008000" style="background-color: #008000;"></button>
                                     </div>
                                     <div class="color-picker-main">
-                                        <button class="color-btn" data-text-color="#FFA500" style="background-color: #FFA500;"></button>
-                                        <button class="color-btn" data-text-color="#800080" style="background-color: #800080;"></button>
-                                        <button class="color-btn" data-text-color="#FFC0CB" style="background-color: #FFC0CB;"></button>
-                                        <label class="color-picker-icon-btn" for="insert-text-custom-color">
+                                        <button class="color-btn touch-target" data-text-color="#FFA500" style="background-color: #FFA500;"></button>
+                                        <button class="color-btn touch-target" data-text-color="#800080" style="background-color: #800080;"></button>
+                                        <button class="color-btn touch-target" data-text-color="#FFC0CB" style="background-color: #FFC0CB;"></button>
+                                        <label class="color-picker-icon-btn touch-target" for="insert-text-custom-color">
                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                 <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
                                                 <polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon>
@@ -100,8 +247,8 @@ class InsertTextManager {
                         </div>
 
                         <div class="text-input-buttons">
-                            <button id="insert-text-modal-cancel-btn" class="confirm-btn cancel-btn" data-i18n="common.cancel"></button>
-                            <button id="insert-text-modal-ok-btn" class="confirm-btn ok-btn" data-i18n="common.confirm"></button>
+                            <button id="insert-text-modal-cancel-btn" class="confirm-btn cancel-btn touch-target" data-i18n="common.cancel"></button>
+                            <button id="insert-text-modal-ok-btn" class="confirm-btn ok-btn touch-target" data-i18n="common.confirm"></button>
                         </div>
                     </div>
                 </div>
@@ -190,6 +337,8 @@ class InsertTextManager {
         ];
 
         select.innerHTML = '';
+        
+        // Add system fonts
         fonts.forEach(font => {
             const option = document.createElement('option');
             option.value = font.value;
@@ -197,6 +346,21 @@ class InsertTextManager {
             option.textContent = window.i18n ? window.i18n.t(font.label) : font.value;
             select.appendChild(option);
         });
+
+        // Add custom fonts if any
+        if (this.customFonts.length > 0) {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = window.i18n ? window.i18n.t('tools.text.customFonts') : 'Custom Fonts';
+            
+            this.customFonts.forEach(font => {
+                const option = document.createElement('option');
+                option.value = font.name;
+                option.textContent = font.name;
+                optgroup.appendChild(option);
+            });
+            
+            select.appendChild(optgroup);
+        }
     }
 
     setupEventListeners() {
@@ -217,6 +381,36 @@ class InsertTextManager {
         fontSelect.addEventListener('change', (e) => {
             this.textConfig.fontFamily = e.target.value;
         });
+
+        // Font Upload
+        const fontUpload = document.getElementById('insert-text-font-upload');
+        if (fontUpload) {
+            fontUpload.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    this.handleFontUpload(e.target.files[0]);
+                }
+            });
+        }
+
+        // Bold Button
+        const boldBtn = document.getElementById('insert-text-bold-btn');
+        if (boldBtn) {
+            boldBtn.addEventListener('click', () => {
+                this.textConfig.bold = !this.textConfig.bold;
+                boldBtn.classList.toggle('active', this.textConfig.bold);
+                boldBtn.setAttribute('aria-pressed', this.textConfig.bold.toString());
+            });
+        }
+
+        // Italic Button
+        const italicBtn = document.getElementById('insert-text-italic-btn');
+        if (italicBtn) {
+            italicBtn.addEventListener('click', () => {
+                this.textConfig.italic = !this.textConfig.italic;
+                italicBtn.classList.toggle('active', this.textConfig.italic);
+                italicBtn.setAttribute('aria-pressed', this.textConfig.italic.toString());
+            });
+        }
 
         // Color Picking
         document.querySelectorAll('#insert-text-modal .color-btn').forEach(btn => {
@@ -313,7 +507,9 @@ class InsertTextManager {
             text: '',
             fontSize: 48,
             color: '#000000',
-            fontFamily: 'sans-serif'
+            fontFamily: 'sans-serif',
+            bold: false,
+            italic: false
         };
         // Reset slider
         document.getElementById('insert-text-size-slider').value = 48;
@@ -323,6 +519,12 @@ class InsertTextManager {
         // Reset font
         const fontSelect = document.getElementById('insert-text-font-select');
         if (fontSelect) fontSelect.value = 'sans-serif';
+
+        // Reset bold/italic buttons
+        const boldBtn = document.getElementById('insert-text-bold-btn');
+        const italicBtn = document.getElementById('insert-text-italic-btn');
+        if (boldBtn) boldBtn.classList.remove('active');
+        if (italicBtn) italicBtn.classList.remove('active');
 
         // Reset active color to black
         document.querySelectorAll('#insert-text-modal .color-btn').forEach(b => b.classList.remove('active'));
@@ -345,6 +547,12 @@ class InsertTextManager {
             document.getElementById('insert-text-size-slider').value = this.textConfig.fontSize;
             document.getElementById('insert-text-size-value').textContent = this.textConfig.fontSize;
             document.getElementById('insert-text-font-select').value = this.textConfig.fontFamily;
+            
+            // Restore bold/italic states
+            const boldBtn = document.getElementById('insert-text-bold-btn');
+            const italicBtn = document.getElementById('insert-text-italic-btn');
+            if (boldBtn) boldBtn.classList.toggle('active', this.textConfig.bold);
+            if (italicBtn) italicBtn.classList.toggle('active', this.textConfig.italic);
         }
 
         input.focus();
@@ -418,6 +626,8 @@ class InsertTextManager {
         this.textContentDiv.style.fontSize = `${this.textConfig.fontSize * this.textScale * scaleX}px`; // Apply zoom scale to font
         this.textContentDiv.style.color = this.textConfig.color;
         this.textContentDiv.style.fontFamily = this.textConfig.fontFamily;
+        this.textContentDiv.style.fontWeight = this.textConfig.bold ? 'bold' : 'normal';
+        this.textContentDiv.style.fontStyle = this.textConfig.italic ? 'italic' : 'normal';
         this.textContentDiv.textContent = this.textConfig.text;
 
         this.controlBox.style.transform = `rotate(${this.textRotation}deg)`;
@@ -432,7 +642,9 @@ class InsertTextManager {
         this.ctx.save();
 
         const fontSize = this.textConfig.fontSize * this.textScale;
-        this.ctx.font = `${fontSize}px ${this.textConfig.fontFamily}`;
+        const fontStyle = this.textConfig.italic ? 'italic' : 'normal';
+        const fontWeight = this.textConfig.bold ? 'bold' : 'normal';
+        this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${this.textConfig.fontFamily}`;
         this.ctx.textBaseline = 'top';
         this.ctx.fillStyle = this.textConfig.color;
 

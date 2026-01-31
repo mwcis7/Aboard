@@ -21,7 +21,9 @@ window.translations = {
         reset: 'Reset',
         start: 'Start',
         stop: 'Stop',
-        preview: 'Preview'
+        preview: 'Preview',
+        settings: 'Settings',
+        dragToMove: 'Drag to move'
     },
 
     // Recovery dialog
@@ -131,7 +133,17 @@ window.translations = {
             placeholder: 'Enter text here',
             size: 'Size',
             color: 'Color',
-            font: 'Font'
+            font: 'Font',
+            style: 'Style',
+            bold: 'Bold',
+            italic: 'Italic',
+            uploadFont: 'Upload Font',
+            customFonts: 'Custom Fonts',
+            fontUploadSuccess: 'Font uploaded successfully!',
+            fontExists: 'This font already exists.',
+            invalidFontFormat: 'Invalid font format. Please use TTF, OTF, WOFF, or WOFF2 files.',
+            fontTooLarge: 'Font file is too large. Maximum size is 2MB.',
+            storageQuotaExceeded: 'Storage quota exceeded. Please delete some custom fonts.'
         }
     },
 
@@ -246,6 +258,8 @@ window.translations = {
             configScale: 'Config Panel Size',
             configScaleLabel: 'Config Panel Size: Current',
             configScaleHint: 'Adjust properties panel size',
+            showToolbarText: 'Show Toolbar Text',
+            showToolbarTextHint: 'Whether to show text labels on toolbar buttons',
             themeColorHint: 'Color of toolbar when selected',
             colorOptions: {
                 blue: 'Blue',
@@ -305,13 +319,14 @@ window.translations = {
             },
             // Control button settings
             controlButtonSettings: 'Control Button Settings',
-            controlButtonSettingsHint: 'Select control buttons to display',
+            controlButtonSettingsHint: 'Select control buttons to display, drag to reorder',
             controlButtons: {
                 zoom: 'Zoom Buttons',
                 pagination: 'Pagination Buttons',
                 time: 'Time Display',
                 fullscreen: 'Fullscreen Button',
-                download: 'Download Button'
+                import: 'Import Button',
+                export: 'Export Button'
             },
             controlPosition: 'Control Position',
             controlPositionHint: 'Position of zoom and pagination controls',
@@ -424,7 +439,6 @@ window.translations = {
         },
         more: {
             title: 'More Settings',
-            description: 'For time display settings, click the time area in the bottom-right corner',
             showTimeDisplay: 'Show Date & Time',
             showTimeDisplayHint: 'Display current date and time in top-right corner'
         },
@@ -566,6 +580,8 @@ window.translations = {
         fullscreenFontSizeLabel: 'Fullscreen Font Size: Current',
         fullscreenFontSizeHint: 'Adjust fullscreen font size (10%-85%)',
         fullscreenSliderLabel: 'Font Size (10%-85%)',
+        titleFontSize: 'Title/Date Font Size',
+        timeFontSize: 'Time Font Size',
         customColor: 'Custom Color',
         transparent: 'Transparent',
         fullscreenDisabled: 'Disabled',
@@ -589,6 +605,8 @@ window.translations = {
         titlePlaceholder: 'e.g., Presentation, Exam, etc.',
         setTime: 'Set Time',
         setStartTime: 'Set Start Time',
+        titleFontSize: 'Title Font Size',
+        timeFontSize: 'Time Font Size',
         fontSettings: 'Font Settings',
         fontSize: 'Font Size',
         fontSizeLabel: 'Font Size: Current',

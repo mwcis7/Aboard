@@ -349,6 +349,10 @@
 
     <!-- Time Display Area (independent, draggable, with edge snapping) -->
     <div id="time-display-area">
+        <!-- Drag handle for time display area -->
+        <div class="panel-drag-handle" data-i18n-title="common.dragToMove">
+            <span class="drag-handle-dots">⋮⋮</span>
+        </div>
         <!-- Close button for time display area -->
         <button id="time-display-area-close-btn" class="config-close-btn">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -578,18 +582,28 @@
                         <div class="settings-group">
                             <label data-i18n="settings.general.globalFont">全局字体</label>
                             <p class="settings-hint" data-i18n="settings.general.globalFontHint">选择应用程序使用的字体</p>
-                            <select id="global-font-select" class="format-select">
-                                <option value="system">系统默认</option>
-                                <option value="serif">宋体（衬线体）</option>
-                                <option value="sans-serif">黑体（无衬线体）</option>
-                                <option value="monospace">等宽字体</option>
-                                <option value="cursive">手写体</option>
-                                <option value="Microsoft YaHei">微软雅黑</option>
-                                <option value="SimSun">宋体</option>
-                                <option value="SimHei">黑体</option>
-                                <option value="KaiTi">楷体</option>
-                                <option value="FangSong">仿宋</option>
-                            </select>
+                            <div class="font-selection-row">
+                                <select id="global-font-select" class="format-select" style="flex: 1;">
+                                    <option value="system">系统默认</option>
+                                    <option value="serif">宋体（衬线体）</option>
+                                    <option value="sans-serif">黑体（无衬线体）</option>
+                                    <option value="monospace">等宽字体</option>
+                                    <option value="cursive">手写体</option>
+                                    <option value="Microsoft YaHei">微软雅黑</option>
+                                    <option value="SimSun">宋体</option>
+                                    <option value="SimHei">黑体</option>
+                                    <option value="KaiTi">楷体</option>
+                                    <option value="FangSong">仿宋</option>
+                                </select>
+                                <label class="font-upload-btn" for="global-font-upload" role="button" tabindex="0" data-i18n-title="tools.text.uploadFont" aria-label="Upload custom font">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    <input type="file" id="global-font-upload" accept=".ttf,.otf,.woff,.woff2" style="display: none;">
+                                </label>
+                            </div>
                         </div>
                         <div class="settings-group">
                             <label class="checkbox-label">
@@ -662,28 +676,50 @@
                         <!-- Control button settings -->
                         <div class="settings-group">
                             <label data-i18n="settings.general.controlButtonSettings">控制按钮设置</label>
-                            <p class="settings-hint" data-i18n="settings.general.controlButtonSettingsHint">选择要显示的控制按钮</p>
-                            <div class="control-button-settings">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="control-show-zoom" checked>
-                                    <span data-i18n="settings.general.controlButtons.zoom">缩放按钮</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="control-show-pagination" checked>
-                                    <span data-i18n="settings.general.controlButtons.pagination">分页按钮</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="control-show-time" checked>
-                                    <span data-i18n="settings.general.controlButtons.time">时间显示</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="control-show-fullscreen" checked>
-                                    <span data-i18n="settings.general.controlButtons.fullscreen">全屏按钮</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="control-show-download" checked>
-                                    <span data-i18n="settings.general.controlButtons.download">下载按钮</span>
-                                </label>
+                            <p class="settings-hint" data-i18n="settings.general.controlButtonSettingsHint">选择要显示的控制按钮，拖动调整顺序</p>
+                            <div class="control-button-settings" id="control-button-list">
+                                <div class="control-button-item" data-control="zoom" draggable="true">
+                                    <span class="drag-handle">☰</span>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="control-show-zoom" checked>
+                                        <span data-i18n="settings.general.controlButtons.zoom">缩放按钮</span>
+                                    </label>
+                                </div>
+                                <div class="control-button-item" data-control="pagination" draggable="true">
+                                    <span class="drag-handle">☰</span>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="control-show-pagination" checked>
+                                        <span data-i18n="settings.general.controlButtons.pagination">分页按钮</span>
+                                    </label>
+                                </div>
+                                <div class="control-button-item" data-control="time" draggable="true">
+                                    <span class="drag-handle">☰</span>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="control-show-time" checked>
+                                        <span data-i18n="settings.general.controlButtons.time">时间显示</span>
+                                    </label>
+                                </div>
+                                <div class="control-button-item" data-control="fullscreen" draggable="true">
+                                    <span class="drag-handle">☰</span>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="control-show-fullscreen" checked>
+                                        <span data-i18n="settings.general.controlButtons.fullscreen">全屏按钮</span>
+                                    </label>
+                                </div>
+                                <div class="control-button-item" data-control="import" draggable="true">
+                                    <span class="drag-handle">☰</span>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="control-show-import" checked>
+                                        <span data-i18n="settings.general.controlButtons.import">导入按钮</span>
+                                    </label>
+                                </div>
+                                <div class="control-button-item" data-control="export" draggable="true">
+                                    <span class="drag-handle">☰</span>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="control-show-export" checked>
+                                        <span data-i18n="settings.general.controlButtons.export">导出按钮</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                         
@@ -724,20 +760,27 @@
                             <p class="settings-hint" data-i18n="settings.display.showFullscreenBtnHint">勾选后，在缩放控件旁显示全屏按钮</p>
                         </div>
                         <div class="settings-group">
-                            <label><span data-i18n="settings.display.toolbarSizeLabel">工具栏大小：当前</span> <span id="toolbar-size-value">40</span>px</label>
+                            <label><span data-i18n="settings.display.toolbarSizeLabel">工具栏大小：当前</span> <span id="toolbar-size-value">65</span>px</label>
                             <p class="settings-hint" data-i18n="settings.display.toolbarSizeHint">调整底部工具栏的大小</p>
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <input type="range" id="toolbar-size-slider" min="40" max="80" value="40" class="slider" step="5" style="flex: 1;">
-                                <input type="number" id="toolbar-size-input" min="40" max="80" value="40" step="5" style="width: 60px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
+                                <input type="range" id="toolbar-size-slider" min="30" max="100" value="65" class="slider" step="5" style="flex: 1;">
+                                <input type="number" id="toolbar-size-input" min="30" max="100" value="50" step="5" style="width: 60px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
                             </div>
                         </div>
                         <div class="settings-group">
                             <label><span data-i18n="settings.display.configScaleLabel">属性栏大小：当前</span> <span id="config-scale-value">100</span>%</label>
                             <p class="settings-hint" data-i18n="settings.display.configScaleHint">调整弹出具体属性面板的大小</p>
                             <div style="display: flex; gap: 10px; align-items: center;">
-                                <input type="range" id="config-scale-slider" min="80" max="120" value="100" class="slider" step="10" style="flex: 1;">
-                                <input type="number" id="config-scale-input" min="80" max="120" value="100" step="10" style="width: 60px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
+                                <input type="range" id="config-scale-slider" min="50" max="150" value="100" class="slider" step="5" style="flex: 1;">
+                                <input type="number" id="config-scale-input" min="50" max="150" value="100" step="5" style="width: 60px; padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center;">
                             </div>
+                        </div>
+                        <div class="settings-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="show-toolbar-text-checkbox" checked>
+                                <span data-i18n="settings.display.showToolbarText">显示工具栏文字</span>
+                            </label>
+                            <p class="settings-hint" data-i18n="settings.display.showToolbarTextHint">是否在工具栏按钮中显示文字标签</p>
                         </div>
                         <div class="settings-group">
                             <label data-i18n="settings.display.themeColor">主题色</label>
@@ -922,7 +965,7 @@
                             
                             <div class="about-section">
                                 <h4 data-i18n="settings.about.version">版本</h4>
-                                <p>v2.1.0</p>
+                                <p>v2.2.0</p>
                             </div>
                         </div>
                     </div>
@@ -938,8 +981,6 @@
                     <!-- More settings -->
                     <div id="more-settings" class="settings-tab-content">
                         <h3 data-i18n="settings.more.title">更多设置</h3>
-                        <p class="settings-hint" style="margin-bottom: 16px;" data-i18n="settings.more.description">时间显示相关设置请点击右下角时间区域进入设置界面</p>
-
                         <!-- Configuration Export/Import -->
                         <div class="settings-group">
                             <label>配置管理</label>
@@ -1154,31 +1195,63 @@
 
     <!-- Fullscreen Time Display Modal -->
     <div id="time-fullscreen-modal" class="time-fullscreen-modal">
-        <button id="time-fullscreen-close-btn" class="time-fullscreen-close-btn">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-        </button>
         <div id="time-fullscreen-content"></div>
-        <div class="time-fullscreen-controls">
-            <div class="time-fullscreen-slider-label">字体大小调节 (10%-85%)</div>
-            <input type="range" id="time-fullscreen-font-slider" class="time-fullscreen-slider" min="10" max="85" value="15" step="0.5">
+        <div class="fullscreen-bottom-controls">
+            <div class="fullscreen-settings-panel" id="time-fullscreen-settings-panel" style="display: none;">
+                <div class="fullscreen-slider-group">
+                    <label data-i18n="timeDisplay.titleFontSize">标题字体大小</label>
+                    <input type="range" id="time-fullscreen-title-font-slider" class="fullscreen-slider" min="2" max="20" value="5" step="0.5">
+                </div>
+                <div class="fullscreen-slider-group">
+                    <label data-i18n="timeDisplay.timeFontSize">时间字体大小</label>
+                    <input type="range" id="time-fullscreen-font-slider" class="fullscreen-slider" min="10" max="85" value="15" step="0.5">
+                </div>
+            </div>
+            <div class="fullscreen-button-row">
+                <button id="time-fullscreen-settings-btn" class="fullscreen-control-btn" data-i18n-title="common.settings">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6M5.6 5.6l4.2 4.2m4.2 4.2l4.2 4.2M1 12h6m6 0h6M5.6 18.4l4.2-4.2m4.2-4.2l4.2-4.2"></path>
+                    </svg>
+                </button>
+                <button id="time-fullscreen-close-btn" class="fullscreen-control-btn fullscreen-close-btn" data-i18n-title="common.close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- Fullscreen Timer Display Modal -->
     <div id="timer-fullscreen-modal" class="timer-fullscreen-modal">
-        <button id="timer-fullscreen-close-btn" class="timer-fullscreen-close-btn">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-        </button>
         <div id="timer-fullscreen-content"></div>
-        <div class="timer-fullscreen-controls">
-            <div class="timer-fullscreen-slider-label">字体大小调节 (10%-85%)</div>
-            <input type="range" id="timer-fullscreen-font-slider" class="timer-fullscreen-slider" min="10" max="85" value="15" step="0.5">
+        <div class="fullscreen-bottom-controls">
+            <div class="fullscreen-settings-panel" id="timer-fullscreen-settings-panel" style="display: none;">
+                <div class="fullscreen-slider-group">
+                    <label data-i18n="timer.titleFontSize">标题字体大小</label>
+                    <input type="range" id="timer-fullscreen-title-font-slider" class="fullscreen-slider" min="2" max="20" value="5" step="0.5">
+                </div>
+                <div class="fullscreen-slider-group">
+                    <label data-i18n="timer.timeFontSize">时间字体大小</label>
+                    <input type="range" id="timer-fullscreen-font-slider" class="fullscreen-slider" min="10" max="85" value="15" step="0.5">
+                </div>
+            </div>
+            <div class="fullscreen-button-row">
+                <button id="timer-fullscreen-settings-btn" class="fullscreen-control-btn" data-i18n-title="common.settings">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M12 1v6m0 6v6M5.6 5.6l4.2 4.2m4.2 4.2l4.2 4.2M1 12h6m6 0h6M5.6 18.4l4.2-4.2m4.2-4.2l4.2-4.2"></path>
+                    </svg>
+                </button>
+                <button id="timer-fullscreen-close-btn" class="fullscreen-control-btn fullscreen-close-btn" data-i18n-title="common.close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
 

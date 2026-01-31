@@ -130,7 +130,17 @@ window.translations = {
             placeholder: '在此輸入文字',
             size: '大小',
             color: '顏色',
-            font: '字體'
+            font: '字體',
+            style: '樣式',
+            bold: '粗體',
+            italic: '斜體',
+            uploadFont: '上傳字體',
+            customFonts: '自訂字體',
+            fontUploadSuccess: '字體上傳成功！',
+            fontExists: '該字體已存在。',
+            invalidFontFormat: '無效的字體格式。請使用 TTF、OTF、WOFF 或 WOFF2 檔案。',
+            fontTooLarge: '字體檔案過大，最大允許 2MB。',
+            storageQuotaExceeded: '儲存空間不足，請刪除一些自訂字體。'
         }
     },
 
@@ -313,7 +323,8 @@ window.translations = {
                 pagination: '分頁按鈕',
                 time: '時間顯示',
                 fullscreen: '全螢幕按鈕',
-                download: '下載按鈕'
+                import: '匯入按鈕',
+                export: '匯出按鈕'
             },
             controlPosition: '控制按鈕位置',
             controlPositionHint: '選擇縮放和分頁控件在屏幕上的顯示位置',

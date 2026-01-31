@@ -121,6 +121,23 @@ window.translations = {
             waveDensity: 'Wellendichte',
             lineSpacing: 'Linienabstand',
             lineCount: 'Linienanzahl'
+        },
+        text: {
+            insertTitle: 'Text einfügen',
+            placeholder: 'Text hier eingeben',
+            size: 'Größe',
+            color: 'Farbe',
+            font: 'Schriftart',
+            style: 'Stil',
+            bold: 'Fett',
+            italic: 'Kursiv',
+            uploadFont: 'Schriftart hochladen',
+            customFonts: 'Benutzerdefinierte Schriftarten',
+            fontUploadSuccess: 'Schriftart erfolgreich hochgeladen!',
+            fontExists: 'Diese Schriftart existiert bereits.',
+            invalidFontFormat: 'Ungültiges Schriftartformat. Bitte verwenden Sie TTF-, OTF-, WOFF- oder WOFF2-Dateien.',
+            fontTooLarge: 'Die Schriftartdatei ist zu groß. Maximale Größe beträgt 2MB.',
+            storageQuotaExceeded: 'Speicherplatz überschritten. Bitte löschen Sie einige benutzerdefinierte Schriftarten.'
         }
     },
 
@@ -275,7 +292,8 @@ window.translations = {
                 pagination: 'Seitennummerierung-Tasten',
                 time: 'Zeitanzeige',
                 fullscreen: 'Vollbild-Taste',
-                download: 'Download-Taste'
+                import: 'Import-Taste',
+                export: 'Export-Taste'
             },
             controlPosition: 'Position der Steuerungstasten',
             controlPositionHint: 'Wählen Sie die Position der Zoom- und Seitensteuerung',
@@ -329,16 +347,13 @@ window.translations = {
             title: 'Hintergrundeinstellungen',
             opacity: 'Hintergrunddeckkraft',
             opacityLabel: 'Hintergrunddeckkraft: Aktuell',
-        opacityHint: 'Hintergrundtransparenz anpassen, 100% ist vollständig undurchsichtig',
-        contrast: 'Kontrast',
-        contrastLabel: 'Mustertransparenz: Aktuell',
             opacityHint: 'Hintergrundtransparenz anpassen, 100% ist vollständig undurchsichtig',
             patternIntensity: 'Musterintensität',
             patternIntensityLabel: 'Mustertransparenz: Aktuell',
             patternIntensityHint: 'Helligkeit der Hintergrundmusterlinien anpassen',
             preference: 'Hintergrundmusterpräferenz',
             preferenceHint: 'Wählen Sie die im Konfigurationspanel anzuzeigenden Muster',
-        upload: 'Hochladen'
+            upload: 'Hochladen'
         },
         announcement: {
             title: 'Ankündigung',
@@ -451,7 +466,8 @@ window.translations = {
         timer: 'Timer',
         randomPicker: 'Auswahl',
         scoreboard: 'Punktetafel',
-        insertImage: 'Bild einfügen'
+        insertImage: 'Bild einfügen',
+        insertText: 'Text einfügen'
     },
 
     // Teaching Tools
@@ -524,16 +540,10 @@ window.translations = {
         titlePlaceholder: 'Timer-Titel eingeben',
         setTime: 'Zeit einstellen',
         setStartTime: 'Startzeit einstellen',
-        hours: 'Stunden',
-        minutes: 'Minuten',
-        seconds: 'Sekunden',
-        title: 'Titel',
-        titlePlaceholder: 'Timer-Titel eingeben',
         fontSettings: 'Schrifteinstellungen',
         fontSize: 'Schriftgröße',
         fontSizeLabel: 'Schriftgröße: Aktuell',
         fontSizeHint: 'Schriftgröße der Zeitanzeige anpassen',
-        fontSizeLabel: 'Schriftgröße: Aktuell',
         adjustColor: 'Farbe anpassen',
         colorSettings: 'Farbeinstellungen',
         colorSettingsHint: 'Schriftart und Hintergrundfarbe für Zeitanzeige festlegen',

@@ -373,6 +373,10 @@ class DrawingBoard {
                     return;
                 }
                 this.drawingEngine.startDrawing(e);
+                // Show eraser cursor only when actually erasing on canvas
+                if (this.drawingEngine.currentTool === 'eraser') {
+                    this.showEraserCursor();
+                }
             }
         });
         
@@ -446,6 +450,10 @@ class DrawingBoard {
             this.stopDraggingCoordinateOrigin();
             this.handleDrawingComplete();
             this.drawingEngine.stopPanning();
+            // Hide eraser cursor when erasing stops
+            if (this.drawingEngine.currentTool === 'eraser') {
+                this.hideEraserCursor();
+            }
         });
         
         document.addEventListener('pointercancel', (e) => {
@@ -457,6 +465,10 @@ class DrawingBoard {
                 if (this.isPinching && this.activePointers.size < 2) {
                     this.handlePointerPinchEnd();
                 }
+            }
+            // Hide eraser cursor when pointer is cancelled
+            if (this.drawingEngine.currentTool === 'eraser') {
+                this.hideEraserCursor();
             }
         });
         
@@ -479,16 +491,15 @@ class DrawingBoard {
         });
         
         this.canvas.addEventListener('mouseenter', (e) => {
-            if (this.drawingEngine.currentTool === 'eraser') {
+            // Only show eraser cursor when actively erasing (mouse button down)
+            if (this.drawingEngine.currentTool === 'eraser' && this.drawingEngine.isDrawing) {
                 this.showEraserCursor();
             }
         });
         
         this.canvas.addEventListener('mouseleave', () => {
-            // Don't hide eraser cursor if we're still drawing
-            if (!this.drawingEngine.isDrawing) {
-                this.hideEraserCursor();
-            }
+            // Hide eraser cursor when leaving canvas
+            this.hideEraserCursor();
         });
         
         // Touch events - Only for gestures (Pinch Zoom)
@@ -1334,7 +1345,7 @@ class DrawingBoard {
             this.settingsManager.updateToolbarSize();
         });
         toolbarSizeInput.addEventListener('input', (e) => {
-            const value = Math.max(40, Math.min(80, parseInt(e.target.value) || 40));
+            const value = Math.max(30, Math.min(100, parseInt(e.target.value) || 40));
             e.target.value = value;
             toolbarSizeSlider.value = value;
             this.settingsManager.toolbarSize = value;
@@ -1352,7 +1363,7 @@ class DrawingBoard {
             this.settingsManager.updateConfigScale();
         });
         configScaleInput.addEventListener('input', (e) => {
-            const value = Math.max(80, Math.min(120, parseInt(e.target.value) || 100));
+            const value = Math.max(50, Math.min(150, parseInt(e.target.value) || 100));
             e.target.value = value;
             configScaleSlider.value = value;
             this.settingsManager.configScale = value / 100;
@@ -1419,6 +1430,19 @@ class DrawingBoard {
         document.getElementById('global-font-select').addEventListener('change', (e) => {
             this.settingsManager.setGlobalFont(e.target.value);
         });
+        
+        // Global font upload
+        const globalFontUpload = document.getElementById('global-font-upload');
+        if (globalFontUpload) {
+            globalFontUpload.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    this.settingsManager.handleFontUpload(e.target.files[0]);
+                }
+            });
+        }
+        
+        // Populate custom fonts on load
+        this.settingsManager.populateGlobalFontSelect();
         
         // Canvas mode buttons removed - pagination is always active
         
@@ -1507,6 +1531,14 @@ class DrawingBoard {
             localStorage.setItem('showFullscreenBtn', e.target.checked);
             this.updateFullscreenBtnVisibility();
         });
+        
+        // Show/hide toolbar text
+        const showToolbarTextCheckbox = document.getElementById('show-toolbar-text-checkbox');
+        if (showToolbarTextCheckbox) {
+            showToolbarTextCheckbox.addEventListener('change', (e) => {
+                this.settingsManager.setShowToolbarText(e.target.checked);
+            });
+        }
         
         // Toolbar customization handlers
         this.initToolbarCustomization();
@@ -1910,6 +1942,7 @@ class DrawingBoard {
         // Ensure all toolbars and panels stay within viewport after window resize
         const EDGE_SPACING = 10; // Minimum spacing from viewport edges
         const panels = [
+            document.getElementById('toolbar'),
             document.getElementById('history-controls'),
             document.getElementById('config-area'),
             document.getElementById('time-display-area'),
@@ -1931,7 +1964,10 @@ class DrawingBoard {
             let bottom = computedStyle.bottom;
             
             // Check if panel has been dragged (has explicit positioning)
-            const hasCenteredPosition = left === '50%' || computedStyle.transform.includes('translateX');
+            // Include both translateX (horizontal centering) and translateY (vertical centering) checks
+            const hasCenteredPosition = left === '50%' || 
+                                        computedStyle.transform.includes('translateX') || 
+                                        computedStyle.transform.includes('translateY');
             const hasExplicitPosition = !hasCenteredPosition && (left !== 'auto' || top !== 'auto' || right !== 'auto' || bottom !== 'auto');
             
             // Skip panels that are centered and haven't been dragged
@@ -2026,10 +2062,15 @@ class DrawingBoard {
         const timeDisplayArea = document.getElementById('time-display-area');
         const featureArea = document.getElementById('feature-area');
         const toolbar = document.getElementById('toolbar');
+        const paginationControls = document.getElementById('pagination-controls');
         
         // Unified start handler for mouse and touch events
         const handleDragStart = (e, element) => {
-            if (e.target.closest('button') || e.target.closest('input')) return;
+            // Always allow dragging from the drag handle
+            const isDragHandle = e.target.closest('.panel-drag-handle');
+            
+            // Block drag if clicking on interactive elements (unless it's a drag handle)
+            if (!isDragHandle && (e.target.closest('button') || e.target.closest('input'))) return;
             
             e.stopPropagation(); // Prevent drawing on canvas
 
@@ -2040,6 +2081,8 @@ class DrawingBoard {
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             
+            // Calculate offset in scaled coordinates (what we see on screen)
+            // getBoundingClientRect returns already-scaled dimensions
             this.dragOffset.x = clientX - rect.left;
             this.dragOffset.y = clientY - rect.top;
             
@@ -2052,7 +2095,7 @@ class DrawingBoard {
             e.preventDefault();
         };
         
-        [historyControls, configArea, timeDisplayArea, featureArea, toolbar].forEach(element => {
+        [historyControls, configArea, timeDisplayArea, featureArea, toolbar, paginationControls].filter(Boolean).forEach(element => {
             // Mouse events
             element.addEventListener('mousedown', (e) => handleDragStart(e, element));
             // Touch events - improve compatibility with large-screen touch devices
@@ -2167,7 +2210,15 @@ class DrawingBoard {
             
             this.draggedElement.style.left = `${x}px`;
             this.draggedElement.style.top = `${y}px`;
-            this.draggedElement.style.transform = 'none';
+            // For config-area, preserve the scale transform while dragging
+            // Use transform-origin: top left to prevent position jump due to scaling
+            if (this.draggedElement.id === 'config-area') {
+                const scale = this.settingsManager.configScale || 1;
+                this.draggedElement.style.transformOrigin = 'top left';
+                this.draggedElement.style.transform = `scale(${scale})`;
+            } else {
+                this.draggedElement.style.transform = 'none';
+            }
             this.draggedElement.style.right = 'auto';
             this.draggedElement.style.bottom = 'auto';
         };
@@ -2181,6 +2232,11 @@ class DrawingBoard {
                 // Mark toolbar as user-positioned to prevent auto-repositioning
                 if (this.draggedElement.id === 'toolbar') {
                     this.draggedElement.classList.add('user-positioned');
+                }
+                
+                // Mark config-area as user-dragged to prevent scale reset
+                if (this.draggedElement.id === 'config-area') {
+                    this.draggedElement.dataset.userDragged = 'true';
                 }
                 
                 this.isDraggingPanel = false;
@@ -2219,6 +2275,53 @@ class DrawingBoard {
         this.setTool('pen', false);
     }
     
+    positionConfigArea() {
+        // Position config-area above the toolbar
+        const configArea = document.getElementById('config-area');
+        const toolbar = document.getElementById('toolbar');
+        
+        // Only position if config-area hasn't been dragged by user
+        if (configArea.dataset.userDragged === 'true') {
+            return;
+        }
+        
+        const toolbarRect = toolbar.getBoundingClientRect();
+        const isVertical = toolbar.classList.contains('vertical');
+        
+        // Reset inline styles first to get proper dimensions
+        configArea.style.left = '';
+        configArea.style.top = '';
+        configArea.style.bottom = '';
+        configArea.style.right = '';
+        configArea.style.transform = '';
+        configArea.style.transformOrigin = '';
+        
+        const scale = this.settingsManager.configScale || 1;
+        
+        if (isVertical) {
+            // Toolbar is on left or right side
+            const toolbarMidY = toolbarRect.top + toolbarRect.height / 2;
+            if (toolbarRect.left < window.innerWidth / 2) {
+                // Toolbar on left side - position config to the right of toolbar
+                configArea.style.left = `${toolbarRect.right + 10}px`;
+            } else {
+                // Toolbar on right side - position config to the left of toolbar
+                configArea.style.right = `${window.innerWidth - toolbarRect.left + 10}px`;
+                configArea.style.left = 'auto';
+            }
+            configArea.style.top = `${toolbarMidY}px`;
+            configArea.style.transformOrigin = 'center center';
+            configArea.style.transform = `translateY(-50%) scale(${scale})`;
+        } else {
+            // Toolbar is horizontal (bottom)
+            configArea.style.left = '50%';
+            configArea.style.bottom = `${window.innerHeight - toolbarRect.top + 10}px`;
+            configArea.style.top = 'auto';
+            configArea.style.transformOrigin = 'center bottom';
+            configArea.style.transform = `translateX(-50%) scale(${scale})`;
+        }
+    }
+    
     positionFeatureArea() {
         // Position feature-area above the "更多" button
         const featureArea = document.getElementById('feature-area');
@@ -2245,9 +2348,8 @@ class DrawingBoard {
         
         // Update drawing engine tool
         this.drawingEngine.setTool(tool);
-        if (tool === 'eraser') {
-            this.showEraserCursor();
-        } else {
+        // Don't show eraser cursor when selecting tool - only show when actually erasing on canvas
+        if (tool !== 'eraser') {
             this.hideEraserCursor();
         }
         
@@ -2261,8 +2363,9 @@ class DrawingBoard {
             if (isSameTool && isConfigVisible) {
                 configArea.classList.remove('show');
             } else {
-                // Show config panel
+                // Show config panel and position it above toolbar
                 configArea.classList.add('show');
+                this.positionConfigArea();
                 // Don't close feature-area when selecting shape - allow multiple panels to be open
                 if (tool !== 'shape') {
                     featureArea.classList.remove('show');
@@ -3144,21 +3247,36 @@ class DrawingBoard {
             pagination: localStorage.getItem('controlShowPagination') !== 'false',
             time: localStorage.getItem('controlShowTime') !== 'false',
             fullscreen: localStorage.getItem('controlShowFullscreen') !== 'false',
-            download: localStorage.getItem('controlShowDownload') !== 'false'
+            import: localStorage.getItem('controlShowImport') !== 'false',
+            export: localStorage.getItem('controlShowExport') !== 'false'
         };
+        
+        // Load saved order
+        const savedOrder = localStorage.getItem('controlButtonOrder');
+        if (savedOrder) {
+            try {
+                const order = JSON.parse(savedOrder);
+                this.reorderControlButtonList(order);
+                this.reorderControlButtons(order);
+            } catch (e) {
+                console.error('Failed to load control button order:', e);
+            }
+        }
         
         // Set checkbox states with null checks
         const zoomCheckbox = document.getElementById('control-show-zoom');
         const paginationCheckbox = document.getElementById('control-show-pagination');
         const timeCheckbox = document.getElementById('control-show-time');
         const fullscreenCheckbox = document.getElementById('control-show-fullscreen');
-        const downloadCheckbox = document.getElementById('control-show-download');
+        const importCheckbox = document.getElementById('control-show-import');
+        const exportCheckbox = document.getElementById('control-show-export');
         
         if (zoomCheckbox) zoomCheckbox.checked = controlSettings.zoom;
         if (paginationCheckbox) paginationCheckbox.checked = controlSettings.pagination;
         if (timeCheckbox) timeCheckbox.checked = controlSettings.time;
         if (fullscreenCheckbox) fullscreenCheckbox.checked = controlSettings.fullscreen;
-        if (downloadCheckbox) downloadCheckbox.checked = controlSettings.download;
+        if (importCheckbox) importCheckbox.checked = controlSettings.import;
+        if (exportCheckbox) exportCheckbox.checked = controlSettings.export;
         
         // Apply initial visibility
         this.applyControlButtonVisibility(controlSettings);
@@ -3192,12 +3310,150 @@ class DrawingBoard {
             });
         }
         
-        if (downloadCheckbox) {
-            downloadCheckbox.addEventListener('change', (e) => {
-                localStorage.setItem('controlShowDownload', e.target.checked);
+        if (importCheckbox) {
+            importCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowImport', e.target.checked);
                 this.applyControlButtonVisibility();
             });
         }
+        
+        if (exportCheckbox) {
+            exportCheckbox.addEventListener('change', (e) => {
+                localStorage.setItem('controlShowExport', e.target.checked);
+                this.applyControlButtonVisibility();
+            });
+        }
+        
+        // Initialize drag-and-drop for control button ordering
+        this.initControlButtonDragDrop();
+    }
+    
+    // Initialize drag-and-drop for control button reordering
+    initControlButtonDragDrop() {
+        const list = document.getElementById('control-button-list');
+        if (!list) return;
+        
+        let draggedItem = null;
+        
+        list.querySelectorAll('.control-button-item').forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                draggedItem = item;
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', item.innerHTML);
+            });
+            
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+                list.querySelectorAll('.control-button-item').forEach(i => {
+                    i.classList.remove('drag-over');
+                });
+                draggedItem = null;
+                
+                // Save the new order
+                this.saveControlButtonOrder();
+            });
+            
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            });
+            
+            item.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                if (item !== draggedItem) {
+                    item.classList.add('drag-over');
+                }
+            });
+            
+            item.addEventListener('dragleave', () => {
+                item.classList.remove('drag-over');
+            });
+            
+            item.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (item !== draggedItem && draggedItem) {
+                    // Swap positions
+                    const allItems = [...list.querySelectorAll('.control-button-item')];
+                    const draggedIndex = allItems.indexOf(draggedItem);
+                    const dropIndex = allItems.indexOf(item);
+                    
+                    if (draggedIndex < dropIndex) {
+                        list.insertBefore(draggedItem, item.nextSibling);
+                    } else {
+                        list.insertBefore(draggedItem, item);
+                    }
+                }
+                item.classList.remove('drag-over');
+            });
+        });
+    }
+    
+    // Save control button order to localStorage
+    saveControlButtonOrder() {
+        const list = document.getElementById('control-button-list');
+        if (!list) return;
+        
+        const order = [...list.querySelectorAll('.control-button-item')]
+            .map(item => item.dataset.control)
+            .filter(control => control !== undefined);
+        localStorage.setItem('controlButtonOrder', JSON.stringify(order));
+        
+        // Apply the order to actual control buttons
+        this.reorderControlButtons(order);
+    }
+    
+    // Reorder the settings list based on saved order
+    reorderControlButtonList(order) {
+        const list = document.getElementById('control-button-list');
+        if (!list || !order) return;
+        
+        order.forEach(controlName => {
+            const item = list.querySelector(`[data-control="${controlName}"]`);
+            if (item) {
+                list.appendChild(item);
+            }
+        });
+    }
+    
+    // Reorder actual control buttons in the UI based on order
+    reorderControlButtons(order) {
+        const controlArea = document.getElementById('history-controls');
+        if (!controlArea || !order) return;
+        
+        // Map control names to their element IDs
+        const controlElements = {
+            zoom: ['zoom-out-btn', 'zoom-input', 'zoom-in-btn'],
+            pagination: ['pagination-controls'],
+            time: ['time-display-area'],
+            fullscreen: ['fullscreen-btn'],
+            import: ['import-project-btn'],
+            export: ['export-btn-top']
+        };
+        
+        // Get all control elements and store them
+        const elements = {};
+        Object.keys(controlElements).forEach(control => {
+            elements[control] = controlElements[control].map(id => document.getElementById(id)).filter(el => el);
+        });
+        
+        // Reorder based on the saved order
+        order.forEach(control => {
+            if (elements[control]) {
+                elements[control].forEach(el => {
+                    controlArea.appendChild(el);
+                });
+            }
+        });
+        
+        // Append any remaining controls that weren't in the order
+        Object.keys(elements).forEach(control => {
+            if (!order.includes(control)) {
+                elements[control].forEach(el => {
+                    controlArea.appendChild(el);
+                });
+            }
+        });
     }
     
     applyControlButtonVisibility(settings) {
@@ -3207,7 +3463,8 @@ class DrawingBoard {
                 pagination: localStorage.getItem('controlShowPagination') !== 'false',
                 time: localStorage.getItem('controlShowTime') !== 'false',
                 fullscreen: localStorage.getItem('controlShowFullscreen') !== 'false',
-                download: localStorage.getItem('controlShowDownload') !== 'false'
+                import: localStorage.getItem('controlShowImport') !== 'false',
+                export: localStorage.getItem('controlShowExport') !== 'false'
             };
         }
         
@@ -3219,21 +3476,40 @@ class DrawingBoard {
         if (zoomInput) zoomInput.style.display = settings.zoom ? 'block' : 'none';
         if (zoomInBtn) zoomInBtn.style.display = settings.zoom ? 'flex' : 'none';
         
-        // Pagination controls
-        const pageControls = document.getElementById('page-controls');
-        if (pageControls) pageControls.style.display = settings.pagination ? 'flex' : 'none';
+        // Pagination controls (correct ID is pagination-controls)
+        const paginationControls = document.getElementById('pagination-controls');
+        if (paginationControls) paginationControls.style.display = settings.pagination ? 'flex' : 'none';
         
-        // Time display
+        // Time display - handle both the time widget and its config area
+        // The main widget uses .show class with !important, so we toggle the class
         const timeDisplay = document.getElementById('time-display');
-        if (timeDisplay) timeDisplay.style.display = settings.time ? 'flex' : 'none';
+        if (timeDisplay) {
+            if (settings.time) {
+                timeDisplay.classList.add('show');
+            } else {
+                timeDisplay.classList.remove('show');
+            }
+        }
+        // Also handle the config area visibility
+        const timeDisplayArea = document.getElementById('time-display-area');
+        if (timeDisplayArea) {
+            if (!settings.time) {
+                timeDisplayArea.style.display = 'none';
+            }
+            // Note: We don't restore display here because the config area is shown/hidden by clicking the time widget
+        }
         
         // Fullscreen button
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         if (fullscreenBtn) fullscreenBtn.style.display = settings.fullscreen ? 'flex' : 'none';
         
-        // Download button
-        const downloadBtn = document.getElementById('download-btn');
-        if (downloadBtn) downloadBtn.style.display = settings.download ? 'flex' : 'none';
+        // Import button
+        const importBtn = document.getElementById('import-project-btn');
+        if (importBtn) importBtn.style.display = settings.import ? 'flex' : 'none';
+        
+        // Export button
+        const exportBtnTop = document.getElementById('export-btn-top');
+        if (exportBtnTop) exportBtnTop.style.display = settings.export ? 'flex' : 'none';
     }
     
     toggleFullscreen() {

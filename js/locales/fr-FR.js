@@ -119,6 +119,23 @@ window.translations = {
             waveDensity: 'Densité des ondes',
             lineSpacing: 'Espacement des lignes',
             lineCount: 'Nombre de lignes'
+        },
+        text: {
+            insertTitle: 'Insérer du texte',
+            placeholder: 'Entrez le texte ici',
+            size: 'Taille',
+            color: 'Couleur',
+            font: 'Police',
+            style: 'Style',
+            bold: 'Gras',
+            italic: 'Italique',
+            uploadFont: 'Télécharger police',
+            customFonts: 'Polices personnalisées',
+            fontUploadSuccess: 'Police téléchargée avec succès !',
+            fontExists: 'Cette police existe déjà.',
+            invalidFontFormat: 'Format de police invalide. Veuillez utiliser des fichiers TTF, OTF, WOFF ou WOFF2.',
+            fontTooLarge: 'Le fichier de police est trop volumineux. La taille maximale est de 2 Mo.',
+            storageQuotaExceeded: 'Quota de stockage dépassé. Veuillez supprimer certaines polices personnalisées.'
         }
     },
 
@@ -273,7 +290,8 @@ window.translations = {
                 pagination: 'Boutons de pagination',
                 time: 'Affichage de l\'heure',
                 fullscreen: 'Bouton plein écran',
-                download: 'Bouton de téléchargement'
+                import: 'Bouton d\'importation',
+                export: 'Bouton d\'exportation'
             },
             controlPosition: 'Position du bouton de contrôle',
             controlPositionHint: 'Choisir où afficher les contrôles de zoom et de pagination',
@@ -440,7 +458,8 @@ window.translations = {
         timer: 'Minuteur',
         randomPicker: 'Sélecteur',
         scoreboard: 'Tableau',
-        insertImage: 'Image'
+        insertImage: 'Image',
+        insertText: 'Texte'
     },
 
     // Teaching Tools
