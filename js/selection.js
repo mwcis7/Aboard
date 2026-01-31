@@ -201,15 +201,18 @@ class SelectionManager {
         });
         
         // Action buttons
-        document.getElementById('selection-copy-btn').addEventListener('click', () => {
+        document.getElementById('selection-copy-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
             this.copySelection();
         });
         
-        document.getElementById('selection-delete-btn').addEventListener('click', () => {
+        document.getElementById('selection-delete-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
             this.deleteSelection();
         });
         
-        document.getElementById('selection-done-btn').addEventListener('click', () => {
+        document.getElementById('selection-done-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
             this.finishSelection();
         });
     }
