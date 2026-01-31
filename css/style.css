@@ -1004,6 +1004,52 @@ button, a, input[type="button"], input[type="submit"] {
     margin-top: 8px;
 }
 
+.control-button-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    cursor: grab;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.control-button-item:active {
+    cursor: grabbing;
+}
+
+.control-button-item.dragging {
+    opacity: 0.5;
+    background: #e3f2fd;
+}
+
+.control-button-item.drag-over {
+    border-color: #4285f4;
+    background: #e8f0fe;
+}
+
+.control-button-item .drag-handle {
+    color: #999;
+    font-size: 14px;
+    padding: 4px 8px;
+    cursor: grab;
+    user-select: none;
+}
+
+.control-button-item .drag-handle:active {
+    cursor: grabbing;
+}
+
+.control-button-item .checkbox-label {
+    flex: 1;
+    padding: 8px 12px;
+    margin: 0;
+    background: transparent;
+    border: none;
+}
+
 .control-button-settings .checkbox-label {
     padding: 8px 12px;
     background: #f8f9fa;

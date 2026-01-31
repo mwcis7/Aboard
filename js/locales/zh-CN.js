@@ -318,7 +318,7 @@ window.translations = {
             },
             // Control button settings
             controlButtonSettings: '控制按钮设置',
-            controlButtonSettingsHint: '选择要显示的控制按钮',
+            controlButtonSettingsHint: '选择要显示的控制按钮，拖动调整顺序',
             controlButtons: {
                 zoom: '缩放按钮',
                 pagination: '分页按钮',

@@ -3245,6 +3245,18 @@ class DrawingBoard {
             download: localStorage.getItem('controlShowDownload') !== 'false'
         };
         
+        // Load saved order
+        const savedOrder = localStorage.getItem('controlButtonOrder');
+        if (savedOrder) {
+            try {
+                const order = JSON.parse(savedOrder);
+                this.reorderControlButtonList(order);
+                this.reorderControlButtons(order);
+            } catch (e) {
+                console.error('Failed to load control button order:', e);
+            }
+        }
+        
         // Set checkbox states with null checks
         const zoomCheckbox = document.getElementById('control-show-zoom');
         const paginationCheckbox = document.getElementById('control-show-pagination');
@@ -3296,6 +3308,136 @@ class DrawingBoard {
                 this.applyControlButtonVisibility();
             });
         }
+        
+        // Initialize drag-and-drop for control button ordering
+        this.initControlButtonDragDrop();
+    }
+    
+    // Initialize drag-and-drop for control button reordering
+    initControlButtonDragDrop() {
+        const list = document.getElementById('control-button-list');
+        if (!list) return;
+        
+        let draggedItem = null;
+        
+        list.querySelectorAll('.control-button-item').forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                draggedItem = item;
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', item.innerHTML);
+            });
+            
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+                list.querySelectorAll('.control-button-item').forEach(i => {
+                    i.classList.remove('drag-over');
+                });
+                draggedItem = null;
+                
+                // Save the new order
+                this.saveControlButtonOrder();
+            });
+            
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            });
+            
+            item.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                if (item !== draggedItem) {
+                    item.classList.add('drag-over');
+                }
+            });
+            
+            item.addEventListener('dragleave', () => {
+                item.classList.remove('drag-over');
+            });
+            
+            item.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (item !== draggedItem && draggedItem) {
+                    // Swap positions
+                    const allItems = [...list.querySelectorAll('.control-button-item')];
+                    const draggedIndex = allItems.indexOf(draggedItem);
+                    const dropIndex = allItems.indexOf(item);
+                    
+                    if (draggedIndex < dropIndex) {
+                        list.insertBefore(draggedItem, item.nextSibling);
+                    } else {
+                        list.insertBefore(draggedItem, item);
+                    }
+                }
+                item.classList.remove('drag-over');
+            });
+        });
+    }
+    
+    // Save control button order to localStorage
+    saveControlButtonOrder() {
+        const list = document.getElementById('control-button-list');
+        if (!list) return;
+        
+        const order = [...list.querySelectorAll('.control-button-item')]
+            .map(item => item.dataset.control)
+            .filter(control => control !== undefined);
+        localStorage.setItem('controlButtonOrder', JSON.stringify(order));
+        
+        // Apply the order to actual control buttons
+        this.reorderControlButtons(order);
+    }
+    
+    // Reorder the settings list based on saved order
+    reorderControlButtonList(order) {
+        const list = document.getElementById('control-button-list');
+        if (!list || !order) return;
+        
+        order.forEach(controlName => {
+            const item = list.querySelector(`[data-control="${controlName}"]`);
+            if (item) {
+                list.appendChild(item);
+            }
+        });
+    }
+    
+    // Reorder actual control buttons in the UI based on order
+    reorderControlButtons(order) {
+        const controlArea = document.getElementById('top-left-container');
+        if (!controlArea || !order) return;
+        
+        // Map control names to their element IDs
+        const controlElements = {
+            zoom: ['zoom-out-btn', 'zoom-input', 'zoom-in-btn'],
+            pagination: ['pagination-controls'],
+            time: ['time-display-area'],
+            fullscreen: ['fullscreen-btn'],
+            download: ['export-btn-top']
+        };
+        
+        // Get all control elements and store them
+        const elements = {};
+        Object.keys(controlElements).forEach(control => {
+            elements[control] = controlElements[control].map(id => document.getElementById(id)).filter(el => el);
+        });
+        
+        // Reorder based on the saved order
+        order.forEach(control => {
+            if (elements[control]) {
+                elements[control].forEach(el => {
+                    controlArea.appendChild(el);
+                });
+            }
+        });
+        
+        // Append any remaining controls that weren't in the order
+        Object.keys(elements).forEach(control => {
+            if (!order.includes(control)) {
+                elements[control].forEach(el => {
+                    controlArea.appendChild(el);
+                });
+            }
+        });
     }
     
     applyControlButtonVisibility(settings) {
@@ -3317,21 +3459,36 @@ class DrawingBoard {
         if (zoomInput) zoomInput.style.display = settings.zoom ? 'block' : 'none';
         if (zoomInBtn) zoomInBtn.style.display = settings.zoom ? 'flex' : 'none';
         
-        // Pagination controls
-        const pageControls = document.getElementById('page-controls');
-        if (pageControls) pageControls.style.display = settings.pagination ? 'flex' : 'none';
+        // Pagination controls (correct ID is pagination-controls)
+        const paginationControls = document.getElementById('pagination-controls');
+        if (paginationControls) paginationControls.style.display = settings.pagination ? 'flex' : 'none';
         
-        // Time display
+        // Time display - handle both the time widget and its config area
+        // The main widget uses .show class with !important, so we toggle the class
         const timeDisplay = document.getElementById('time-display');
-        if (timeDisplay) timeDisplay.style.display = settings.time ? 'flex' : 'none';
+        if (timeDisplay) {
+            if (settings.time) {
+                timeDisplay.classList.add('show');
+            } else {
+                timeDisplay.classList.remove('show');
+            }
+        }
+        // Also handle the config area visibility
+        const timeDisplayArea = document.getElementById('time-display-area');
+        if (timeDisplayArea) {
+            if (!settings.time) {
+                timeDisplayArea.style.display = 'none';
+            }
+            // Note: We don't restore display here because the config area is shown/hidden by clicking the time widget
+        }
         
         // Fullscreen button
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         if (fullscreenBtn) fullscreenBtn.style.display = settings.fullscreen ? 'flex' : 'none';
         
-        // Download button
-        const downloadBtn = document.getElementById('download-btn');
-        if (downloadBtn) downloadBtn.style.display = settings.download ? 'flex' : 'none';
+        // Download button (correct ID is export-btn-top)
+        const exportBtnTop = document.getElementById('export-btn-top');
+        if (exportBtnTop) exportBtnTop.style.display = settings.download ? 'flex' : 'none';
     }
     
     toggleFullscreen() {

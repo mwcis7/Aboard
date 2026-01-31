@@ -318,7 +318,7 @@ window.translations = {
             },
             // Control button settings
             controlButtonSettings: 'Control Button Settings',
-            controlButtonSettingsHint: 'Select control buttons to display',
+            controlButtonSettingsHint: 'Select control buttons to display, drag to reorder',
             controlButtons: {
                 zoom: 'Zoom Buttons',
                 pagination: 'Pagination Buttons',

@@ -672,28 +672,43 @@
                         <!-- Control button settings -->
                         <div class="settings-group">
                             <label data-i18n="settings.general.controlButtonSettings">控制按钮设置</label>
-                            <p class="settings-hint" data-i18n="settings.general.controlButtonSettingsHint">选择要显示的控制按钮</p>
-                            <div class="control-button-settings">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="control-show-zoom" checked>
-                                    <span data-i18n="settings.general.controlButtons.zoom">缩放按钮</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="control-show-pagination" checked>
-                                    <span data-i18n="settings.general.controlButtons.pagination">分页按钮</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="control-show-time" checked>
-                                    <span data-i18n="settings.general.controlButtons.time">时间显示</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="control-show-fullscreen" checked>
-                                    <span data-i18n="settings.general.controlButtons.fullscreen">全屏按钮</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="control-show-download" checked>
-                                    <span data-i18n="settings.general.controlButtons.download">下载按钮</span>
-                                </label>
+                            <p class="settings-hint" data-i18n="settings.general.controlButtonSettingsHint">选择要显示的控制按钮，拖动调整顺序</p>
+                            <div class="control-button-settings" id="control-button-list">
+                                <div class="control-button-item" data-control="zoom" draggable="true">
+                                    <span class="drag-handle">☰</span>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="control-show-zoom" checked>
+                                        <span data-i18n="settings.general.controlButtons.zoom">缩放按钮</span>
+                                    </label>
+                                </div>
+                                <div class="control-button-item" data-control="pagination" draggable="true">
+                                    <span class="drag-handle">☰</span>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="control-show-pagination" checked>
+                                        <span data-i18n="settings.general.controlButtons.pagination">分页按钮</span>
+                                    </label>
+                                </div>
+                                <div class="control-button-item" data-control="time" draggable="true">
+                                    <span class="drag-handle">☰</span>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="control-show-time" checked>
+                                        <span data-i18n="settings.general.controlButtons.time">时间显示</span>
+                                    </label>
+                                </div>
+                                <div class="control-button-item" data-control="fullscreen" draggable="true">
+                                    <span class="drag-handle">☰</span>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="control-show-fullscreen" checked>
+                                        <span data-i18n="settings.general.controlButtons.fullscreen">全屏按钮</span>
+                                    </label>
+                                </div>
+                                <div class="control-button-item" data-control="download" draggable="true">
+                                    <span class="drag-handle">☰</span>
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="control-show-download" checked>
+                                        <span data-i18n="settings.general.controlButtons.download">下载按钮</span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                         
