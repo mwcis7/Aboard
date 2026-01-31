@@ -22,6 +22,8 @@ class DrawingBoard {
         this.backgroundManager = new BackgroundManager(this.bgCanvas, this.bgCtx);
         this.imageControls = new ImageControls(this.backgroundManager);
         this.strokeControls = new StrokeControls(this.drawingEngine, this.canvas, this.ctx, this.historyManager);
+        this.selectionManager = new SelectionManager(this.canvas, this.ctx, this.drawingEngine, this.strokeControls);
+        this.selectionManager.setHistoryManager(this.historyManager);
         this.timeDisplayManager = new TimeDisplayManager(this.settingsManager);
         this.timeDisplayControls = new TimeDisplayControls(this.timeDisplayManager);
         this.timeDisplaySettingsModal = new TimeDisplaySettingsModal(this.timeDisplayManager);
@@ -361,6 +363,9 @@ class DrawingBoard {
             
             if (e.button === 1 || (e.button === 0 && e.shiftKey) || this.drawingEngine.currentTool === 'pan') {
                 this.drawingEngine.startPanning(e);
+            } else if (this.drawingEngine.currentTool === 'select') {
+                // Handle selection tool
+                this.selectionManager.startSelection(e);
             } else if (this.drawingEngine.currentTool === 'shape') {
                 // Handle shape drawing
                 if (this.teachingToolsManager && this.teachingToolsManager.isInteracting) {
@@ -642,6 +647,7 @@ class DrawingBoard {
         // Toolbar buttons
         document.getElementById('pen-btn').addEventListener('click', () => this.setTool('pen'));
         document.getElementById('pan-btn').addEventListener('click', () => this.setTool('pan'));
+        document.getElementById('select-btn').addEventListener('click', () => this.setTool('select'));
         document.getElementById('eraser-btn').addEventListener('click', () => this.setTool('eraser'));
         document.getElementById('background-btn').addEventListener('click', () => this.setTool('background'));
         document.getElementById('clear-btn').addEventListener('click', () => this.confirmClear());
@@ -2346,11 +2352,25 @@ class DrawingBoard {
         const isSameTool = (previousTool === tool);
         const isConfigVisible = configArea.classList.contains('show');
         
+        // Deactivate selection mode if switching away from select tool
+        if (previousTool === 'select' && tool !== 'select') {
+            this.selectionManager.deactivate();
+        }
+        
         // Update drawing engine tool
         this.drawingEngine.setTool(tool);
         // Don't show eraser cursor when selecting tool - only show when actually erasing on canvas
         if (tool !== 'eraser') {
             this.hideEraserCursor();
+        }
+        
+        // Activate selection mode if switching to select tool
+        if (tool === 'select') {
+            this.selectionManager.activate();
+            // Link text manager if available
+            if (this.insertTextManager) {
+                this.selectionManager.setTextManager(this.insertTextManager);
+            }
         }
         
         this.updateUI();
@@ -2385,7 +2405,7 @@ class DrawingBoard {
                 this.positionFeatureArea();
             }
         } else {
-            // For other tools (like pan), just hide panels
+            // For other tools (like pan, select), just hide panels
             configArea.classList.remove('show');
             featureArea.classList.remove('show');
         }
@@ -2739,6 +2759,9 @@ class DrawingBoard {
         } else if (tool === 'pan') {
             document.getElementById('pan-btn').classList.add('active');
             this.canvas.style.cursor = 'grab';
+        } else if (tool === 'select') {
+            document.getElementById('select-btn').classList.add('active');
+            this.canvas.style.cursor = 'crosshair';
         } else if (tool === 'eraser') {
             document.getElementById('eraser-btn').classList.add('active');
             document.getElementById('eraser-config').classList.add('active');
