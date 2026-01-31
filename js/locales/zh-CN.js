@@ -22,7 +22,8 @@ window.translations = {
         start: '开始',
         stop: '停止',
         preview: '试听',
-        settings: '设置'
+        settings: '设置',
+        dragToMove: '拖动以移动'
     },
 
     // Recovery dialog

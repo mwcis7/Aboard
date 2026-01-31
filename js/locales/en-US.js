@@ -22,7 +22,8 @@ window.translations = {
         start: 'Start',
         stop: 'Stop',
         preview: 'Preview',
-        settings: 'Settings'
+        settings: 'Settings',
+        dragToMove: 'Drag to move'
     },
 
     // Recovery dialog

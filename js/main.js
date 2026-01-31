@@ -2066,7 +2066,11 @@ class DrawingBoard {
         
         // Unified start handler for mouse and touch events
         const handleDragStart = (e, element) => {
-            if (e.target.closest('button') || e.target.closest('input')) return;
+            // Always allow dragging from the drag handle
+            const isDragHandle = e.target.closest('.panel-drag-handle');
+            
+            // Block drag if clicking on interactive elements (unless it's a drag handle)
+            if (!isDragHandle && (e.target.closest('button') || e.target.closest('input'))) return;
             
             e.stopPropagation(); // Prevent drawing on canvas
 
