@@ -240,10 +240,13 @@ class SettingsManager {
         toolbar.style.gap = `${toolbarGap}px`;
         
         buttons.forEach(btn => {
-            // Square button with fixed size
+            // Square button with fixed size - set all dimensions to ensure truly square
             btn.style.width = `${buttonSize}px`;
             btn.style.height = `${buttonSize}px`;
             btn.style.minWidth = `${buttonSize}px`;
+            btn.style.minHeight = `${buttonSize}px`;
+            btn.style.maxWidth = `${buttonSize}px`;
+            btn.style.maxHeight = `${buttonSize}px`;
             btn.style.padding = `${buttonPadding}px`;
             btn.style.gap = `${buttonGap}px`;
             btn.style.boxSizing = 'border-box';

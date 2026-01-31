@@ -34,7 +34,8 @@ button, a, input[type="button"], input[type="submit"] {
 }
 
 /* Minimum touch target size for primary navigation buttons (44x44px recommended by WCAG) */
-.tool-btn, .history-btn, .feature-btn, .timer-action-btn, .timer-control-btn {
+/* NOTE: .tool-btn size is controlled by JS updateToolbarSize() - do NOT set min-height/min-width here */
+.history-btn, .feature-btn, .timer-action-btn, .timer-control-btn {
     min-height: var(--touch-target-size);
     min-width: var(--touch-target-size);
 }
