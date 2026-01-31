@@ -206,6 +206,13 @@ window.translations = {
         rotate: 'Rotate'
     },
 
+    // Selection Controls
+    selection: {
+        copy: 'Copy',
+        delete: 'Delete',
+        done: 'Done'
+    },
+
     // Page Navigation
     page: {
         previous: 'Previous Page',

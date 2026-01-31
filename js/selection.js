@@ -1,5 +1,5 @@
 // Selection Module
-// Handles selection of drawn strokes, text objects, and inserted images
+// Handles selection of drawn strokes (images and text are stamped as pixels and not individually selectable)
 
 class SelectionManager {
     constructor(canvas, ctx, drawingEngine, strokeControls) {
@@ -34,6 +34,9 @@ class SelectionManager {
         this.isResizing = false;
         this.resizeHandle = null;
         this.resizeStartBounds = null;
+        
+        // Track if changes were made that need to be saved
+        this.hasUnsavedChanges = false;
         
         // Constants
         this.COPY_OFFSET = 20;
@@ -83,19 +86,19 @@ class SelectionManager {
                     
                     <!-- Control toolbar with action buttons -->
                     <div class="image-controls-toolbar selection-action-toolbar">
-                        <button id="selection-copy-btn" class="image-control-btn" title="复制">
+                        <button id="selection-copy-btn" class="image-control-btn" data-i18n-title="selection.copy" title="Copy">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                                 <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
                             </svg>
                         </button>
-                        <button id="selection-delete-btn" class="image-control-btn image-cancel-btn" title="删除">
+                        <button id="selection-delete-btn" class="image-control-btn image-cancel-btn" data-i18n-title="selection.delete" title="Delete">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="3 6 5 6 21 6"></polyline>
                                 <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"></path>
                             </svg>
                         </button>
-                        <button id="selection-done-btn" class="image-control-btn image-done-btn" title="完成">
+                        <button id="selection-done-btn" class="image-control-btn image-done-btn" data-i18n-title="selection.done" title="Done">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <polyline points="20 6 9 17 4 12"></polyline>
                             </svg>
@@ -416,6 +419,7 @@ class SelectionManager {
     stopDrag() {
         if (this.isDragging) {
             this.isDragging = false;
+            this.hasUnsavedChanges = true;
             this.controlBox.style.cursor = 'move';
             
             // Clear original position markers for strokes
@@ -536,6 +540,7 @@ class SelectionManager {
     stopResize() {
         if (this.isResizing) {
             this.isResizing = false;
+            this.hasUnsavedChanges = true;
             this.resizeHandle = null;
             this.resizeStartBounds = null;
             
@@ -619,6 +624,7 @@ class SelectionManager {
     stopRotate() {
         if (this.isRotating) {
             this.isRotating = false;
+            this.hasUnsavedChanges = true;
             
             if (this.selectionType === 'stroke' && this.selectedIndex !== null) {
                 const stroke = this.drawingEngine.strokes[this.selectedIndex];
@@ -686,7 +692,11 @@ class SelectionManager {
     }
     
     finishSelection() {
-        this.saveHistory();
+        // Only save history if something was actually changed (moved, resized, rotated)
+        // Copy and delete operations already save history themselves
+        if (this.hasUnsavedChanges) {
+            this.saveHistory();
+        }
         this.clearSelection();
     }
     
@@ -738,6 +748,7 @@ class SelectionManager {
     clearSelection() {
         this.selectionType = null;
         this.selectedIndex = null;
+        this.hasUnsavedChanges = false;
         this.drawingEngine.deselectStroke();
         if (this.textManager) {
             this.textManager.selectedTextIndex = null;

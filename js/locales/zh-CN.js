@@ -206,6 +206,13 @@ window.translations = {
         rotate: '旋转'
     },
 
+    // Selection Controls
+    selection: {
+        copy: '复制',
+        delete: '删除',
+        done: '完成'
+    },
+
     // Page Navigation
     page: {
         previous: '上一页',
