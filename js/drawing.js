@@ -770,21 +770,9 @@ class DrawingEngine {
     }
     
     drawSelectionBorder() {
-        if (this.selectedStrokeIndex === null) return;
-        
-        const stroke = this.strokes[this.selectedStrokeIndex];
-        if (!stroke) return;
-        
-        const bounds = this.getStrokeBounds(stroke);
-        if (!bounds) return;
-        
-        this.ctx.save();
-        this.ctx.strokeStyle = '#999999';
-        this.ctx.lineWidth = 2;
-        this.ctx.setLineDash([5, 5]);
-        this.ctx.globalAlpha = 0.8;
-        this.ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
-        this.ctx.restore();
+        // Selection border is now handled by CSS overlay (.image-controls-box)
+        // No need to draw additional border on canvas
+        return;
     }
     
     copySelectedStroke() {
