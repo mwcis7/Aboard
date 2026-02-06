@@ -304,7 +304,15 @@ class DrawingBoard {
                     e.target.closest('.timer-fullscreen-modal') ||
                     e.target.closest('#time-display-settings-modal') ||
                     e.target.closest('#timer-settings-modal') ||
+                    e.target.closest('#selection-controls-overlay') ||
                     e.target.closest('input[type="range"]')) {
+                    return;
+                }
+            }
+            
+            // 如果正在使用选择工具并且点击在选择控件内，不要触发新的选择
+            if (this.selectionManager && this.selectionManager.hasSelection()) {
+                if (e.target.closest('#selection-controls-overlay')) {
                     return;
                 }
             }

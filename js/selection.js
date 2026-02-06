@@ -119,6 +119,19 @@ class SelectionManager {
     setupEventListeners() {
         // Drag selection box
         this.controlBox.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            if (e.target === this.controlBox || e.target.closest('.image-controls-box') === this.controlBox) {
+                if (!e.target.classList.contains('resize-handle') && 
+                    !e.target.closest('.resize-handle') &&
+                    !e.target.closest('.rotate-handle') &&
+                    !e.target.closest('.image-controls-toolbar')) {
+                    this.startDrag(e);
+                }
+            }
+        });
+        
+        this.controlBox.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
             if (e.target === this.controlBox || e.target.closest('.image-controls-box') === this.controlBox) {
                 if (!e.target.classList.contains('resize-handle') && 
                     !e.target.closest('.resize-handle') &&
@@ -130,6 +143,7 @@ class SelectionManager {
         });
         
         this.controlBox.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
             if (e.target === this.controlBox || e.target.closest('.image-controls-box') === this.controlBox) {
                 if (!e.target.classList.contains('resize-handle') && 
                     !e.target.closest('.resize-handle') &&
@@ -144,6 +158,12 @@ class SelectionManager {
         this.controlBox.querySelectorAll('.resize-handle').forEach(handle => {
             handle.addEventListener('mousedown', (e) => {
                 e.stopPropagation();
+                e.preventDefault();
+                this.startResize(e, handle.dataset.handle);
+            });
+            handle.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 this.startResize(e, handle.dataset.handle);
             });
             handle.addEventListener('touchstart', (e) => {
@@ -158,6 +178,12 @@ class SelectionManager {
         if (rotateHandle) {
             rotateHandle.addEventListener('mousedown', (e) => {
                 e.stopPropagation();
+                e.preventDefault();
+                this.startRotate(e);
+            });
+            rotateHandle.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
                 this.startRotate(e);
             });
             rotateHandle.addEventListener('touchstart', (e) => {
@@ -203,19 +229,38 @@ class SelectionManager {
             this.stopRotate();
         });
         
-        // Action buttons
-        document.getElementById('selection-copy-btn').addEventListener('click', (e) => {
+        // Action buttons - need to handle both mousedown and click to prevent event propagation
+        const copyBtn = document.getElementById('selection-copy-btn');
+        const deleteBtn = document.getElementById('selection-delete-btn');
+        const doneBtn = document.getElementById('selection-done-btn');
+        
+        // Add mousedown/pointerdown handlers to prevent events from propagating to document
+        [copyBtn, deleteBtn, doneBtn].forEach(btn => {
+            btn.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+            });
+            btn.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+            });
+        });
+        
+        copyBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            e.preventDefault();
             this.copySelection();
         });
         
-        document.getElementById('selection-delete-btn').addEventListener('click', (e) => {
+        deleteBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            e.preventDefault();
             this.deleteSelection();
         });
         
-        document.getElementById('selection-done-btn').addEventListener('click', (e) => {
+        doneBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            e.preventDefault();
             this.finishSelection();
         });
     }
@@ -274,6 +319,11 @@ class SelectionManager {
 
     startSelection(e) {
         if (!this.isActive) return false;
+        
+        // Don't start new selection if clicking on the selection controls overlay
+        if (e.target && e.target.closest && e.target.closest('#selection-controls-overlay')) {
+            return false;
+        }
         
         this.isSelecting = true;
         const coords = this.getCanvasCoordinates(e);
