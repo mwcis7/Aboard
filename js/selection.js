@@ -194,7 +194,7 @@ class SelectionManager {
         }
         
         // Global mouse/touch events
-        document.addEventListener('mousemove', (e) => {
+        const handleMove = (e) => {
             if (this.isDragging) {
                 this.drag(e);
             } else if (this.isResizing) {
@@ -202,7 +202,10 @@ class SelectionManager {
             } else if (this.isRotating) {
                 this.rotate(e);
             }
-        });
+        };
+        
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('pointermove', handleMove);
         
         document.addEventListener('touchmove', (e) => {
             if (this.isDragging || this.isResizing || this.isRotating) {
@@ -223,7 +226,26 @@ class SelectionManager {
             this.stopRotate();
         });
         
+        document.addEventListener('pointerup', () => {
+            this.stopDrag();
+            this.stopResize();
+            this.stopRotate();
+        });
+        
         document.addEventListener('touchend', () => {
+            this.stopDrag();
+            this.stopResize();
+            this.stopRotate();
+        });
+        
+        // Also handle pointer cancel (e.g., when touch is interrupted)
+        document.addEventListener('pointercancel', () => {
+            this.stopDrag();
+            this.stopResize();
+            this.stopRotate();
+        });
+        
+        document.addEventListener('touchcancel', () => {
             this.stopDrag();
             this.stopResize();
             this.stopRotate();
@@ -406,13 +428,17 @@ class SelectionManager {
         if (!bounds) return;
         
         const rect = this.canvas.getBoundingClientRect();
-        const canvasScale = this.getCanvasScale();
+        
+        // Use the same scale calculation as getCanvasCoordinates for consistency
+        const scaleX = rect.width / this.canvas.offsetWidth;
+        const scaleY = rect.height / this.canvas.offsetHeight;
         
         // Calculate actual position and size accounting for canvas transform
-        const actualX = rect.left + (bounds.x * canvasScale);
-        const actualY = rect.top + (bounds.y * canvasScale);
-        const actualWidth = bounds.width * canvasScale;
-        const actualHeight = bounds.height * canvasScale;
+        // bounds coordinates are in canvas pixel space, need to convert to screen space
+        const actualX = rect.left + (bounds.x * scaleX);
+        const actualY = rect.top + (bounds.y * scaleY);
+        const actualWidth = bounds.width * scaleX;
+        const actualHeight = bounds.height * scaleY;
         
         this.controlBox.style.left = `${actualX}px`;
         this.controlBox.style.top = `${actualY}px`;
@@ -450,9 +476,13 @@ class SelectionManager {
         if (!this.isDragging || this.selectedIndex === null) return;
         
         const pos = this.getClientPos(e);
-        const canvasScale = this.getCanvasScale();
-        const deltaX = (pos.x - this.dragStartPos.x) / canvasScale;
-        const deltaY = (pos.y - this.dragStartPos.y) / canvasScale;
+        const rect = this.canvas.getBoundingClientRect();
+        
+        // Convert screen delta to canvas coordinate delta using consistent scaling
+        const scaleX = this.canvas.offsetWidth / rect.width;
+        const scaleY = this.canvas.offsetHeight / rect.height;
+        const deltaX = (pos.x - this.dragStartPos.x) * scaleX;
+        const deltaY = (pos.y - this.dragStartPos.y) * scaleY;
         
         if (this.selectionType === 'stroke') {
             const stroke = this.drawingEngine.strokes[this.selectedIndex];
