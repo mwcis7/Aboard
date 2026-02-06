@@ -478,7 +478,8 @@ class SelectionManager {
         const pos = this.getClientPos(e);
         const rect = this.canvas.getBoundingClientRect();
         
-        // Convert screen delta to canvas coordinate delta using consistent scaling
+        // Convert screen delta to canvas coordinate delta
+        // Scale factor: canvas pixels / screen pixels (inverse of updateControlBox which does screen/canvas)
         const scaleX = this.canvas.offsetWidth / rect.width;
         const scaleY = this.canvas.offsetHeight / rect.height;
         const deltaX = (pos.x - this.dragStartPos.x) * scaleX;
