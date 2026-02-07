@@ -132,8 +132,8 @@
 .touch-friendly-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 28px;
-    height: 28px;
+    width: 18px;
+    height: 18px;
     background: var(--theme-color);
     border-radius: 50%;
     cursor: pointer;
@@ -141,8 +141,8 @@
 }
 
 .touch-friendly-slider::-moz-range-thumb {
-    width: 28px;
-    height: 28px;
+    width: 18px;
+    height: 18px;
     background: var(--theme-color);
     border-radius: 50%;
     cursor: pointer;
@@ -335,13 +335,13 @@
     }
     
     .touch-friendly-slider::-webkit-slider-thumb {
-        width: 36px;
-        height: 36px;
+        width: 22px;
+        height: 22px;
     }
     
     .touch-friendly-slider::-moz-range-thumb {
-        width: 36px;
-        height: 36px;
+        width: 22px;
+        height: 22px;
     }
     
     .touch-target {
