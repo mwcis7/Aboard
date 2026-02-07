@@ -53,6 +53,7 @@ class DrawingEngine {
         
         // Stamped images storage (for redraw support)
         this.stampedImages = [];
+        this.selectedImageIndex = null;
         
         // Canvas scaling and panning
         this.canvasScale = parseFloat(localStorage.getItem('canvasScale')) || 1.0;
@@ -901,5 +902,66 @@ class DrawingEngine {
     
     clearStampedImages() {
         this.stampedImages = [];
+        this.selectedImageIndex = null;
+    }
+
+    findImageAtPoint(x, y) {
+        for (let i = this.stampedImages.length - 1; i >= 0; i--) {
+            const img = this.stampedImages[i];
+            if (!img) continue;
+            const cx = img.x + img.width / 2;
+            const cy = img.y + img.height / 2;
+            const rot = -(img.rotation || 0) * Math.PI / 180;
+            const dx = x - cx;
+            const dy = y - cy;
+            const localX = dx * Math.cos(rot) - dy * Math.sin(rot) + cx;
+            const localY = dx * Math.sin(rot) + dy * Math.cos(rot) + cy;
+            if (localX >= img.x && localX <= img.x + img.width &&
+                localY >= img.y && localY <= img.y + img.height) {
+                return i;
+            }
+        }
+        return null;
+    }
+
+    selectImage(index) {
+        this.selectedImageIndex = index;
+    }
+
+    deselectImage() {
+        this.selectedImageIndex = null;
+    }
+
+    getImageBounds(img) {
+        if (!img) return null;
+        return { x: img.x, y: img.y, width: img.width, height: img.height };
+    }
+
+    copySelectedImage() {
+        if (this.selectedImageIndex === null) return false;
+        const img = this.stampedImages[this.selectedImageIndex];
+        if (!img) return false;
+        const copy = {
+            imageElement: img.imageElement,
+            x: img.x + this.COPY_OFFSET,
+            y: img.y + this.COPY_OFFSET,
+            width: img.width,
+            height: img.height,
+            rotation: img.rotation || 0,
+            flipHorizontal: img.flipHorizontal || false,
+            flipVertical: img.flipVertical || false
+        };
+        this.stampedImages.push(copy);
+        this.selectedImageIndex = this.stampedImages.length - 1;
+        return true;
+    }
+
+    deleteSelectedImage() {
+        if (this.selectedImageIndex === null) return false;
+        const img = this.stampedImages[this.selectedImageIndex];
+        if (!img) return false;
+        this.stampedImages.splice(this.selectedImageIndex, 1);
+        this.selectedImageIndex = null;
+        return true;
     }
 }

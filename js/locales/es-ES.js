@@ -137,6 +137,11 @@ window.translations = {
             invalidFontFormat: 'Formato de fuente no válido. Use archivos TTF, OTF, WOFF o WOFF2.',
             fontTooLarge: 'El archivo de fuente es demasiado grande. El tamaño máximo es 2MB.',
             storageQuotaExceeded: 'Cuota de almacenamiento excedida. Elimine algunas fuentes personalizadas.'
+        },
+        select: {
+            mode: 'Modo de selección',
+            clickMode: 'Clic',
+            rectMode: 'Selección por área'
         }
     },
 
@@ -193,6 +198,13 @@ window.translations = {
         flipHorizontal: 'Voltear horizontal',
         flipVertical: 'Voltear vertical',
         rotate: 'Rotar'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: 'Copiar',
+        delete: 'Eliminar',
+        done: 'Listo'
     },
 
     // Page Navigation

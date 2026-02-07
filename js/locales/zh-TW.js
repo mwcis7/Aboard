@@ -142,6 +142,11 @@ window.translations = {
             invalidFontFormat: '無效的字體格式。請使用 TTF、OTF、WOFF 或 WOFF2 檔案。',
             fontTooLarge: '字體檔案過大，最大允許 2MB。',
             storageQuotaExceeded: '儲存空間不足，請刪除一些自訂字體。'
+        },
+        select: {
+            mode: '選擇模式',
+            clickMode: '點選',
+            rectMode: '框選'
         }
     },
 
@@ -201,6 +206,13 @@ window.translations = {
         flipHorizontal: '水平翻轉',
         flipVertical: '垂直翻轉',
         rotate: '旋轉'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: '複製',
+        delete: '刪除',
+        done: '完成'
     },
 
     // Page Navigation

@@ -145,6 +145,11 @@ window.translations = {
             invalidFontFormat: '无效的字体格式。请使用 TTF、OTF、WOFF 或 WOFF2 文件。',
             fontTooLarge: '字体文件过大，最大允许 2MB。',
             storageQuotaExceeded: '存储空间不足，请删除一些自定义字体。'
+        },
+        select: {
+            mode: '选择模式',
+            clickMode: '点选',
+            rectMode: '框选'
         }
     },
 

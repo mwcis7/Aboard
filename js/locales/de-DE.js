@@ -139,6 +139,11 @@ window.translations = {
             invalidFontFormat: 'Ungültiges Schriftartformat. Bitte verwenden Sie TTF-, OTF-, WOFF- oder WOFF2-Dateien.',
             fontTooLarge: 'Die Schriftartdatei ist zu groß. Maximale Größe beträgt 2MB.',
             storageQuotaExceeded: 'Speicherplatz überschritten. Bitte löschen Sie einige benutzerdefinierte Schriftarten.'
+        },
+        select: {
+            mode: 'Auswahlmodus',
+            clickMode: 'Klick',
+            rectMode: 'Bereichsauswahl'
         }
     },
 
@@ -195,6 +200,13 @@ window.translations = {
         flipHorizontal: 'Horizontal spiegeln',
         flipVertical: 'Vertikal spiegeln',
         rotate: 'Drehen'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: 'Kopieren',
+        delete: 'Löschen',
+        done: 'Fertig'
     },
 
     // Page Navigation

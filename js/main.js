@@ -427,6 +427,8 @@ class DrawingBoard {
             
             if (this.isDraggingCoordinateOrigin) {
                 this.dragCoordinateOrigin(e);
+            } else if (this.drawingEngine.currentTool === 'select' && this.selectionManager.isBoxSelecting) {
+                this.selectionManager.continueBoxSelection(e);
             } else if (this.drawingEngine.isPanning) {
                 this.drawingEngine.pan(e);
                 this.applyPanTransform();
@@ -461,6 +463,9 @@ class DrawingBoard {
             
             if (!e.isPrimary) return;
             this.stopDraggingCoordinateOrigin();
+            if (this.drawingEngine.currentTool === 'select' && this.selectionManager.isBoxSelecting) {
+                this.selectionManager.endBoxSelection(e);
+            }
             this.handleDrawingComplete();
             this.drawingEngine.stopPanning();
             // Hide eraser cursor when erasing stops
@@ -1337,6 +1342,18 @@ class DrawingBoard {
                 }
             });
         }
+        
+        // Select mode buttons
+        document.querySelectorAll('.select-mode-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.select-mode-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                const mode = e.currentTarget.dataset.mode;
+                if (this.selectionManager) {
+                    this.selectionManager.selectionMode = mode;
+                }
+            });
+        });
     }
     
     setupSettingsListeners() {
@@ -2384,7 +2401,7 @@ class DrawingBoard {
         this.updateUI();
         
         // Handle toggle behavior for tools with config panels
-        const toolsWithConfig = ['pen', 'eraser', 'background', 'shape'];
+        const toolsWithConfig = ['pen', 'eraser', 'background', 'shape', 'select'];
         
         if (showConfig && toolsWithConfig.includes(tool)) {
             // If clicking the same tool and config is visible, toggle it off
@@ -2769,6 +2786,7 @@ class DrawingBoard {
             this.canvas.style.cursor = 'grab';
         } else if (tool === 'select') {
             document.getElementById('select-btn').classList.add('active');
+            document.getElementById('select-config').classList.add('active');
             this.canvas.style.cursor = 'crosshair';
         } else if (tool === 'eraser') {
             document.getElementById('eraser-btn').classList.add('active');

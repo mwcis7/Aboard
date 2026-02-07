@@ -137,6 +137,11 @@ window.translations = {
             invalidFontFormat: 'Format de police invalide. Veuillez utiliser des fichiers TTF, OTF, WOFF ou WOFF2.',
             fontTooLarge: 'Le fichier de police est trop volumineux. La taille maximale est de 2 Mo.',
             storageQuotaExceeded: 'Quota de stockage dépassé. Veuillez supprimer certaines polices personnalisées.'
+        },
+        select: {
+            mode: 'Mode de sélection',
+            clickMode: 'Clic',
+            rectMode: 'Sélection par zone'
         }
     },
 
@@ -193,6 +198,13 @@ window.translations = {
         flipHorizontal: 'Retourner horizontalement',
         flipVertical: 'Retourner verticalement',
         rotate: 'Rotation'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: 'Copier',
+        delete: 'Supprimer',
+        done: 'Terminé'
     },
 
     // Page Navigation

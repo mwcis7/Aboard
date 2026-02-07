@@ -139,6 +139,11 @@ window.translations = {
             invalidFontFormat: '잘못된 글꼴 형식입니다. TTF, OTF, WOFF 또는 WOFF2 파일을 사용하세요.',
             fontTooLarge: '글꼴 파일이 너무 큽니다. 최대 2MB까지 허용됩니다.',
             storageQuotaExceeded: '저장 공간이 초과되었습니다. 사용자 정의 글꼴을 삭제해 주세요.'
+        },
+        select: {
+            mode: '선택 모드',
+            clickMode: '클릭',
+            rectMode: '영역 선택'
         }
     },
 
@@ -197,6 +202,13 @@ window.translations = {
         flipHorizontal: '좌우 반전',
         flipVertical: '상하 반전',
         rotate: '회전'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: '복사',
+        delete: '삭제',
+        done: '완료'
     },
 
     // Page Navigation

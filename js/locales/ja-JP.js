@@ -139,6 +139,11 @@ window.translations = {
             invalidFontFormat: '無効なフォント形式です。TTF、OTF、WOFF、またはWOFF2ファイルを使用してください。',
             fontTooLarge: 'フォントファイルが大きすぎます。最大2MBまでです。',
             storageQuotaExceeded: 'ストレージ容量を超えました。カスタムフォントを削除してください。'
+        },
+        select: {
+            mode: '選択モード',
+            clickMode: 'クリック',
+            rectMode: '範囲選択'
         }
     },
 
@@ -197,6 +202,13 @@ window.translations = {
         flipHorizontal: '左右反転',
         flipVertical: '上下反転',
         rotate: '回転'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: 'コピー',
+        delete: '削除',
+        done: '完了'
     },
 
     // Page Navigation

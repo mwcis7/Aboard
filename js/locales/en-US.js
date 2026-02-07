@@ -145,6 +145,11 @@ window.translations = {
             invalidFontFormat: 'Invalid font format. Please use TTF, OTF, WOFF, or WOFF2 files.',
             fontTooLarge: 'Font file is too large. Maximum size is 2MB.',
             storageQuotaExceeded: 'Storage quota exceeded. Please delete some custom fonts.'
+        },
+        select: {
+            mode: 'Selection Mode',
+            clickMode: 'Click',
+            rectMode: 'Box Select'
         }
     },
 
