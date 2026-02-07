@@ -1261,6 +1261,11 @@ class SelectionManager {
         this.boxSelectStart = null;
         this.boxSelectEnd = null;
         
+        this.applyFoundSelection(foundStrokes, foundImages);
+    }
+    
+    // Apply selection from found strokes and images (shared by box and lasso selection)
+    applyFoundSelection(foundStrokes, foundImages) {
         const totalFound = foundStrokes.length + foundImages.length;
         
         if (totalFound === 0) {
@@ -1270,15 +1275,12 @@ class SelectionManager {
         } else if (totalFound === 1 && foundImages.length === 1) {
             this.selectImage(foundImages[0]);
         } else if (foundStrokes.length > 0 && foundImages.length === 0) {
-            // Multi-select strokes only
             this.selectedStrokes = foundStrokes;
             this.selectionType = 'multi';
             this.selectedIndex = null;
             this.showControls();
             this.redrawWithSelection();
         } else {
-            // Mixed selection or multiple images - select strokes as multi
-            // (multi-select currently supports strokes; for single image fallback to first found)
             if (foundStrokes.length > 0) {
                 this.selectedStrokes = foundStrokes;
                 this.selectionType = 'multi';
@@ -1350,6 +1352,10 @@ class SelectionManager {
         
         // Convert lasso screen points to canvas coordinates
         const rect = this.canvas.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) {
+            this.lassoPoints = [];
+            return;
+        }
         const scaleX = this.canvas.offsetWidth / rect.width;
         const scaleY = this.canvas.offsetHeight / rect.height;
         
@@ -1395,31 +1401,7 @@ class SelectionManager {
             }
         }
         
-        const totalFound = foundStrokes.length + foundImages.length;
-        
-        if (totalFound === 0) {
-            return;
-        } else if (totalFound === 1 && foundStrokes.length === 1) {
-            this.selectStroke(foundStrokes[0]);
-        } else if (totalFound === 1 && foundImages.length === 1) {
-            this.selectImage(foundImages[0]);
-        } else if (foundStrokes.length > 0 && foundImages.length === 0) {
-            this.selectedStrokes = foundStrokes;
-            this.selectionType = 'multi';
-            this.selectedIndex = null;
-            this.showControls();
-            this.redrawWithSelection();
-        } else {
-            if (foundStrokes.length > 0) {
-                this.selectedStrokes = foundStrokes;
-                this.selectionType = 'multi';
-                this.selectedIndex = null;
-                this.showControls();
-                this.redrawWithSelection();
-            } else {
-                this.selectImage(foundImages[0]);
-            }
-        }
+        this.applyFoundSelection(foundStrokes, foundImages);
     }
     
     // Ray-casting point-in-polygon algorithm
