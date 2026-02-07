@@ -51,6 +51,9 @@ class DrawingEngine {
         this.SELECTION_THRESHOLD = 10; // Distance threshold for stroke selection
         this.COPY_OFFSET = 20; // Offset for copied strokes
         
+        // Stamped images storage (for redraw support)
+        this.stampedImages = [];
+        
         // Canvas scaling and panning
         this.canvasScale = parseFloat(localStorage.getItem('canvasScale')) || 1.0;
         this.panOffset = { 
@@ -655,6 +658,7 @@ class DrawingEngine {
     clearCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.clearStrokes();
+        this.clearStampedImages();
     }
     
     setTool(tool) {
@@ -863,5 +867,39 @@ class DrawingEngine {
     clearStrokes() {
         this.strokes = [];
         this.selectedStrokeIndex = null;
+    }
+    
+    // Stamped image management
+    addStampedImage(imageData) {
+        this.stampedImages.push(imageData);
+    }
+    
+    redrawStampedImages() {
+        for (const img of this.stampedImages) {
+            if (!img.imageElement) continue;
+            
+            this.ctx.save();
+            const centerX = img.x + img.width / 2;
+            const centerY = img.y + img.height / 2;
+            this.ctx.translate(centerX, centerY);
+            this.ctx.rotate(img.rotation * Math.PI / 180);
+            
+            const flipScaleX = img.flipHorizontal ? -1 : 1;
+            const flipScaleY = img.flipVertical ? -1 : 1;
+            this.ctx.scale(flipScaleX, flipScaleY);
+            
+            this.ctx.drawImage(
+                img.imageElement,
+                -img.width / 2,
+                -img.height / 2,
+                img.width,
+                img.height
+            );
+            this.ctx.restore();
+        }
+    }
+    
+    clearStampedImages() {
+        this.stampedImages = [];
     }
 }

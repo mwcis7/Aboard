@@ -456,6 +456,18 @@ class InsertImageManager {
         );
 
         this.ctx.restore();
+        
+        // Track the stamped image so it can be redrawn during selection operations
+        this.drawingEngine.addStampedImage({
+            imageElement: this.currentImage,
+            x: this.imagePosition.x,
+            y: this.imagePosition.y,
+            width: this.imageSize.width,
+            height: this.imageSize.height,
+            rotation: this.imageRotation,
+            flipHorizontal: this.flipHorizontal,
+            flipVertical: this.flipVertical
+        });
 
         // Save history
         this.historyManager.saveState();

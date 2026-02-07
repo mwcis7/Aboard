@@ -410,7 +410,13 @@ class SelectionManager {
         if (this.selectionType === 'stroke') {
             const stroke = this.drawingEngine.strokes[this.selectedIndex];
             if (!stroke) return;
-            bounds = this.drawingEngine.getStrokeBounds(stroke);
+            // During rotation, use originalBounds to keep the box size stable.
+            // The originalBounds represent the unrotated bounding box.
+            if (this.isRotating && stroke.originalBounds) {
+                bounds = stroke.originalBounds;
+            } else {
+                bounds = this.drawingEngine.getStrokeBounds(stroke);
+            }
             rotation = stroke.rotation || 0;
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
@@ -644,16 +650,45 @@ class SelectionManager {
     }
     
     // Rotation handling
+    
+    // Calculate the screen center of the control box from canvas coordinates.
+    // This avoids using getBoundingClientRect() which returns the axis-aligned
+    // bounding box and changes size/position as the element rotates.
+    getControlBoxCenter() {
+        let bounds = null;
+        
+        if (this.selectionType === 'stroke') {
+            const stroke = this.drawingEngine.strokes[this.selectedIndex];
+            if (!stroke) return null;
+            // Use originalBounds during rotation to get stable center
+            bounds = stroke.originalBounds || this.drawingEngine.getStrokeBounds(stroke);
+        } else if (this.selectionType === 'text' && this.textManager) {
+            const textObj = this.textManager.textObjects[this.selectedIndex];
+            if (!textObj) return null;
+            const lineCount = textObj.text.split('\n').length;
+            bounds = {
+                x: textObj.x - 5,
+                y: textObj.y - 5,
+                width: textObj.width * textObj.scale + 10,
+                height: textObj.height * lineCount * textObj.scale + 10
+            };
+        }
+        
+        if (!bounds) return null;
+        
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = rect.width / this.canvas.offsetWidth;
+        const scaleY = rect.height / this.canvas.offsetHeight;
+        
+        const centerX = rect.left + (bounds.x + bounds.width / 2) * scaleX;
+        const centerY = rect.top + (bounds.y + bounds.height / 2) * scaleY;
+        return { x: centerX, y: centerY };
+    }
+    
     startRotate(e) {
         if (this.selectedIndex === null) return;
         
         this.isRotating = true;
-        const rect = this.controlBox.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        
-        const pos = this.getClientPos(e);
-        this.rotateStartAngle = Math.atan2(pos.y - centerY, pos.x - centerX) * 180 / Math.PI;
         
         if (this.selectionType === 'stroke') {
             const stroke = this.drawingEngine.strokes[this.selectedIndex];
@@ -667,17 +702,22 @@ class SelectionManager {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             this.rotateStartRotation = textObj.rotation || 0;
         }
+        
+        const center = this.getControlBoxCenter();
+        if (!center) return;
+        
+        const pos = this.getClientPos(e);
+        this.rotateStartAngle = Math.atan2(pos.y - center.y, pos.x - center.x) * 180 / Math.PI;
     }
     
     rotate(e) {
         if (!this.isRotating || this.selectedIndex === null) return;
         
-        const rect = this.controlBox.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
+        const center = this.getControlBoxCenter();
+        if (!center) return;
         
         const pos = this.getClientPos(e);
-        const currentAngle = Math.atan2(pos.y - centerY, pos.x - centerX) * 180 / Math.PI;
+        const currentAngle = Math.atan2(pos.y - center.y, pos.x - center.x) * 180 / Math.PI;
         const angleDelta = currentAngle - this.rotateStartAngle;
         
         if (this.selectionType === 'stroke') {
@@ -853,6 +893,9 @@ class SelectionManager {
     redrawCanvas() {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Redraw stamped images (preserves inserted images during selection operations)
+        this.drawingEngine.redrawStampedImages();
         
         // Redraw all strokes
         for (const stroke of this.drawingEngine.strokes) {
