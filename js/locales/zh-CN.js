@@ -47,6 +47,7 @@ window.translations = {
         pen: '笔',
         shape: '形状',
         move: '移动',
+        select: '选择',
         eraser: '擦除',
         clear: '清空',
         background: '背景',
@@ -205,6 +206,13 @@ window.translations = {
         rotate: '旋转'
     },
 
+    // Selection Controls
+    selection: {
+        copy: '复制',
+        delete: '删除',
+        done: '完成'
+    },
+
     // Page Navigation
     page: {
         previous: '上一页',
@@ -311,6 +319,7 @@ window.translations = {
                 redo: '重做',
                 pen: '笔',
                 move: '移动',
+                select: '选择',
                 eraser: '擦除',
                 clear: '清空',
                 background: '背景',

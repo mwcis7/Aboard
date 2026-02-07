@@ -47,6 +47,7 @@ window.translations = {
         pen: 'Pen',
         shape: 'Shape',
         move: 'Move',
+        select: 'Select',
         eraser: 'Eraser',
         clear: 'Clear',
         background: 'Backgrnd',
@@ -205,6 +206,13 @@ window.translations = {
         rotate: 'Rotate'
     },
 
+    // Selection Controls
+    selection: {
+        copy: 'Copy',
+        delete: 'Delete',
+        done: 'Done'
+    },
+
     // Page Navigation
     page: {
         previous: 'Previous Page',
@@ -311,6 +319,7 @@ window.translations = {
                 redo: 'Redo',
                 pen: 'Pen',
                 move: 'Move',
+                select: 'Select',
                 eraser: 'Eraser',
                 clear: 'Clear',
                 background: 'Background',
