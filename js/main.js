@@ -429,6 +429,8 @@ class DrawingBoard {
                 this.dragCoordinateOrigin(e);
             } else if (this.drawingEngine.currentTool === 'select' && this.selectionManager.isBoxSelecting) {
                 this.selectionManager.continueBoxSelection(e);
+            } else if (this.drawingEngine.currentTool === 'select' && this.selectionManager.isLassoSelecting) {
+                this.selectionManager.continueLassoSelection(e);
             } else if (this.drawingEngine.isPanning) {
                 this.drawingEngine.pan(e);
                 this.applyPanTransform();
@@ -465,6 +467,9 @@ class DrawingBoard {
             this.stopDraggingCoordinateOrigin();
             if (this.drawingEngine.currentTool === 'select' && this.selectionManager.isBoxSelecting) {
                 this.selectionManager.endBoxSelection(e);
+            }
+            if (this.drawingEngine.currentTool === 'select' && this.selectionManager.isLassoSelecting) {
+                this.selectionManager.endLassoSelection(e);
             }
             this.handleDrawingComplete();
             this.drawingEngine.stopPanning();

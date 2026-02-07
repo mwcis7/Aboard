@@ -879,6 +879,31 @@ button, a, input[type="button"], input[type="submit"] {
     border-color: var(--theme-color);
 }
 
+.select-mode-btn {
+    flex: 1;
+    padding: 8px 10px;
+    border: 3px solid #ddd;
+    border-radius: 8px;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #666;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.select-mode-btn:hover {
+    background-color: #f0f0f0;
+    border-color: #ccc;
+}
+
+.select-mode-btn.active {
+    background-color: var(--theme-color);
+    color: #ffffff;
+    border-color: var(--theme-color);
+}
+
 .button-size-options-4 {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -2632,7 +2657,8 @@ button, a, input[type="button"], input[type="submit"] {
     }
     
     .pen-type-btn,
-    .shape-type-btn {
+    .shape-type-btn,
+    .select-mode-btn {
         padding: 8px 6px;
         font-size: 11px;
     }
@@ -2673,6 +2699,7 @@ button, a, input[type="button"], input[type="submit"] {
     .color-btn,
     .pen-type-btn,
     .shape-type-btn,
+    .select-mode-btn,
     .feature-btn,
     .config-close-btn,
     .sound-preset-btn,
@@ -2870,6 +2897,7 @@ button, a, input[type="button"], input[type="submit"] {
     /* Larger config panel options */
     .pen-type-btn,
     .shape-type-btn,
+    .select-mode-btn,
     .eraser-type-btn {
         padding: 14px;
         font-size: 14px;

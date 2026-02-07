@@ -143,7 +143,8 @@ window.translations = {
         select: {
             mode: '선택 모드',
             clickMode: '클릭',
-            rectMode: '영역 선택'
+            rectMode: '영역 선택',
+            lassoMode: '올가미'
         }
     },
 

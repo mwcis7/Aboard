@@ -146,7 +146,8 @@ window.translations = {
         select: {
             mode: '選擇模式',
             clickMode: '點選',
-            rectMode: '框選'
+            rectMode: '框選',
+            lassoMode: '套索'
         }
     },
 

@@ -46,10 +46,14 @@ class SelectionManager {
         this.MIN_SIZE = 10;
         
         // For lasso/rectangle selection
-        this.selectionMode = 'click'; // 'click' or 'rectangle'
+        this.selectionMode = 'click'; // 'click', 'rectangle', or 'lasso'
         this.isBoxSelecting = false;
         this.boxSelectStart = null;
         this.boxSelectEnd = null;
+        
+        // Lasso selection state
+        this.isLassoSelecting = false;
+        this.lassoPoints = []; // Array of {x, y} screen coords
         
         // Multi-select state
         this.multiDragStartPositions = [];
@@ -125,6 +129,17 @@ class SelectionManager {
         this.boxSelectDiv.id = 'box-select-rect';
         this.boxSelectDiv.style.cssText = 'display:none; position:fixed; border:2px dashed #888; background:rgba(128,128,128,0.1); pointer-events:none; z-index:1400;';
         document.body.appendChild(this.boxSelectDiv);
+        
+        // Lasso selection SVG overlay
+        this.lassoSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        this.lassoSvg.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1400;';
+        this.lassoPath = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+        this.lassoPath.setAttribute('fill', 'rgba(128,128,128,0.1)');
+        this.lassoPath.setAttribute('stroke', '#888');
+        this.lassoPath.setAttribute('stroke-width', '2');
+        this.lassoPath.setAttribute('stroke-dasharray', '6 4');
+        this.lassoSvg.appendChild(this.lassoPath);
+        document.body.appendChild(this.lassoSvg);
         
         this.setupEventListeners();
     }
@@ -366,6 +381,12 @@ class SelectionManager {
         // Rectangle selection mode
         if (this.selectionMode === 'rectangle') {
             this.startBoxSelection(e);
+            return true;
+        }
+        
+        // Lasso selection mode
+        if (this.selectionMode === 'lasso') {
+            this.startLassoSelection(e);
             return true;
         }
         
@@ -1125,6 +1146,11 @@ class SelectionManager {
         if (this.boxSelectDiv) {
             this.boxSelectDiv.style.display = 'none';
         }
+        this.isLassoSelecting = false;
+        this.lassoPoints = [];
+        if (this.lassoSvg) {
+            this.lassoSvg.style.display = 'none';
+        }
         this.redrawCanvas();
     }
     
@@ -1287,5 +1313,126 @@ class SelectionManager {
         }
         if (minX === Infinity) return null;
         return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+    }
+    
+    // Lasso selection methods
+    startLassoSelection(e) {
+        this.clearSelection();
+        this.isLassoSelecting = true;
+        const pos = this.getClientPos(e);
+        this.lassoPoints = [{ x: pos.x, y: pos.y }];
+        this.lassoSvg.style.display = 'block';
+        this.updateLassoPath();
+    }
+    
+    continueLassoSelection(e) {
+        if (!this.isLassoSelecting) return;
+        const pos = this.getClientPos(e);
+        this.lassoPoints.push({ x: pos.x, y: pos.y });
+        this.updateLassoPath();
+    }
+    
+    updateLassoPath() {
+        if (this.lassoPoints.length === 0) return;
+        const pointsStr = this.lassoPoints.map(p => `${p.x},${p.y}`).join(' ');
+        this.lassoPath.setAttribute('points', pointsStr);
+    }
+    
+    endLassoSelection(e) {
+        if (!this.isLassoSelecting) return;
+        this.isLassoSelecting = false;
+        this.lassoSvg.style.display = 'none';
+        
+        if (this.lassoPoints.length < 3) {
+            this.lassoPoints = [];
+            return;
+        }
+        
+        // Convert lasso screen points to canvas coordinates
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.offsetWidth / rect.width;
+        const scaleY = this.canvas.offsetHeight / rect.height;
+        
+        const canvasLassoPoints = this.lassoPoints.map(p => ({
+            x: (p.x - rect.left) * scaleX,
+            y: (p.y - rect.top) * scaleY
+        }));
+        
+        this.lassoPoints = [];
+        
+        // Find strokes with any point inside the lasso polygon
+        const foundStrokes = [];
+        for (let i = 0; i < this.drawingEngine.strokes.length; i++) {
+            const stroke = this.drawingEngine.strokes[i];
+            const bounds = this.drawingEngine.getStrokeBounds(stroke);
+            if (!bounds) continue;
+            // Check if center of stroke bounds is inside lasso
+            const cx = bounds.x + bounds.width / 2;
+            const cy = bounds.y + bounds.height / 2;
+            if (this.pointInPolygon(cx, cy, canvasLassoPoints)) {
+                foundStrokes.push(i);
+                continue;
+            }
+            // Also check if any stroke point is inside lasso
+            for (const pt of stroke.points) {
+                if (this.pointInPolygon(pt.x, pt.y, canvasLassoPoints)) {
+                    foundStrokes.push(i);
+                    break;
+                }
+            }
+        }
+        
+        // Find stamped images inside lasso
+        const foundImages = [];
+        for (let i = 0; i < this.drawingEngine.stampedImages.length; i++) {
+            const img = this.drawingEngine.stampedImages[i];
+            const bounds = this.drawingEngine.getImageBounds(img);
+            if (!bounds) continue;
+            const cx = bounds.x + bounds.width / 2;
+            const cy = bounds.y + bounds.height / 2;
+            if (this.pointInPolygon(cx, cy, canvasLassoPoints)) {
+                foundImages.push(i);
+            }
+        }
+        
+        const totalFound = foundStrokes.length + foundImages.length;
+        
+        if (totalFound === 0) {
+            return;
+        } else if (totalFound === 1 && foundStrokes.length === 1) {
+            this.selectStroke(foundStrokes[0]);
+        } else if (totalFound === 1 && foundImages.length === 1) {
+            this.selectImage(foundImages[0]);
+        } else if (foundStrokes.length > 0 && foundImages.length === 0) {
+            this.selectedStrokes = foundStrokes;
+            this.selectionType = 'multi';
+            this.selectedIndex = null;
+            this.showControls();
+            this.redrawWithSelection();
+        } else {
+            if (foundStrokes.length > 0) {
+                this.selectedStrokes = foundStrokes;
+                this.selectionType = 'multi';
+                this.selectedIndex = null;
+                this.showControls();
+                this.redrawWithSelection();
+            } else {
+                this.selectImage(foundImages[0]);
+            }
+        }
+    }
+    
+    // Ray-casting point-in-polygon algorithm
+    pointInPolygon(x, y, polygon) {
+        let inside = false;
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            const xi = polygon[i].x, yi = polygon[i].y;
+            const xj = polygon[j].x, yj = polygon[j].y;
+            
+            const intersect = ((yi > y) !== (yj > y)) &&
+                (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
     }
 }

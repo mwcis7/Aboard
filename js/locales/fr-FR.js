@@ -141,7 +141,8 @@ window.translations = {
         select: {
             mode: 'Mode de sélection',
             clickMode: 'Clic',
-            rectMode: 'Sélection par zone'
+            rectMode: 'Sélection par zone',
+            lassoMode: 'Lasso'
         }
     },
 

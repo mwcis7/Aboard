@@ -149,7 +149,8 @@ window.translations = {
         select: {
             mode: '选择模式',
             clickMode: '点选',
-            rectMode: '框选'
+            rectMode: '框选',
+            lassoMode: '套索'
         }
     },
 

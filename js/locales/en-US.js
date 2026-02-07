@@ -149,7 +149,8 @@ window.translations = {
         select: {
             mode: 'Selection Mode',
             clickMode: 'Click',
-            rectMode: 'Box Select'
+            rectMode: 'Box Select',
+            lassoMode: 'Lasso'
         }
     },
 
