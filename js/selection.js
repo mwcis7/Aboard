@@ -651,10 +651,10 @@ class SelectionManager {
     
     // Rotation handling
     
-    // Calculate the screen center of the control box from canvas coordinates.
+    // Calculate the screen-space center of the control box from canvas coordinates.
     // This avoids using getBoundingClientRect() which returns the axis-aligned
     // bounding box and changes size/position as the element rotates.
-    getControlBoxCenter() {
+    getControlBoxScreenCenter() {
         let bounds = null;
         
         if (this.selectionType === 'stroke') {
@@ -703,7 +703,7 @@ class SelectionManager {
             this.rotateStartRotation = textObj.rotation || 0;
         }
         
-        const center = this.getControlBoxCenter();
+        const center = this.getControlBoxScreenCenter();
         if (!center) return;
         
         const pos = this.getClientPos(e);
@@ -713,7 +713,7 @@ class SelectionManager {
     rotate(e) {
         if (!this.isRotating || this.selectedIndex === null) return;
         
-        const center = this.getControlBoxCenter();
+        const center = this.getControlBoxScreenCenter();
         if (!center) return;
         
         const pos = this.getClientPos(e);
