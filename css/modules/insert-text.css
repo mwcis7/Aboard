@@ -127,6 +127,7 @@
     background: #ddd;
     border-radius: 4px;
     outline: none;
+    touch-action: none;
 }
 
 .touch-friendly-slider::-webkit-slider-thumb {
