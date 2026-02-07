@@ -1160,8 +1160,8 @@ class SelectionManager {
     
     // Box selection methods
     startBoxSelection(e) {
-        this.isBoxSelecting = true;
         this.clearSelection();
+        this.isBoxSelecting = true;
         const pos = this.getClientPos(e);
         this.boxSelectStart = { x: pos.x, y: pos.y };
         this.boxSelectEnd = { x: pos.x, y: pos.y };
