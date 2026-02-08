@@ -42,6 +42,7 @@ window.translations = {
         pen: 'Bolígrafo',
         shape: 'Forma',
         move: 'Mover',
+        select: 'Seleccionar',
         eraser: 'Borrador',
         clear: 'Borrar',
         background: 'Fondo',
@@ -136,6 +137,12 @@ window.translations = {
             invalidFontFormat: 'Formato de fuente no válido. Use archivos TTF, OTF, WOFF o WOFF2.',
             fontTooLarge: 'El archivo de fuente es demasiado grande. El tamaño máximo es 2MB.',
             storageQuotaExceeded: 'Cuota de almacenamiento excedida. Elimine algunas fuentes personalizadas.'
+        },
+        select: {
+            mode: 'Modo de selección',
+            clickMode: 'Clic',
+            rectMode: 'Selección por área',
+            lassoMode: 'Lazo'
         }
     },
 
@@ -171,6 +178,11 @@ window.translations = {
         coordinate: 'Coordenadas',
         coordinateOriginHint: 'Doble clic para seleccionar el origen en modo Mover, luego arrastre para moverlo',
         image: 'Imagen',
+        imagePrefix: 'Imagen',
+        density: 'Densidad',
+        densityLabel: 'Densidad: Actual',
+        size: 'Tamaño',
+        sizeLabel: 'Tamaño: Actual',
         opacity: 'Opacidad del fondo',
         opacityHint: 'Ajustar la transparencia del fondo, 100% es completamente opaco',
         contrast: 'Contraste',
@@ -187,6 +199,13 @@ window.translations = {
         flipHorizontal: 'Voltear horizontal',
         flipVertical: 'Voltear vertical',
         rotate: 'Rotar'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: 'Copiar',
+        delete: 'Eliminar',
+        done: 'Listo'
     },
 
     // Page Navigation
@@ -276,6 +295,7 @@ window.translations = {
                 redo: 'Rehacer',
                 pen: 'Lápiz',
                 move: 'Mover',
+                select: 'Seleccionar',
                 eraser: 'Borrador',
                 clear: 'Borrar',
                 background: 'Fondo',
@@ -531,6 +551,11 @@ window.translations = {
         titlePlaceholder: 'Introducir título del temporizador',
         fontSettings: 'Configuración de fuente',
         fontSize: 'Tamaño de fuente',
+        titleFontSize: 'Tamaño título',
+        timeFontSize: 'Tamaño hora',
+        fontSizeLabel: 'Tamaño: Actual',
+        minimal: 'Mínimo',
+        minimalMode: 'Modo mínimo',
         adjustColor: 'Ajustar color',
         colorSettings: 'Configuración de color',
         textColor: 'Color de texto',

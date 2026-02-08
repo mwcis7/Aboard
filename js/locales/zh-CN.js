@@ -145,6 +145,12 @@ window.translations = {
             invalidFontFormat: '无效的字体格式。请使用 TTF、OTF、WOFF 或 WOFF2 文件。',
             fontTooLarge: '字体文件过大，最大允许 2MB。',
             storageQuotaExceeded: '存储空间不足，请删除一些自定义字体。'
+        },
+        select: {
+            mode: '选择模式',
+            clickMode: '点选',
+            rectMode: '框选',
+            lassoMode: '套索'
         }
     },
 
@@ -234,7 +240,11 @@ window.translations = {
             current: '当前',
             new: '新',
             title: '导入配置确认',
-            message: '检测到以下设置将被更改：'
+            message: '检测到以下设置将被更改：',
+            oldValue: '旧值',
+            newValue: '新值',
+            confirm: '确认',
+            cancel: '取消'
         },
         tabs: {
             general: '通用',
@@ -671,6 +681,13 @@ window.translations = {
         stop: '停止',
         alertSetTime: '请设置倒计时时间',
         alertTitle: '提示'
+    },
+
+    // Export
+    export: {
+        selectAtLeastOnePage: '请至少选择一页',
+        paginationRequired: '需要分页',
+        noPages: '没有可用页面'
     },
 
     // Timezone names

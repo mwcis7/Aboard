@@ -210,10 +210,10 @@ class SettingsManager {
         
         // Square buttons with dynamic sizing based on toolbarSize
         // All proportions scale with buttonSize for consistent appearance
-        const BUTTON_PADDING_RATIO = 0.10;   // Button padding = 10% of button size (slightly reduced)
-        const ICON_SIZE_RATIO = 0.50;        // Icon = 50% of button size (increased from 45%)
-        const FONT_SIZE_RATIO = 0.20;        // Font = 20% of button size (reduced from 25%)
-        const BUTTON_GAP_RATIO = 0.06;       // Button internal gap = 6% of button size (increased from 4%)
+        const BUTTON_PADDING_RATIO = 0.10;   // Button padding = 10% of button size
+        const ICON_SIZE_RATIO = 0.5225;      // Icon = 52.25% of button size (base 55% reduced by 5%)
+        const FONT_SIZE_RATIO = 0.1751;      // Font = 17.51% of button size (base 17% increased by 3%)
+        const BUTTON_GAP_RATIO = 0.08;       // Button internal gap = 8% of button size (more spacing)
         
         // Toolbar container padding and gap also scale with button size
         const TOOLBAR_PADDING_RATIO = 0.25;  // Toolbar padding = 25% of button size

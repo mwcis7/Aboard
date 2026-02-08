@@ -155,7 +155,7 @@ class RandomPickerInstance {
         };
 
         header.addEventListener('mousedown', startDrag);
-        header.addEventListener('touchstart', startDrag);
+        header.addEventListener('touchstart', startDrag, { passive: false });
 
         document.addEventListener('mousemove', doDrag);
         document.addEventListener('touchmove', doDrag, { passive: false });

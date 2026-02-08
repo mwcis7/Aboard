@@ -257,8 +257,8 @@
 .time-fullscreen-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background: white;
     cursor: pointer;
@@ -266,8 +266,8 @@
 }
 
 .time-fullscreen-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background: white;
     cursor: pointer;
@@ -436,8 +436,8 @@
 .fullscreen-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 24px;
-    height: 24px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     background: white;
     cursor: pointer;
@@ -445,8 +445,8 @@
 }
 
 .fullscreen-slider::-moz-range-thumb {
-    width: 24px;
-    height: 24px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     background: white;
     cursor: pointer;

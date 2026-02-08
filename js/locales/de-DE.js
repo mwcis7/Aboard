@@ -42,6 +42,7 @@ window.translations = {
         pen: 'Stift',
         shape: 'Form',
         move: 'Verschieben',
+        select: 'Auswählen',
         eraser: 'Radiergummi',
         clear: 'Löschen',
         background: 'Hintergrund',
@@ -138,6 +139,12 @@ window.translations = {
             invalidFontFormat: 'Ungültiges Schriftartformat. Bitte verwenden Sie TTF-, OTF-, WOFF- oder WOFF2-Dateien.',
             fontTooLarge: 'Die Schriftartdatei ist zu groß. Maximale Größe beträgt 2MB.',
             storageQuotaExceeded: 'Speicherplatz überschritten. Bitte löschen Sie einige benutzerdefinierte Schriftarten.'
+        },
+        select: {
+            mode: 'Auswahlmodus',
+            clickMode: 'Klick',
+            rectMode: 'Bereichsauswahl',
+            lassoMode: 'Lasso'
         }
     },
 
@@ -173,6 +180,11 @@ window.translations = {
         coordinate: 'Koordinaten',
         coordinateOriginHint: 'Doppelklicken Sie im Verschiebemodus, um den Koordinatenursprung auszuwählen und zu verschieben',
         image: 'Bild',
+        imagePrefix: 'Bild',
+        density: 'Dichte',
+        densityLabel: 'Dichte: Aktuell',
+        size: 'Größe',
+        sizeLabel: 'Größe: Aktuell',
         opacity: 'Hintergrund-Deckkraft',
         opacityHint: 'Hintergrundtransparenz anpassen, 100% ist vollständig undurchsichtig',
         contrast: 'Kontrast',
@@ -189,6 +201,13 @@ window.translations = {
         flipHorizontal: 'Horizontal spiegeln',
         flipVertical: 'Vertikal spiegeln',
         rotate: 'Drehen'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: 'Kopieren',
+        delete: 'Löschen',
+        done: 'Fertig'
     },
 
     // Page Navigation
@@ -278,6 +297,7 @@ window.translations = {
                 redo: 'Wiederholen',
                 pen: 'Stift',
                 move: 'Verschieben',
+                select: 'Auswählen',
                 eraser: 'Radierer',
                 clear: 'Löschen',
                 background: 'Hintergrund',

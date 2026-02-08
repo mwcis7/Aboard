@@ -1,5 +1,5 @@
 // Selection Module
-// Handles selection of drawn strokes (images and text are stamped as pixels and not individually selectable)
+// Handles selection of drawn strokes, images, and text
 
 class SelectionManager {
     constructor(canvas, ctx, drawingEngine, strokeControls) {
@@ -17,7 +17,7 @@ class SelectionManager {
         this.selectedStrokes = [];
         
         // Current selection type and index
-        this.selectionType = null; // 'stroke' or 'text' (text selection prepared for future text manager integration)
+        this.selectionType = null; // 'stroke', 'text', 'image', or 'multi'
         this.selectedIndex = null;
         
         // Dragging state
@@ -45,8 +45,19 @@ class SelectionManager {
         this.HANDLE_THRESHOLD = 10;
         this.MIN_SIZE = 10;
         
-        // For lasso/rectangle selection (future enhancement)
-        this.selectionMode = 'click'; // 'click' or 'rectangle'
+        // For lasso/rectangle selection
+        this.selectionMode = 'click'; // 'click', 'rectangle', or 'lasso'
+        this.isBoxSelecting = false;
+        this.boxSelectStart = null;
+        this.boxSelectEnd = null;
+        
+        // Lasso selection state
+        this.isLassoSelecting = false;
+        this.lassoPoints = []; // Array of {x, y} screen coords
+        
+        // Multi-select state
+        this.multiDragStartPositions = [];
+        this.multiBounds = null;
         
         // Create selection controls overlay
         this.createSelectionControls();
@@ -112,6 +123,23 @@ class SelectionManager {
         
         this.overlay = document.getElementById('selection-controls-overlay');
         this.controlBox = document.getElementById('selection-controls-box');
+        
+        // Box selection rectangle overlay
+        this.boxSelectDiv = document.createElement('div');
+        this.boxSelectDiv.id = 'box-select-rect';
+        this.boxSelectDiv.style.cssText = 'display:none; position:fixed; border:2px dashed #888; background:rgba(128,128,128,0.1); pointer-events:none; z-index:1400;';
+        document.body.appendChild(this.boxSelectDiv);
+        
+        // Lasso selection SVG overlay
+        this.lassoSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        this.lassoSvg.style.cssText = 'display:none; position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1400;';
+        this.lassoPath = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+        this.lassoPath.setAttribute('fill', 'rgba(128,128,128,0.1)');
+        this.lassoPath.setAttribute('stroke', '#888');
+        this.lassoPath.setAttribute('stroke-width', '2');
+        this.lassoPath.setAttribute('stroke-dasharray', '6 4');
+        this.lassoSvg.appendChild(this.lassoPath);
+        document.body.appendChild(this.lassoSvg);
         
         this.setupEventListeners();
     }
@@ -350,15 +378,33 @@ class SelectionManager {
         this.isSelecting = true;
         const coords = this.getCanvasCoordinates(e);
         
-        // Try to select something at this point
-        // First, check for text objects (requires TextInsertionManager to be set via setTextManager)
-        // Note: Currently text insertion stamps pixels onto canvas, but this is prepared for future integration
+        // Rectangle selection mode
+        if (this.selectionMode === 'rectangle') {
+            this.startBoxSelection(e);
+            return true;
+        }
+        
+        // Lasso selection mode
+        if (this.selectionMode === 'lasso') {
+            this.startLassoSelection(e);
+            return true;
+        }
+        
+        // Click selection mode
+        // First, check for text objects
         if (this.textManager && this.textManager.textObjects && this.textManager.textObjects.length > 0) {
             const textIndex = this.textManager.hitTestText(coords.x, coords.y);
             if (textIndex >= 0) {
                 this.selectText(textIndex);
                 return true;
             }
+        }
+        
+        // Check for stamped images
+        const imageIndex = this.drawingEngine.findImageAtPoint(coords.x, coords.y);
+        if (imageIndex !== null) {
+            this.selectImage(imageIndex);
+            return true;
         }
         
         // Then check for strokes
@@ -392,6 +438,14 @@ class SelectionManager {
         this.redrawWithSelection();
     }
     
+    selectImage(index) {
+        this.selectionType = 'image';
+        this.selectedIndex = index;
+        this.drawingEngine.selectImage(index);
+        this.showControls();
+        this.redrawWithSelection();
+    }
+    
     showControls() {
         this.overlay.style.display = 'block';
         this.updateControlBox();
@@ -402,7 +456,8 @@ class SelectionManager {
     }
     
     updateControlBox() {
-        if (this.selectionType === null || this.selectedIndex === null) return;
+        if (this.selectionType === null) return;
+        if (this.selectionType !== 'multi' && this.selectedIndex === null) return;
         
         let bounds = null;
         let rotation = 0;
@@ -410,7 +465,11 @@ class SelectionManager {
         if (this.selectionType === 'stroke') {
             const stroke = this.drawingEngine.strokes[this.selectedIndex];
             if (!stroke) return;
-            bounds = this.drawingEngine.getStrokeBounds(stroke);
+            if (this.isRotating && stroke.originalBounds) {
+                bounds = stroke.originalBounds;
+            } else {
+                bounds = this.drawingEngine.getStrokeBounds(stroke);
+            }
             rotation = stroke.rotation || 0;
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
@@ -423,6 +482,14 @@ class SelectionManager {
                 height: textObj.height * lineCount * textObj.scale + 10
             };
             rotation = textObj.rotation || 0;
+        } else if (this.selectionType === 'image') {
+            const img = this.drawingEngine.stampedImages[this.selectedIndex];
+            if (!img) return;
+            bounds = this.drawingEngine.getImageBounds(img);
+            rotation = img.rotation || 0;
+        } else if (this.selectionType === 'multi') {
+            bounds = this.getMultiBounds();
+            rotation = 0;
         }
         
         if (!bounds) return;
@@ -449,7 +516,11 @@ class SelectionManager {
     
     // Drag handling
     startDrag(e) {
-        if (this.selectedIndex === null) return;
+        if (this.selectionType === 'multi') {
+            // Multi-select drag
+        } else if (this.selectedIndex === null) {
+            return;
+        }
         
         e.preventDefault();
         this.isDragging = true;
@@ -467,19 +538,33 @@ class SelectionManager {
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             this.dragStartObjectPos = { x: textObj.x, y: textObj.y };
+        } else if (this.selectionType === 'image') {
+            const img = this.drawingEngine.stampedImages[this.selectedIndex];
+            this.dragStartObjectPos = { x: img.x, y: img.y };
+        } else if (this.selectionType === 'multi') {
+            this.multiDragStartPositions = [];
+            for (const idx of this.selectedStrokes) {
+                const stroke = this.drawingEngine.strokes[idx];
+                if (stroke) {
+                    for (let point of stroke.points) {
+                        point.originalX = point.x;
+                        point.originalY = point.y;
+                    }
+                }
+            }
         }
         
         this.controlBox.style.cursor = 'grabbing';
     }
     
     drag(e) {
-        if (!this.isDragging || this.selectedIndex === null) return;
+        if (!this.isDragging) return;
+        if (this.selectionType !== 'multi' && this.selectedIndex === null) return;
         
         const pos = this.getClientPos(e);
         const rect = this.canvas.getBoundingClientRect();
         
         // Convert screen delta to canvas coordinate delta
-        // Scale factor: canvas pixels / screen pixels (inverse of updateControlBox which does screen/canvas)
         const scaleX = this.canvas.offsetWidth / rect.width;
         const scaleY = this.canvas.offsetHeight / rect.height;
         const deltaX = (pos.x - this.dragStartPos.x) * scaleX;
@@ -497,6 +582,22 @@ class SelectionManager {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             textObj.x = this.dragStartObjectPos.x + deltaX;
             textObj.y = this.dragStartObjectPos.y + deltaY;
+        } else if (this.selectionType === 'image') {
+            const img = this.drawingEngine.stampedImages[this.selectedIndex];
+            img.x = this.dragStartObjectPos.x + deltaX;
+            img.y = this.dragStartObjectPos.y + deltaY;
+        } else if (this.selectionType === 'multi') {
+            for (const idx of this.selectedStrokes) {
+                const stroke = this.drawingEngine.strokes[idx];
+                if (stroke) {
+                    for (let point of stroke.points) {
+                        if (point.originalX !== undefined) {
+                            point.x = point.originalX + deltaX;
+                            point.y = point.originalY + deltaY;
+                        }
+                    }
+                }
+            }
         }
         
         this.updateControlBox();
@@ -518,13 +619,23 @@ class SelectionManager {
                         delete point.originalY;
                     }
                 }
+            } else if (this.selectionType === 'multi') {
+                for (const idx of this.selectedStrokes) {
+                    const stroke = this.drawingEngine.strokes[idx];
+                    if (stroke) {
+                        for (let point of stroke.points) {
+                            delete point.originalX;
+                            delete point.originalY;
+                        }
+                    }
+                }
             }
         }
     }
     
     // Resize handling
     startResize(e, handle) {
-        if (this.selectedIndex === null) return;
+        if (this.selectionType !== 'multi' && this.selectedIndex === null) return;
         
         this.isResizing = true;
         this.resizeHandle = handle;
@@ -547,11 +658,26 @@ class SelectionManager {
                 height: textObj.height * lineCount * textObj.scale,
                 scale: textObj.scale
             };
+        } else if (this.selectionType === 'image') {
+            const img = this.drawingEngine.stampedImages[this.selectedIndex];
+            this.resizeStartBounds = { x: img.x, y: img.y, width: img.width, height: img.height };
+        } else if (this.selectionType === 'multi') {
+            this.resizeStartBounds = this.getMultiBounds();
+            for (const idx of this.selectedStrokes) {
+                const stroke = this.drawingEngine.strokes[idx];
+                if (stroke) {
+                    for (let point of stroke.points) {
+                        point.originalX = point.x;
+                        point.originalY = point.y;
+                    }
+                }
+            }
         }
     }
     
     resize(e) {
-        if (!this.isResizing || this.selectedIndex === null || !this.resizeStartBounds) return;
+        if (!this.isResizing || !this.resizeStartBounds) return;
+        if (this.selectionType !== 'multi' && this.selectedIndex === null) return;
         
         const pos = this.getClientPos(e);
         const canvasScale = this.getCanvasScale();
@@ -601,9 +727,6 @@ class SelectionManager {
         
         if (this.selectionType === 'stroke') {
             const stroke = this.drawingEngine.strokes[this.selectedIndex];
-            const scaleX = newBounds.width / startBounds.width;
-            const scaleY = newBounds.height / startBounds.height;
-            
             for (let point of stroke.points) {
                 if (point.originalX !== undefined && point.originalY !== undefined) {
                     const relX = (point.originalX - startBounds.x) / startBounds.width;
@@ -618,6 +741,26 @@ class SelectionManager {
             textObj.scale = Math.max(0.1, startBounds.scale * scaleRatio);
             textObj.x = newBounds.x;
             textObj.y = newBounds.y;
+        } else if (this.selectionType === 'image') {
+            const img = this.drawingEngine.stampedImages[this.selectedIndex];
+            img.x = newBounds.x;
+            img.y = newBounds.y;
+            img.width = newBounds.width;
+            img.height = newBounds.height;
+        } else if (this.selectionType === 'multi') {
+            for (const idx of this.selectedStrokes) {
+                const stroke = this.drawingEngine.strokes[idx];
+                if (stroke) {
+                    for (let point of stroke.points) {
+                        if (point.originalX !== undefined && point.originalY !== undefined) {
+                            const relX = (point.originalX - startBounds.x) / startBounds.width;
+                            const relY = (point.originalY - startBounds.y) / startBounds.height;
+                            point.x = newBounds.x + relX * newBounds.width;
+                            point.y = newBounds.y + relY * newBounds.height;
+                        }
+                    }
+                }
+            }
         }
         
         this.updateControlBox();
@@ -639,21 +782,65 @@ class SelectionManager {
                         delete point.originalY;
                     }
                 }
+            } else if (this.selectionType === 'multi') {
+                for (const idx of this.selectedStrokes) {
+                    const stroke = this.drawingEngine.strokes[idx];
+                    if (stroke) {
+                        for (let point of stroke.points) {
+                            delete point.originalX;
+                            delete point.originalY;
+                        }
+                    }
+                }
             }
         }
     }
     
     // Rotation handling
+    
+    // Calculate the screen-space center of the control box from canvas coordinates.
+    // This avoids using getBoundingClientRect() which returns the axis-aligned
+    // bounding box and changes size/position as the element rotates.
+    getControlBoxScreenCenter() {
+        let bounds = null;
+        
+        if (this.selectionType === 'stroke') {
+            const stroke = this.drawingEngine.strokes[this.selectedIndex];
+            if (!stroke) return null;
+            bounds = stroke.originalBounds || this.drawingEngine.getStrokeBounds(stroke);
+        } else if (this.selectionType === 'text' && this.textManager) {
+            const textObj = this.textManager.textObjects[this.selectedIndex];
+            if (!textObj) return null;
+            const lineCount = textObj.text.split('\n').length;
+            bounds = {
+                x: textObj.x - 5,
+                y: textObj.y - 5,
+                width: textObj.width * textObj.scale + 10,
+                height: textObj.height * lineCount * textObj.scale + 10
+            };
+        } else if (this.selectionType === 'image') {
+            const img = this.drawingEngine.stampedImages[this.selectedIndex];
+            if (!img) return null;
+            bounds = { x: img.x, y: img.y, width: img.width, height: img.height };
+        } else if (this.selectionType === 'multi') {
+            bounds = this.getMultiBounds();
+        }
+        
+        if (!bounds) return null;
+        
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = rect.width / this.canvas.offsetWidth;
+        const scaleY = rect.height / this.canvas.offsetHeight;
+        
+        const centerX = rect.left + (bounds.x + bounds.width / 2) * scaleX;
+        const centerY = rect.top + (bounds.y + bounds.height / 2) * scaleY;
+        return { x: centerX, y: centerY };
+    }
+    
     startRotate(e) {
-        if (this.selectedIndex === null) return;
+        if (this.selectionType !== 'multi' && this.selectedIndex === null) return;
         
         this.isRotating = true;
-        const rect = this.controlBox.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        
-        const pos = this.getClientPos(e);
-        this.rotateStartAngle = Math.atan2(pos.y - centerY, pos.x - centerX) * 180 / Math.PI;
         
         if (this.selectionType === 'stroke') {
             const stroke = this.drawingEngine.strokes[this.selectedIndex];
@@ -666,18 +853,39 @@ class SelectionManager {
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             this.rotateStartRotation = textObj.rotation || 0;
+        } else if (this.selectionType === 'image') {
+            const img = this.drawingEngine.stampedImages[this.selectedIndex];
+            this.rotateStartRotation = img.rotation || 0;
+        } else if (this.selectionType === 'multi') {
+            this.rotateStartRotation = 0;
+            this.multiBounds = this.getMultiBounds();
+            for (const idx of this.selectedStrokes) {
+                const stroke = this.drawingEngine.strokes[idx];
+                if (stroke) {
+                    for (let point of stroke.points) {
+                        point.originalX = point.x;
+                        point.originalY = point.y;
+                    }
+                }
+            }
         }
+        
+        const center = this.getControlBoxScreenCenter();
+        if (!center) return;
+        
+        const pos = this.getClientPos(e);
+        this.rotateStartAngle = Math.atan2(pos.y - center.y, pos.x - center.x) * 180 / Math.PI;
     }
     
     rotate(e) {
-        if (!this.isRotating || this.selectedIndex === null) return;
+        if (!this.isRotating) return;
+        if (this.selectionType !== 'multi' && this.selectedIndex === null) return;
         
-        const rect = this.controlBox.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
+        const center = this.getControlBoxScreenCenter();
+        if (!center) return;
         
         const pos = this.getClientPos(e);
-        const currentAngle = Math.atan2(pos.y - centerY, pos.x - centerX) * 180 / Math.PI;
+        const currentAngle = Math.atan2(pos.y - center.y, pos.x - center.x) * 180 / Math.PI;
         const angleDelta = currentAngle - this.rotateStartAngle;
         
         if (this.selectionType === 'stroke') {
@@ -702,6 +910,28 @@ class SelectionManager {
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             textObj.rotation = this.normalizeAngle(this.rotateStartRotation + angleDelta);
+        } else if (this.selectionType === 'image') {
+            const img = this.drawingEngine.stampedImages[this.selectedIndex];
+            img.rotation = this.normalizeAngle(this.rotateStartRotation + angleDelta);
+        } else if (this.selectionType === 'multi') {
+            const bounds = this.multiBounds;
+            if (!bounds) return;
+            const centerX = bounds.x + bounds.width / 2;
+            const centerY = bounds.y + bounds.height / 2;
+            const angleRad = angleDelta * Math.PI / 180;
+            for (const idx of this.selectedStrokes) {
+                const stroke = this.drawingEngine.strokes[idx];
+                if (stroke) {
+                    for (let point of stroke.points) {
+                        if (point.originalX !== undefined && point.originalY !== undefined) {
+                            const relX = point.originalX - centerX;
+                            const relY = point.originalY - centerY;
+                            point.x = centerX + relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
+                            point.y = centerY + relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
+                        }
+                    }
+                }
+            }
         }
         
         this.updateControlBox();
@@ -722,18 +952,53 @@ class SelectionManager {
                     }
                     delete stroke.originalBounds;
                 }
+            } else if (this.selectionType === 'multi') {
+                for (const idx of this.selectedStrokes) {
+                    const stroke = this.drawingEngine.strokes[idx];
+                    if (stroke) {
+                        for (let point of stroke.points) {
+                            delete point.originalX;
+                            delete point.originalY;
+                        }
+                    }
+                }
+                this.multiBounds = null;
             }
         }
     }
     
     // Action methods
     copySelection() {
+        if (this.selectionType === 'multi') {
+            if (this.selectedStrokes.length === 0) return false;
+            const newIndices = [];
+            for (const idx of this.selectedStrokes) {
+                const stroke = this.drawingEngine.strokes[idx];
+                if (stroke) {
+                    const copiedStroke = {
+                        points: stroke.points.map(p => ({ x: p.x + this.COPY_OFFSET, y: p.y + this.COPY_OFFSET })),
+                        color: stroke.color,
+                        size: stroke.size,
+                        penType: stroke.penType,
+                        tool: stroke.tool,
+                        rotation: stroke.rotation || 0
+                    };
+                    this.drawingEngine.strokes.push(copiedStroke);
+                    newIndices.push(this.drawingEngine.strokes.length - 1);
+                }
+            }
+            this.selectedStrokes = newIndices;
+            this.updateControlBox();
+            this.redrawWithSelection();
+            this.saveHistory();
+            return true;
+        }
+        
         if (this.selectedIndex === null) return false;
         
         if (this.selectionType === 'stroke') {
             const result = this.drawingEngine.copySelectedStroke();
             if (result) {
-                // Select the newly copied stroke
                 this.selectedIndex = this.drawingEngine.strokes.length - 1;
                 this.updateControlBox();
                 this.redrawWithSelection();
@@ -749,12 +1014,34 @@ class SelectionManager {
                 this.saveHistory();
             }
             return result;
+        } else if (this.selectionType === 'image') {
+            const result = this.drawingEngine.copySelectedImage();
+            if (result) {
+                this.selectedIndex = this.drawingEngine.stampedImages.length - 1;
+                this.updateControlBox();
+                this.redrawWithSelection();
+                this.saveHistory();
+            }
+            return result;
         }
         
         return false;
     }
     
     deleteSelection() {
+        if (this.selectionType === 'multi') {
+            if (this.selectedStrokes.length === 0) return false;
+            // Sort indices in descending order to remove from end first
+            const sorted = [...this.selectedStrokes].sort((a, b) => b - a);
+            for (const idx of sorted) {
+                this.drawingEngine.strokes.splice(idx, 1);
+            }
+            this.clearSelection();
+            this.redrawCanvas();
+            this.saveHistory();
+            return true;
+        }
+        
         if (this.selectedIndex === null) return false;
         
         if (this.selectionType === 'stroke') {
@@ -767,6 +1054,14 @@ class SelectionManager {
             return result;
         } else if (this.selectionType === 'text' && this.textManager) {
             const result = this.textManager.deleteSelectedText();
+            if (result) {
+                this.clearSelection();
+                this.redrawCanvas();
+                this.saveHistory();
+            }
+            return result;
+        } else if (this.selectionType === 'image') {
+            const result = this.drawingEngine.deleteSelectedImage();
             if (result) {
                 this.clearSelection();
                 this.redrawCanvas();
@@ -829,7 +1124,7 @@ class SelectionManager {
     }
     
     hasSelection() {
-        return this.selectedIndex !== null;
+        return this.selectedIndex !== null || (this.selectionType === 'multi' && this.selectedStrokes.length > 0);
     }
     
     clearSelection() {
@@ -837,11 +1132,25 @@ class SelectionManager {
         this.selectedIndex = null;
         this.hasUnsavedChanges = false;
         this.drawingEngine.deselectStroke();
+        this.drawingEngine.deselectImage();
+        this.drawingEngine.selectedImageIndex = null;
         if (this.textManager) {
             this.textManager.selectedTextIndex = null;
         }
         this.hideControls();
         this.selectedStrokes = [];
+        this.multiBounds = null;
+        this.isBoxSelecting = false;
+        this.boxSelectStart = null;
+        this.boxSelectEnd = null;
+        if (this.boxSelectDiv) {
+            this.boxSelectDiv.style.display = 'none';
+        }
+        this.isLassoSelecting = false;
+        this.lassoPoints = [];
+        if (this.lassoSvg) {
+            this.lassoSvg.style.display = 'none';
+        }
         this.redrawCanvas();
     }
     
@@ -853,6 +1162,9 @@ class SelectionManager {
     redrawCanvas() {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Redraw stamped images (preserves inserted images during selection operations)
+        this.drawingEngine.redrawStampedImages();
         
         // Redraw all strokes
         for (const stroke of this.drawingEngine.strokes) {
@@ -870,5 +1182,239 @@ class SelectionManager {
         } else if (this.selectionType === 'text' && this.textManager) {
             this.textManager.drawTextSelection();
         }
+    }
+    
+    // Box selection methods
+    startBoxSelection(e) {
+        this.clearSelection();
+        this.isBoxSelecting = true;
+        const pos = this.getClientPos(e);
+        this.boxSelectStart = { x: pos.x, y: pos.y };
+        this.boxSelectEnd = { x: pos.x, y: pos.y };
+        this.boxSelectDiv.style.display = 'block';
+        this.updateBoxSelectDiv();
+    }
+    
+    continueBoxSelection(e) {
+        if (!this.isBoxSelecting) return;
+        const pos = this.getClientPos(e);
+        this.boxSelectEnd = { x: pos.x, y: pos.y };
+        this.updateBoxSelectDiv();
+    }
+    
+    updateBoxSelectDiv() {
+        if (!this.boxSelectStart || !this.boxSelectEnd) return;
+        const left = Math.min(this.boxSelectStart.x, this.boxSelectEnd.x);
+        const top = Math.min(this.boxSelectStart.y, this.boxSelectEnd.y);
+        const width = Math.abs(this.boxSelectEnd.x - this.boxSelectStart.x);
+        const height = Math.abs(this.boxSelectEnd.y - this.boxSelectStart.y);
+        this.boxSelectDiv.style.left = left + 'px';
+        this.boxSelectDiv.style.top = top + 'px';
+        this.boxSelectDiv.style.width = width + 'px';
+        this.boxSelectDiv.style.height = height + 'px';
+    }
+    
+    endBoxSelection(e) {
+        if (!this.isBoxSelecting) return;
+        this.isBoxSelecting = false;
+        this.boxSelectDiv.style.display = 'none';
+        
+        if (!this.boxSelectStart || !this.boxSelectEnd) return;
+        
+        // Convert screen coordinates to canvas coordinates
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.offsetWidth / rect.width;
+        const scaleY = this.canvas.offsetHeight / rect.height;
+        
+        const selLeft = Math.min(this.boxSelectStart.x, this.boxSelectEnd.x);
+        const selTop = Math.min(this.boxSelectStart.y, this.boxSelectEnd.y);
+        const selRight = Math.max(this.boxSelectStart.x, this.boxSelectEnd.x);
+        const selBottom = Math.max(this.boxSelectStart.y, this.boxSelectEnd.y);
+        
+        const canvasSelRect = {
+            x: (selLeft - rect.left) * scaleX,
+            y: (selTop - rect.top) * scaleY,
+            width: (selRight - selLeft) * scaleX,
+            height: (selBottom - selTop) * scaleY
+        };
+        
+        // Find strokes whose bounding boxes intersect the selection rectangle
+        const foundStrokes = [];
+        for (let i = 0; i < this.drawingEngine.strokes.length; i++) {
+            const stroke = this.drawingEngine.strokes[i];
+            const bounds = this.drawingEngine.getStrokeBounds(stroke);
+            if (bounds && this.rectsIntersect(canvasSelRect, bounds)) {
+                foundStrokes.push(i);
+            }
+        }
+        
+        // Find stamped images whose bounding boxes intersect the selection rectangle
+        const foundImages = [];
+        for (let i = 0; i < this.drawingEngine.stampedImages.length; i++) {
+            const img = this.drawingEngine.stampedImages[i];
+            const bounds = this.drawingEngine.getImageBounds(img);
+            if (bounds && this.rectsIntersect(canvasSelRect, bounds)) {
+                foundImages.push(i);
+            }
+        }
+        
+        this.boxSelectStart = null;
+        this.boxSelectEnd = null;
+        
+        this.applyFoundSelection(foundStrokes, foundImages);
+    }
+    
+    // Apply selection from found strokes and images (shared by box and lasso selection)
+    applyFoundSelection(foundStrokes, foundImages) {
+        const totalFound = foundStrokes.length + foundImages.length;
+        
+        if (totalFound === 0) {
+            return;
+        } else if (totalFound === 1 && foundStrokes.length === 1) {
+            this.selectStroke(foundStrokes[0]);
+        } else if (totalFound === 1 && foundImages.length === 1) {
+            this.selectImage(foundImages[0]);
+        } else if (foundStrokes.length > 0 && foundImages.length === 0) {
+            this.selectedStrokes = foundStrokes;
+            this.selectionType = 'multi';
+            this.selectedIndex = null;
+            this.showControls();
+            this.redrawWithSelection();
+        } else {
+            if (foundStrokes.length > 0) {
+                this.selectedStrokes = foundStrokes;
+                this.selectionType = 'multi';
+                this.selectedIndex = null;
+                this.showControls();
+                this.redrawWithSelection();
+            } else {
+                this.selectImage(foundImages[0]);
+            }
+        }
+    }
+    
+    rectsIntersect(a, b) {
+        return a.x < b.x + b.width &&
+               a.x + a.width > b.x &&
+               a.y < b.y + b.height &&
+               a.y + a.height > b.y;
+    }
+    
+    getMultiBounds() {
+        if (this.selectedStrokes.length === 0) return null;
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (const idx of this.selectedStrokes) {
+            const stroke = this.drawingEngine.strokes[idx];
+            if (!stroke) continue;
+            const bounds = this.drawingEngine.getStrokeBounds(stroke);
+            if (!bounds) continue;
+            minX = Math.min(minX, bounds.x);
+            minY = Math.min(minY, bounds.y);
+            maxX = Math.max(maxX, bounds.x + bounds.width);
+            maxY = Math.max(maxY, bounds.y + bounds.height);
+        }
+        if (minX === Infinity) return null;
+        return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+    }
+    
+    // Lasso selection methods
+    startLassoSelection(e) {
+        this.clearSelection();
+        this.isLassoSelecting = true;
+        const pos = this.getClientPos(e);
+        this.lassoPoints = [{ x: pos.x, y: pos.y }];
+        this.lassoSvg.style.display = 'block';
+        this.updateLassoPath();
+    }
+    
+    continueLassoSelection(e) {
+        if (!this.isLassoSelecting) return;
+        const pos = this.getClientPos(e);
+        this.lassoPoints.push({ x: pos.x, y: pos.y });
+        this.updateLassoPath();
+    }
+    
+    updateLassoPath() {
+        if (this.lassoPoints.length === 0) return;
+        const pointsStr = this.lassoPoints.map(p => `${p.x},${p.y}`).join(' ');
+        this.lassoPath.setAttribute('points', pointsStr);
+    }
+    
+    endLassoSelection(e) {
+        if (!this.isLassoSelecting) return;
+        this.isLassoSelecting = false;
+        this.lassoSvg.style.display = 'none';
+        
+        if (this.lassoPoints.length < 3) {
+            this.lassoPoints = [];
+            return;
+        }
+        
+        // Convert lasso screen points to canvas coordinates
+        const rect = this.canvas.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) {
+            this.lassoPoints = [];
+            return;
+        }
+        const scaleX = this.canvas.offsetWidth / rect.width;
+        const scaleY = this.canvas.offsetHeight / rect.height;
+        
+        const canvasLassoPoints = this.lassoPoints.map(p => ({
+            x: (p.x - rect.left) * scaleX,
+            y: (p.y - rect.top) * scaleY
+        }));
+        
+        this.lassoPoints = [];
+        
+        // Find strokes with any point inside the lasso polygon
+        const foundStrokes = [];
+        for (let i = 0; i < this.drawingEngine.strokes.length; i++) {
+            const stroke = this.drawingEngine.strokes[i];
+            const bounds = this.drawingEngine.getStrokeBounds(stroke);
+            if (!bounds) continue;
+            // Check if center of stroke bounds is inside lasso
+            const cx = bounds.x + bounds.width / 2;
+            const cy = bounds.y + bounds.height / 2;
+            if (this.pointInPolygon(cx, cy, canvasLassoPoints)) {
+                foundStrokes.push(i);
+                continue;
+            }
+            // Also check if any stroke point is inside lasso
+            for (const pt of stroke.points) {
+                if (this.pointInPolygon(pt.x, pt.y, canvasLassoPoints)) {
+                    foundStrokes.push(i);
+                    break;
+                }
+            }
+        }
+        
+        // Find stamped images inside lasso
+        const foundImages = [];
+        for (let i = 0; i < this.drawingEngine.stampedImages.length; i++) {
+            const img = this.drawingEngine.stampedImages[i];
+            const bounds = this.drawingEngine.getImageBounds(img);
+            if (!bounds) continue;
+            const cx = bounds.x + bounds.width / 2;
+            const cy = bounds.y + bounds.height / 2;
+            if (this.pointInPolygon(cx, cy, canvasLassoPoints)) {
+                foundImages.push(i);
+            }
+        }
+        
+        this.applyFoundSelection(foundStrokes, foundImages);
+    }
+    
+    // Ray-casting point-in-polygon algorithm
+    pointInPolygon(x, y, polygon) {
+        let inside = false;
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+            const xi = polygon[i].x, yi = polygon[i].y;
+            const xj = polygon[j].x, yj = polygon[j].y;
+            
+            const intersect = ((yi > y) !== (yj > y)) &&
+                (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
     }
 }

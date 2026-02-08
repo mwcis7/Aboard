@@ -42,6 +42,7 @@ window.translations = {
         pen: 'Stylo',
         shape: 'Forme',
         move: 'Déplacer',
+        select: 'Sélectionner',
         eraser: 'Gomme',
         clear: 'Effacer',
         background: 'Arrière-plan',
@@ -136,6 +137,12 @@ window.translations = {
             invalidFontFormat: 'Format de police invalide. Veuillez utiliser des fichiers TTF, OTF, WOFF ou WOFF2.',
             fontTooLarge: 'Le fichier de police est trop volumineux. La taille maximale est de 2 Mo.',
             storageQuotaExceeded: 'Quota de stockage dépassé. Veuillez supprimer certaines polices personnalisées.'
+        },
+        select: {
+            mode: 'Mode de sélection',
+            clickMode: 'Clic',
+            rectMode: 'Sélection par zone',
+            lassoMode: 'Lasso'
         }
     },
 
@@ -171,6 +178,11 @@ window.translations = {
         coordinate: 'Coordonnées',
         coordinateOriginHint: 'Double-cliquez pour sélectionner l\'origine en mode Déplacer, puis faites glisser',
         image: 'Image',
+        imagePrefix: 'Image',
+        density: 'Densité',
+        densityLabel: 'Densité : Actuelle',
+        size: 'Taille',
+        sizeLabel: 'Taille : Actuelle',
         opacity: 'Opacité de l\'arrière-plan',
         opacityHint: 'Ajuster la transparence de l\'arrière-plan, 100% est complètement opaque',
         contrast: 'Contraste',
@@ -187,6 +199,13 @@ window.translations = {
         flipHorizontal: 'Retourner horizontalement',
         flipVertical: 'Retourner verticalement',
         rotate: 'Rotation'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: 'Copier',
+        delete: 'Supprimer',
+        done: 'Terminé'
     },
 
     // Page Navigation
@@ -276,6 +295,7 @@ window.translations = {
                 redo: 'Rétablir',
                 pen: 'Stylo',
                 move: 'Déplacer',
+                select: 'Sélectionner',
                 eraser: 'Gomme',
                 clear: 'Effacer',
                 background: 'Arrière-plan',
@@ -531,6 +551,11 @@ window.translations = {
         titlePlaceholder: 'Entrer le titre du minuteur',
         fontSettings: 'Paramètres de police',
         fontSize: 'Taille de police',
+        titleFontSize: 'Taille titre',
+        timeFontSize: 'Taille heure',
+        fontSizeLabel: 'Taille : Actuelle',
+        minimal: 'Minimal',
+        minimalMode: 'Mode minimal',
         adjustColor: 'Ajuster la couleur',
         colorSettings: 'Paramètres de couleur',
         textColor: 'Couleur du texte',
