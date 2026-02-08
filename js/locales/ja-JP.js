@@ -144,7 +144,11 @@ window.translations = {
             mode: '選択モード',
             clickMode: 'クリック',
             rectMode: '範囲選択',
-            lassoMode: 'なげなわ'
+            lassoMode: 'なげなわ',
+            transform: '変換',
+            rotate90: '90°回転',
+            flipH: '左右反転',
+            flipV: '上下反転'
         }
     },
 

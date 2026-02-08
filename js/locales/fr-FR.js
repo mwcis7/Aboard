@@ -142,7 +142,11 @@ window.translations = {
             mode: 'Mode de sélection',
             clickMode: 'Clic',
             rectMode: 'Sélection par zone',
-            lassoMode: 'Lasso'
+            lassoMode: 'Lasso',
+            transform: 'Transformer',
+            rotate90: 'Rotation 90°',
+            flipH: 'Retourner horizontalement',
+            flipV: 'Retourner verticalement'
         }
     },
 

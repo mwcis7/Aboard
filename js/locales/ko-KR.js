@@ -144,7 +144,11 @@ window.translations = {
             mode: '선택 모드',
             clickMode: '클릭',
             rectMode: '영역 선택',
-            lassoMode: '올가미'
+            lassoMode: '올가미',
+            transform: '변환',
+            rotate90: '90° 회전',
+            flipH: '좌우 반전',
+            flipV: '상하 반전'
         }
     },
 

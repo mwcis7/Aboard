@@ -1359,6 +1359,32 @@ class DrawingBoard {
                 }
             });
         });
+
+        // Select transform buttons (rotate 90, flip H, flip V)
+        const rotate90Btn = document.getElementById('select-rotate90-btn');
+        if (rotate90Btn) {
+            rotate90Btn.addEventListener('click', () => {
+                if (this.selectionManager && this.selectionManager.hasSelection()) {
+                    this.selectionManager.rotate90();
+                }
+            });
+        }
+        const flipHBtn = document.getElementById('select-flip-h-btn');
+        if (flipHBtn) {
+            flipHBtn.addEventListener('click', () => {
+                if (this.selectionManager && this.selectionManager.hasSelection()) {
+                    this.selectionManager.flipHorizontal();
+                }
+            });
+        }
+        const flipVBtn = document.getElementById('select-flip-v-btn');
+        if (flipVBtn) {
+            flipVBtn.addEventListener('click', () => {
+                if (this.selectionManager && this.selectionManager.hasSelection()) {
+                    this.selectionManager.flipVertical();
+                }
+            });
+        }
     }
     
     setupSettingsListeners() {
@@ -2006,8 +2032,25 @@ class DrawingBoard {
                                         computedStyle.transform.includes('translateY');
             const hasExplicitPosition = !hasCenteredPosition && (left !== 'auto' || top !== 'auto' || right !== 'auto' || bottom !== 'auto');
             
-            // Skip panels that are centered and haven't been dragged
+            // For centered panels, check if they overflow the viewport and reposition if needed
             if (hasCenteredPosition && !hasExplicitPosition) {
+                if (rect.right > windowWidth - EDGE_SPACING) {
+                    panel.style.left = `${Math.max(EDGE_SPACING, windowWidth - rect.width - EDGE_SPACING)}px`;
+                    panel.style.right = 'auto';
+                    panel.style.transform = panel.style.transform ? panel.style.transform.replace(/translateX\([^)]*\)/, '') : '';
+                } else if (rect.left < EDGE_SPACING) {
+                    panel.style.left = `${EDGE_SPACING}px`;
+                    panel.style.right = 'auto';
+                    panel.style.transform = panel.style.transform ? panel.style.transform.replace(/translateX\([^)]*\)/, '') : '';
+                }
+                if (rect.bottom > windowHeight - EDGE_SPACING) {
+                    const newBottom = EDGE_SPACING;
+                    panel.style.bottom = `${newBottom}px`;
+                    panel.style.top = 'auto';
+                } else if (rect.top < EDGE_SPACING) {
+                    panel.style.top = `${EDGE_SPACING}px`;
+                    panel.style.bottom = 'auto';
+                }
                 return;
             }
             

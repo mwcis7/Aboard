@@ -57,6 +57,8 @@ class SelectionManager {
         
         // Multi-select state
         this.multiDragStartPositions = [];
+        this.selectedImages = []; // Array of image indices for multi-select
+        this.multiImageDragStartPositions = []; // Starting positions for images in multi-drag
         this.multiBounds = null;
         
         // Create selection controls overlay
@@ -552,6 +554,13 @@ class SelectionManager {
                     }
                 }
             }
+            this.multiImageDragStartPositions = [];
+            for (const idx of this.selectedImages) {
+                const img = this.drawingEngine.stampedImages[idx];
+                if (img) {
+                    this.multiImageDragStartPositions.push({ idx, x: img.x, y: img.y });
+                }
+            }
         }
         
         this.controlBox.style.cursor = 'grabbing';
@@ -596,6 +605,13 @@ class SelectionManager {
                             point.y = point.originalY + deltaY;
                         }
                     }
+                }
+            }
+            for (const startPos of this.multiImageDragStartPositions) {
+                const img = this.drawingEngine.stampedImages[startPos.idx];
+                if (img) {
+                    img.x = startPos.x + deltaX;
+                    img.y = startPos.y + deltaY;
                 }
             }
         }
@@ -670,6 +686,13 @@ class SelectionManager {
                         point.originalX = point.x;
                         point.originalY = point.y;
                     }
+                }
+            }
+            this.multiImageResizeStart = [];
+            for (const idx of this.selectedImages) {
+                const img = this.drawingEngine.stampedImages[idx];
+                if (img) {
+                    this.multiImageResizeStart.push({ idx, x: img.x, y: img.y, width: img.width, height: img.height });
                 }
             }
         }
@@ -758,6 +781,21 @@ class SelectionManager {
                             point.x = newBounds.x + relX * newBounds.width;
                             point.y = newBounds.y + relY * newBounds.height;
                         }
+                    }
+                }
+            }
+            if (this.multiImageResizeStart) {
+                for (const start of this.multiImageResizeStart) {
+                    const img = this.drawingEngine.stampedImages[start.idx];
+                    if (img) {
+                        const relX = (start.x - startBounds.x) / startBounds.width;
+                        const relY = (start.y - startBounds.y) / startBounds.height;
+                        const relW = start.width / startBounds.width;
+                        const relH = start.height / startBounds.height;
+                        img.x = newBounds.x + relX * newBounds.width;
+                        img.y = newBounds.y + relY * newBounds.height;
+                        img.width = Math.max(this.MIN_SIZE, relW * newBounds.width);
+                        img.height = Math.max(this.MIN_SIZE, relH * newBounds.height);
                     }
                 }
             }
@@ -868,6 +906,13 @@ class SelectionManager {
                     }
                 }
             }
+            this.multiImageRotateStart = [];
+            for (const idx of this.selectedImages) {
+                const img = this.drawingEngine.stampedImages[idx];
+                if (img) {
+                    this.multiImageRotateStart.push({ idx, x: img.x, y: img.y, width: img.width, height: img.height, rotation: img.rotation || 0 });
+                }
+            }
         }
         
         const center = this.getControlBoxScreenCenter();
@@ -932,6 +977,22 @@ class SelectionManager {
                     }
                 }
             }
+            if (this.multiImageRotateStart) {
+                for (const start of this.multiImageRotateStart) {
+                    const img = this.drawingEngine.stampedImages[start.idx];
+                    if (img) {
+                        const imgCenterX = start.x + start.width / 2;
+                        const imgCenterY = start.y + start.height / 2;
+                        const relX = imgCenterX - centerX;
+                        const relY = imgCenterY - centerY;
+                        const newCenterX = centerX + relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
+                        const newCenterY = centerY + relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
+                        img.x = newCenterX - start.width / 2;
+                        img.y = newCenterY - start.height / 2;
+                        img.rotation = this.normalizeAngle(start.rotation + angleDelta);
+                    }
+                }
+            }
         }
         
         this.updateControlBox();
@@ -962,6 +1023,7 @@ class SelectionManager {
                         }
                     }
                 }
+                this.multiImageRotateStart = [];
                 this.multiBounds = null;
             }
         }
@@ -970,8 +1032,8 @@ class SelectionManager {
     // Action methods
     copySelection() {
         if (this.selectionType === 'multi') {
-            if (this.selectedStrokes.length === 0) return false;
-            const newIndices = [];
+            if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0) return false;
+            const newStrokeIndices = [];
             for (const idx of this.selectedStrokes) {
                 const stroke = this.drawingEngine.strokes[idx];
                 if (stroke) {
@@ -984,10 +1046,29 @@ class SelectionManager {
                         rotation: stroke.rotation || 0
                     };
                     this.drawingEngine.strokes.push(copiedStroke);
-                    newIndices.push(this.drawingEngine.strokes.length - 1);
+                    newStrokeIndices.push(this.drawingEngine.strokes.length - 1);
                 }
             }
-            this.selectedStrokes = newIndices;
+            const newImageIndices = [];
+            for (const idx of this.selectedImages) {
+                const img = this.drawingEngine.stampedImages[idx];
+                if (img) {
+                    const copiedImage = {
+                        imageElement: img.imageElement,
+                        x: img.x + this.COPY_OFFSET,
+                        y: img.y + this.COPY_OFFSET,
+                        width: img.width,
+                        height: img.height,
+                        rotation: img.rotation || 0,
+                        flipHorizontal: img.flipHorizontal || false,
+                        flipVertical: img.flipVertical || false
+                    };
+                    this.drawingEngine.stampedImages.push(copiedImage);
+                    newImageIndices.push(this.drawingEngine.stampedImages.length - 1);
+                }
+            }
+            this.selectedStrokes = newStrokeIndices;
+            this.selectedImages = newImageIndices;
             this.updateControlBox();
             this.redrawWithSelection();
             this.saveHistory();
@@ -1030,11 +1111,15 @@ class SelectionManager {
     
     deleteSelection() {
         if (this.selectionType === 'multi') {
-            if (this.selectedStrokes.length === 0) return false;
+            if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0) return false;
             // Sort indices in descending order to remove from end first
-            const sorted = [...this.selectedStrokes].sort((a, b) => b - a);
-            for (const idx of sorted) {
+            const sortedStrokes = [...this.selectedStrokes].sort((a, b) => b - a);
+            for (const idx of sortedStrokes) {
                 this.drawingEngine.strokes.splice(idx, 1);
+            }
+            const sortedImages = [...this.selectedImages].sort((a, b) => b - a);
+            for (const idx of sortedImages) {
+                this.drawingEngine.stampedImages.splice(idx, 1);
             }
             this.clearSelection();
             this.redrawCanvas();
@@ -1088,6 +1173,155 @@ class SelectionManager {
         }
     }
     
+    rotate90() {
+        if (!this.hasSelection()) return;
+        
+        if (this.selectionType === 'stroke') {
+            const stroke = this.drawingEngine.strokes[this.selectedIndex];
+            if (!stroke) return;
+            const bounds = this.drawingEngine.getStrokeBounds(stroke);
+            if (!bounds) return;
+            const cx = bounds.x + bounds.width / 2;
+            const cy = bounds.y + bounds.height / 2;
+            const angleRad = Math.PI / 2;
+            for (let point of stroke.points) {
+                const relX = point.x - cx;
+                const relY = point.y - cy;
+                point.x = cx + relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
+                point.y = cy + relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
+            }
+        } else if (this.selectionType === 'text' && this.textManager) {
+            const textObj = this.textManager.textObjects[this.selectedIndex];
+            if (!textObj) return;
+            textObj.rotation = this.normalizeAngle((textObj.rotation || 0) + 90);
+        } else if (this.selectionType === 'image') {
+            const img = this.drawingEngine.stampedImages[this.selectedIndex];
+            if (!img) return;
+            img.rotation = this.normalizeAngle((img.rotation || 0) + 90);
+        } else if (this.selectionType === 'multi') {
+            const bounds = this.getMultiBounds();
+            if (!bounds) return;
+            const cx = bounds.x + bounds.width / 2;
+            const cy = bounds.y + bounds.height / 2;
+            const angleRad = Math.PI / 2;
+            for (const idx of this.selectedStrokes) {
+                const stroke = this.drawingEngine.strokes[idx];
+                if (stroke) {
+                    for (let point of stroke.points) {
+                        const relX = point.x - cx;
+                        const relY = point.y - cy;
+                        point.x = cx + relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
+                        point.y = cy + relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
+                    }
+                }
+            }
+            for (const idx of this.selectedImages) {
+                const img = this.drawingEngine.stampedImages[idx];
+                if (img) {
+                    const imgCX = img.x + img.width / 2;
+                    const imgCY = img.y + img.height / 2;
+                    const relX = imgCX - cx;
+                    const relY = imgCY - cy;
+                    const newCX = cx + relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
+                    const newCY = cy + relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
+                    img.x = newCX - img.width / 2;
+                    img.y = newCY - img.height / 2;
+                    img.rotation = this.normalizeAngle((img.rotation || 0) + 90);
+                }
+            }
+        }
+        
+        this.hasUnsavedChanges = true;
+        this.updateControlBox();
+        this.redrawCanvas();
+    }
+    
+    flipHorizontal() {
+        if (!this.hasSelection()) return;
+        
+        if (this.selectionType === 'stroke') {
+            const stroke = this.drawingEngine.strokes[this.selectedIndex];
+            if (!stroke) return;
+            const bounds = this.drawingEngine.getStrokeBounds(stroke);
+            if (!bounds) return;
+            const cx = bounds.x + bounds.width / 2;
+            for (let point of stroke.points) {
+                point.x = 2 * cx - point.x;
+            }
+        } else if (this.selectionType === 'image') {
+            const img = this.drawingEngine.stampedImages[this.selectedIndex];
+            if (!img) return;
+            img.flipHorizontal = !(img.flipHorizontal || false);
+        } else if (this.selectionType === 'multi') {
+            const bounds = this.getMultiBounds();
+            if (!bounds) return;
+            const cx = bounds.x + bounds.width / 2;
+            for (const idx of this.selectedStrokes) {
+                const stroke = this.drawingEngine.strokes[idx];
+                if (stroke) {
+                    for (let point of stroke.points) {
+                        point.x = 2 * cx - point.x;
+                    }
+                }
+            }
+            for (const idx of this.selectedImages) {
+                const img = this.drawingEngine.stampedImages[idx];
+                if (img) {
+                    const imgCX = img.x + img.width / 2;
+                    img.x = 2 * cx - imgCX - img.width / 2;
+                    img.flipHorizontal = !(img.flipHorizontal || false);
+                }
+            }
+        }
+        
+        this.hasUnsavedChanges = true;
+        this.updateControlBox();
+        this.redrawCanvas();
+    }
+    
+    flipVertical() {
+        if (!this.hasSelection()) return;
+        
+        if (this.selectionType === 'stroke') {
+            const stroke = this.drawingEngine.strokes[this.selectedIndex];
+            if (!stroke) return;
+            const bounds = this.drawingEngine.getStrokeBounds(stroke);
+            if (!bounds) return;
+            const cy = bounds.y + bounds.height / 2;
+            for (let point of stroke.points) {
+                point.y = 2 * cy - point.y;
+            }
+        } else if (this.selectionType === 'image') {
+            const img = this.drawingEngine.stampedImages[this.selectedIndex];
+            if (!img) return;
+            img.flipVertical = !(img.flipVertical || false);
+        } else if (this.selectionType === 'multi') {
+            const bounds = this.getMultiBounds();
+            if (!bounds) return;
+            const cy = bounds.y + bounds.height / 2;
+            for (const idx of this.selectedStrokes) {
+                const stroke = this.drawingEngine.strokes[idx];
+                if (stroke) {
+                    for (let point of stroke.points) {
+                        point.y = 2 * cy - point.y;
+                    }
+                }
+            }
+            for (const idx of this.selectedImages) {
+                const img = this.drawingEngine.stampedImages[idx];
+                if (img) {
+                    const imgCY = img.y + img.height / 2;
+                    img.y = 2 * cy - imgCY - img.height / 2;
+                    img.flipVertical = !(img.flipVertical || false);
+                }
+            }
+        }
+        
+        this.hasUnsavedChanges = true;
+        this.updateControlBox();
+        this.redrawCanvas();
+    }
+    
     continueSelection(e) {
         if (!this.isSelecting) return;
         
@@ -1124,7 +1358,7 @@ class SelectionManager {
     }
     
     hasSelection() {
-        return this.selectedIndex !== null || (this.selectionType === 'multi' && this.selectedStrokes.length > 0);
+        return this.selectedIndex !== null || (this.selectionType === 'multi' && (this.selectedStrokes.length > 0 || this.selectedImages.length > 0));
     }
     
     clearSelection() {
@@ -1139,6 +1373,7 @@ class SelectionManager {
         }
         this.hideControls();
         this.selectedStrokes = [];
+        this.selectedImages = [];
         this.multiBounds = null;
         this.isBoxSelecting = false;
         this.boxSelectStart = null;
@@ -1274,22 +1509,14 @@ class SelectionManager {
             this.selectStroke(foundStrokes[0]);
         } else if (totalFound === 1 && foundImages.length === 1) {
             this.selectImage(foundImages[0]);
-        } else if (foundStrokes.length > 0 && foundImages.length === 0) {
+        } else {
+            // Multi-select: include both strokes and images
             this.selectedStrokes = foundStrokes;
+            this.selectedImages = foundImages;
             this.selectionType = 'multi';
             this.selectedIndex = null;
             this.showControls();
             this.redrawWithSelection();
-        } else {
-            if (foundStrokes.length > 0) {
-                this.selectedStrokes = foundStrokes;
-                this.selectionType = 'multi';
-                this.selectedIndex = null;
-                this.showControls();
-                this.redrawWithSelection();
-            } else {
-                this.selectImage(foundImages[0]);
-            }
         }
     }
     
@@ -1301,12 +1528,22 @@ class SelectionManager {
     }
     
     getMultiBounds() {
-        if (this.selectedStrokes.length === 0) return null;
+        if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0) return null;
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         for (const idx of this.selectedStrokes) {
             const stroke = this.drawingEngine.strokes[idx];
             if (!stroke) continue;
             const bounds = this.drawingEngine.getStrokeBounds(stroke);
+            if (!bounds) continue;
+            minX = Math.min(minX, bounds.x);
+            minY = Math.min(minY, bounds.y);
+            maxX = Math.max(maxX, bounds.x + bounds.width);
+            maxY = Math.max(maxY, bounds.y + bounds.height);
+        }
+        for (const idx of this.selectedImages) {
+            const img = this.drawingEngine.stampedImages[idx];
+            if (!img) continue;
+            const bounds = this.drawingEngine.getImageBounds(img);
             if (!bounds) continue;
             minX = Math.min(minX, bounds.x);
             minY = Math.min(minY, bounds.y);
