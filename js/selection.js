@@ -1154,8 +1154,7 @@ class SelectionManager {
                 }
                 this.multiImageRotateStart = [];
                 this.multiTextRotateStart = [];
-                // Keep multiBounds and multiRotation - don't clear them
-                // Recalculate multiBounds from new positions
+                // Clear multiBounds so it recalculates from new positions; keep multiRotation
                 this.multiBounds = null;
             }
         }
