@@ -152,6 +152,15 @@ window.translations = {
         }
     },
 
+    selection: {
+        edit: 'Bearbeiten',
+        copy: 'Kopieren',
+        delete: 'Löschen',
+        done: 'Fertig',
+        rotate90: '90° drehen',
+        flipH: 'Horizontal spiegeln'
+    },
+
     // Line Style Modal
     lineStyleModal: {
         title: 'Linienstil-Einstellungen',

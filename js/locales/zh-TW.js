@@ -155,6 +155,15 @@ window.translations = {
         }
     },
 
+    selection: {
+        edit: '編輯',
+        copy: '複製',
+        delete: '刪除',
+        done: '完成',
+        rotate90: '旋轉90°',
+        flipH: '水平翻轉'
+    },
+
     // Line Style Modal
     lineStyleModal: {
         title: '線條樣式設定',

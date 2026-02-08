@@ -152,6 +152,15 @@ window.translations = {
         }
     },
 
+    selection: {
+        edit: '편집',
+        copy: '복사',
+        delete: '삭제',
+        done: '완료',
+        rotate90: '90° 회전',
+        flipH: '좌우 반전'
+    },
+
     // Line Style Modal
     lineStyleModal: {
         title: '선 스타일 설정',

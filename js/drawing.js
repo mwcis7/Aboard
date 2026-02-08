@@ -792,7 +792,8 @@ class DrawingEngine {
             color: stroke.color,
             size: stroke.size,
             penType: stroke.penType,
-            tool: stroke.tool
+            tool: stroke.tool,
+            rotation: stroke.rotation || 0
         };
         
         this.strokes.push(copiedStroke);

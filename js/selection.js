@@ -63,6 +63,7 @@ class SelectionManager {
         this.multiTextDragStartPositions = []; // Starting positions for texts in multi-drag
         this.multiBounds = null;
         this.multiRotation = 0; // Accumulated rotation for multi-select
+        this.multiStrokeRotateStart = [];
         
         // Create selection controls overlay
         this.createSelectionControls();
@@ -529,18 +530,14 @@ class SelectionManager {
             if (this.isRotating && stroke.originalBounds) {
                 bounds = stroke.originalBounds;
             } else {
-                bounds = this.drawingEngine.getStrokeBounds(stroke);
+                bounds = this.getStrokeSelectionBounds(stroke);
             }
             rotation = stroke.rotation || 0;
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             if (!textObj) return;
-            bounds = {
-                x: textObj.x - 5,
-                y: textObj.y - 5,
-                width: textObj.width * textObj.scale + 10,
-                height: textObj.height * textObj.scale + 10
-            };
+            bounds = this.getTextObjectBounds(this.selectedIndex);
+            if (!bounds) return;
             rotation = textObj.rotation || 0;
         } else if (this.selectionType === 'image') {
             const img = this.drawingEngine.stampedImages[this.selectedIndex];
@@ -552,7 +549,7 @@ class SelectionManager {
             if (this.isRotating && this.multiBounds) {
                 bounds = this.multiBounds;
             } else {
-                bounds = this.getMultiBounds();
+                bounds = this.getMultiSelectionBounds();
             }
             rotation = this.multiRotation || 0;
         }
@@ -947,23 +944,19 @@ class SelectionManager {
         if (this.selectionType === 'stroke') {
             const stroke = this.drawingEngine.strokes[this.selectedIndex];
             if (!stroke) return null;
-            bounds = stroke.originalBounds || this.drawingEngine.getStrokeBounds(stroke);
+            bounds = (this.isRotating && stroke.originalBounds) ? stroke.originalBounds : this.getStrokeSelectionBounds(stroke);
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             if (!textObj) return null;
-            bounds = {
-                x: textObj.x - 5,
-                y: textObj.y - 5,
-                width: textObj.width * textObj.scale + 10,
-                height: textObj.height * textObj.scale + 10
-            };
+            bounds = this.getTextObjectBounds(this.selectedIndex);
+            if (!bounds) return null;
         } else if (this.selectionType === 'image') {
             const img = this.drawingEngine.stampedImages[this.selectedIndex];
             if (!img) return null;
             bounds = { x: img.x, y: img.y, width: img.width, height: img.height };
         } else if (this.selectionType === 'multi') {
             // During rotation, use the saved original bounds center
-            bounds = (this.isRotating && this.multiBounds) ? this.multiBounds : this.getMultiBounds();
+            bounds = (this.isRotating && this.multiBounds) ? this.multiBounds : this.getMultiSelectionBounds();
         }
         
         if (!bounds) return null;
@@ -985,7 +978,7 @@ class SelectionManager {
         if (this.selectionType === 'stroke') {
             const stroke = this.drawingEngine.strokes[this.selectedIndex];
             this.rotateStartRotation = stroke.rotation || 0;
-            stroke.originalBounds = this.drawingEngine.getStrokeBounds(stroke);
+            stroke.originalBounds = this.getStrokeSelectionBounds(stroke);
             for (let point of stroke.points) {
                 point.originalX = point.x;
                 point.originalY = point.y;
@@ -998,7 +991,8 @@ class SelectionManager {
             this.rotateStartRotation = img.rotation || 0;
         } else if (this.selectionType === 'multi') {
             this.rotateStartRotation = this.multiRotation;
-            this.multiBounds = this.getMultiBounds();
+            this.multiBounds = this.getMultiSelectionBounds();
+            this.multiStrokeRotateStart = [];
             for (const idx of this.selectedStrokes) {
                 const stroke = this.drawingEngine.strokes[idx];
                 if (stroke) {
@@ -1006,6 +1000,7 @@ class SelectionManager {
                         point.originalX = point.x;
                         point.originalY = point.y;
                     }
+                    this.multiStrokeRotateStart.push({ idx, rotation: stroke.rotation || 0 });
                 }
             }
             this.multiImageRotateStart = [];
@@ -1086,6 +1081,10 @@ class SelectionManager {
                             point.y = centerY + relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
                         }
                     }
+                    const start = this.multiStrokeRotateStart?.find(item => item.idx === idx);
+                    if (start) {
+                        stroke.rotation = this.normalizeAngle(start.rotation + angleDelta);
+                    }
                 }
             }
             if (this.multiImageRotateStart) {
@@ -1152,6 +1151,7 @@ class SelectionManager {
                         }
                     }
                 }
+                this.multiStrokeRotateStart = [];
                 this.multiImageRotateStart = [];
                 this.multiTextRotateStart = [];
                 // Clear multiBounds so it recalculates from new positions; keep multiRotation
@@ -1363,6 +1363,7 @@ class SelectionManager {
                 point.x = cx + relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
                 point.y = cy + relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
             }
+            stroke.rotation = this.normalizeAngle((stroke.rotation || 0) + 90);
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             if (!textObj) return;
@@ -1386,6 +1387,7 @@ class SelectionManager {
                         point.x = cx + relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
                         point.y = cy + relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
                     }
+                    stroke.rotation = this.normalizeAngle((stroke.rotation || 0) + 90);
                 }
             }
             for (const idx of this.selectedImages) {
@@ -1591,6 +1593,7 @@ class SelectionManager {
         this.selectedTexts = [];
         this.multiRotation = 0;
         this.multiBounds = null;
+        this.multiStrokeRotateStart = [];
         this.isBoxSelecting = false;
         this.boxSelectStart = null;
         this.boxSelectEnd = null;
@@ -1713,7 +1716,7 @@ class SelectionManager {
         const foundTexts = [];
         if (this.textManager && this.textManager.textObjects) {
             for (let i = 0; i < this.textManager.textObjects.length; i++) {
-                const bounds = this.getTextObjectBounds(i);
+                const bounds = this.getTextObjectSelectionBounds(i);
                 if (bounds && this.rectsIntersect(canvasSelRect, bounds)) {
                     foundTexts.push(i);
                 }
@@ -1757,6 +1760,136 @@ class SelectionManager {
                a.y < b.y + b.height &&
                a.y + a.height > b.y;
     }
+
+    rotatePoint(x, y, centerX, centerY, angleDeg) {
+        const angleRad = angleDeg * Math.PI / 180;
+        const cos = Math.cos(angleRad);
+        const sin = Math.sin(angleRad);
+        const relX = x - centerX;
+        const relY = y - centerY;
+        return {
+            x: centerX + relX * cos - relY * sin,
+            y: centerY + relX * sin + relY * cos
+        };
+    }
+
+    getBoundsFromPoints(points) {
+        if (!points || points.length === 0) return null;
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (const point of points) {
+            if (!point) continue;
+            minX = Math.min(minX, point.x);
+            minY = Math.min(minY, point.y);
+            maxX = Math.max(maxX, point.x);
+            maxY = Math.max(maxY, point.y);
+        }
+        if (minX === Infinity) return null;
+        return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+    }
+
+    getStrokeSelectionBounds(stroke) {
+        if (!stroke) return null;
+        const bounds = this.drawingEngine.getStrokeBounds(stroke);
+        if (!bounds) return null;
+        const rotation = stroke.rotation || 0;
+        if (!rotation) return bounds;
+        const centerX = bounds.x + bounds.width / 2;
+        const centerY = bounds.y + bounds.height / 2;
+        const unrotatedPoints = stroke.points.map(point =>
+            this.rotatePoint(point.x, point.y, centerX, centerY, -rotation)
+        );
+        return this.getBoundsFromPoints(unrotatedPoints);
+    }
+
+    getImageCornerPoints(img) {
+        if (!img) return [];
+        const corners = [
+            { x: img.x, y: img.y },
+            { x: img.x + img.width, y: img.y },
+            { x: img.x + img.width, y: img.y + img.height },
+            { x: img.x, y: img.y + img.height }
+        ];
+        const rotation = img.rotation || 0;
+        if (!rotation) return corners;
+        const centerX = img.x + img.width / 2;
+        const centerY = img.y + img.height / 2;
+        return corners.map(point => this.rotatePoint(point.x, point.y, centerX, centerY, rotation));
+    }
+
+    getTextCornerPoints(textObj, bounds) {
+        if (!textObj || !bounds) return [];
+        const corners = [
+            { x: bounds.x, y: bounds.y },
+            { x: bounds.x + bounds.width, y: bounds.y },
+            { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
+            { x: bounds.x, y: bounds.y + bounds.height }
+        ];
+        const rotation = textObj.rotation || 0;
+        if (!rotation) return corners;
+        const centerX = bounds.x + bounds.width / 2;
+        const centerY = bounds.y + bounds.height / 2;
+        return corners.map(point => this.rotatePoint(point.x, point.y, centerX, centerY, rotation));
+    }
+
+    getMultiSelectionBounds() {
+        if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0 && this.selectedTexts.length === 0) return null;
+        const points = [];
+        for (const idx of this.selectedStrokes) {
+            const stroke = this.drawingEngine.strokes[idx];
+            if (!stroke) continue;
+            for (const point of stroke.points) {
+                points.push({ x: point.x, y: point.y });
+            }
+        }
+        for (const idx of this.selectedImages) {
+            const img = this.drawingEngine.stampedImages[idx];
+            points.push(...this.getImageCornerPoints(img));
+        }
+        if (this.textManager) {
+            for (const idx of this.selectedTexts) {
+                const textObj = this.textManager.textObjects[idx];
+                const bounds = this.getTextObjectBounds(idx);
+                points.push(...this.getTextCornerPoints(textObj, bounds));
+            }
+        }
+        const axisBounds = this.getBoundsFromPoints(points);
+        if (!axisBounds) return null;
+        const rotation = this.multiRotation || 0;
+        if (!rotation) return axisBounds;
+        const centerX = axisBounds.x + axisBounds.width / 2;
+        const centerY = axisBounds.y + axisBounds.height / 2;
+        const unrotatedPoints = points.map(point =>
+            this.rotatePoint(point.x, point.y, centerX, centerY, -rotation)
+        );
+        return this.getBoundsFromPoints(unrotatedPoints);
+    }
+
+    getTextObjectSelectionBounds(index) {
+        if (!this.textManager || !this.textManager.textObjects) return null;
+        const textObj = this.textManager.textObjects[index];
+        const bounds = this.getTextObjectBounds(index);
+        if (!textObj || !bounds) return null;
+        const corners = this.getTextCornerPoints(textObj, bounds);
+        return this.getBoundsFromPoints(corners);
+    }
+
+    polygonIntersectsRect(polygon, rect) {
+        if (!polygon || polygon.length === 0 || !rect) return false;
+        const corners = [
+            { x: rect.x, y: rect.y },
+            { x: rect.x + rect.width, y: rect.y },
+            { x: rect.x + rect.width, y: rect.y + rect.height },
+            { x: rect.x, y: rect.y + rect.height }
+        ];
+        if (corners.some(corner => this.pointInPolygon(corner.x, corner.y, polygon))) {
+            return true;
+        }
+        if (polygon.some(point => point.x >= rect.x && point.x <= rect.x + rect.width &&
+            point.y >= rect.y && point.y <= rect.y + rect.height)) {
+            return true;
+        }
+        return false;
+    }
     
     // Get bounds for a text object by index
     getTextObjectBounds(index) {
@@ -1772,38 +1905,7 @@ class SelectionManager {
     }
     
     getMultiBounds() {
-        if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0 && this.selectedTexts.length === 0) return null;
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        for (const idx of this.selectedStrokes) {
-            const stroke = this.drawingEngine.strokes[idx];
-            if (!stroke) continue;
-            const bounds = this.drawingEngine.getStrokeBounds(stroke);
-            if (!bounds) continue;
-            minX = Math.min(minX, bounds.x);
-            minY = Math.min(minY, bounds.y);
-            maxX = Math.max(maxX, bounds.x + bounds.width);
-            maxY = Math.max(maxY, bounds.y + bounds.height);
-        }
-        for (const idx of this.selectedImages) {
-            const img = this.drawingEngine.stampedImages[idx];
-            if (!img) continue;
-            const bounds = this.drawingEngine.getImageBounds(img);
-            if (!bounds) continue;
-            minX = Math.min(minX, bounds.x);
-            minY = Math.min(minY, bounds.y);
-            maxX = Math.max(maxX, bounds.x + bounds.width);
-            maxY = Math.max(maxY, bounds.y + bounds.height);
-        }
-        for (const idx of this.selectedTexts) {
-            const bounds = this.getTextObjectBounds(idx);
-            if (!bounds) continue;
-            minX = Math.min(minX, bounds.x);
-            minY = Math.min(minY, bounds.y);
-            maxX = Math.max(maxX, bounds.x + bounds.width);
-            maxY = Math.max(maxY, bounds.y + bounds.height);
-        }
-        if (minX === Infinity) return null;
-        return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+        return this.getMultiSelectionBounds();
     }
     
     // Lasso selection methods
@@ -1894,11 +1996,12 @@ class SelectionManager {
         const foundTexts = [];
         if (this.textManager && this.textManager.textObjects) {
             for (let i = 0; i < this.textManager.textObjects.length; i++) {
-                const bounds = this.getTextObjectBounds(i);
+                const bounds = this.getTextObjectSelectionBounds(i);
                 if (!bounds) continue;
                 const cx = bounds.x + bounds.width / 2;
                 const cy = bounds.y + bounds.height / 2;
-                if (this.pointInPolygon(cx, cy, canvasLassoPoints)) {
+                if (this.pointInPolygon(cx, cy, canvasLassoPoints) ||
+                    this.polygonIntersectsRect(canvasLassoPoints, bounds)) {
                     foundTexts.push(i);
                 }
             }

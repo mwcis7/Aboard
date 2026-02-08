@@ -150,6 +150,15 @@ window.translations = {
         }
     },
 
+    selection: {
+        edit: 'Modifier',
+        copy: 'Copier',
+        delete: 'Supprimer',
+        done: 'Terminé',
+        rotate90: 'Rotation 90°',
+        flipH: 'Retourner horizontalement'
+    },
+
     // Line Style Modal
     lineStyleModal: {
         title: 'Paramètres de style de ligne',
