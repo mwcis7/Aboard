@@ -645,11 +645,10 @@ class SelectionManager {
                         }
                     }
                 }
+                this.multiImageDragStartPositions = [];
             }
         }
     }
-    
-    // Resize handling
     startResize(e, handle) {
         if (this.selectionType !== 'multi' && this.selectedIndex === null) return;
         
@@ -830,6 +829,7 @@ class SelectionManager {
                         }
                     }
                 }
+                this.multiImageResizeStart = [];
             }
         }
     }
