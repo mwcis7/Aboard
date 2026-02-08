@@ -41,6 +41,11 @@ class InsertTextManager {
         this.rotateStartAngle = 0;
         this.rotateStartRotation = 0;
 
+        // Text objects storage for selection support
+        this.textObjects = [];
+        this.selectedTextIndex = null;
+        this.editingTextIndex = null; // Index of text being edited
+
         this.createControls();
         this.setupEventListeners();
         this.loadCustomFontsToDocument();
@@ -639,45 +644,221 @@ class InsertTextManager {
     }
 
     stampText() {
-        this.ctx.save();
-
         const fontSize = this.textConfig.fontSize * this.textScale;
         const fontStyle = this.textConfig.italic ? 'italic' : 'normal';
         const fontWeight = this.textConfig.bold ? 'bold' : 'normal';
+        
+        // Measure text dimensions
+        this.ctx.save();
         this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${this.textConfig.fontFamily}`;
         this.ctx.textBaseline = 'top';
-        this.ctx.fillStyle = this.textConfig.color;
-
+        
         const lines = this.textConfig.text.split('\n');
-        const lineHeight = fontSize * 1.2; // Standard CSS line height approximation
-
-        // Measure width
+        const lineHeight = fontSize * 1.2;
+        
         let maxWidth = 0;
         lines.forEach(line => {
             const m = this.ctx.measureText(line);
             if (m.width > maxWidth) maxWidth = m.width;
         });
-
-        const totalHeight = lines.length * lineHeight;
-
-        // Center of text box
-        const centerX = this.textPosition.x + maxWidth / 2;
-        const centerY = this.textPosition.y + totalHeight / 2;
-
-        this.ctx.translate(centerX, centerY);
-        this.ctx.rotate(this.textRotation * Math.PI / 180);
-        this.ctx.translate(-centerX, -centerY);
-
-        // Draw text
-        lines.forEach((line, i) => {
-            const padding = 4;
-            this.ctx.fillText(line, this.textPosition.x + padding, this.textPosition.y + padding + (i * lineHeight));
-        });
-
         this.ctx.restore();
 
+        // Create text object for selection support
+        const textObj = {
+            text: this.textConfig.text,
+            x: this.textPosition.x,
+            y: this.textPosition.y,
+            fontSize: this.textConfig.fontSize,
+            color: this.textConfig.color,
+            fontFamily: this.textConfig.fontFamily,
+            bold: this.textConfig.bold || false,
+            italic: this.textConfig.italic || false,
+            rotation: this.textRotation,
+            scale: this.textScale,
+            width: maxWidth + 8, // Include padding
+            height: lines.length * lineHeight + 8
+        };
+        
+        if (this.editingTextIndex !== null && this.editingTextIndex < this.textObjects.length) {
+            // Update existing text object
+            this.textObjects[this.editingTextIndex] = textObj;
+            this.editingTextIndex = null;
+        } else {
+            // Add new text object
+            this.textObjects.push(textObj);
+        }
+
+        // Draw all text objects
+        this.redrawCanvas();
+        
         this.historyManager.saveState();
         this.cancelOverlay();
+    }
+    
+    // Draw all stored text objects on canvas
+    drawAllTextObjects() {
+        this.textObjects.forEach(textObj => {
+            this.drawTextObject(textObj);
+        });
+    }
+    
+    // Draw a single text object
+    drawTextObject(textObj) {
+        this.ctx.save();
+        
+        const fontSize = textObj.fontSize * textObj.scale;
+        const fontStyle = textObj.italic ? 'italic' : 'normal';
+        const fontWeight = textObj.bold ? 'bold' : 'normal';
+        this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${textObj.fontFamily}`;
+        this.ctx.textBaseline = 'top';
+        this.ctx.fillStyle = textObj.color;
+        
+        const lines = textObj.text.split('\n');
+        const lineHeight = fontSize * 1.2;
+        
+        // Center of text box
+        let maxWidth = 0;
+        lines.forEach(line => {
+            const m = this.ctx.measureText(line);
+            if (m.width > maxWidth) maxWidth = m.width;
+        });
+        const totalHeight = lines.length * lineHeight;
+        const centerX = textObj.x + maxWidth / 2;
+        const centerY = textObj.y + totalHeight / 2;
+        
+        this.ctx.translate(centerX, centerY);
+        this.ctx.rotate((textObj.rotation || 0) * Math.PI / 180);
+        this.ctx.translate(-centerX, -centerY);
+        
+        lines.forEach((line, i) => {
+            const padding = 4;
+            this.ctx.fillText(line, textObj.x + padding, textObj.y + padding + (i * lineHeight));
+        });
+        
+        this.ctx.restore();
+    }
+    
+    // Draw selection indicator for selected text
+    drawTextSelection() {
+        if (this.selectedTextIndex === null || this.selectedTextIndex < 0) return;
+        const textObj = this.textObjects[this.selectedTextIndex];
+        if (!textObj) return;
+        
+        const lineCount = textObj.text.split('\n').length;
+        const w = textObj.width * textObj.scale;
+        const h = textObj.height * textObj.scale;
+        
+        this.ctx.save();
+        this.ctx.strokeStyle = '#0066FF';
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([5, 3]);
+        this.ctx.strokeRect(textObj.x - 2, textObj.y - 2, w + 4, h + 4);
+        this.ctx.restore();
+    }
+    
+    // Hit test for text objects at given canvas coordinates
+    hitTestText(x, y) {
+        for (let i = this.textObjects.length - 1; i >= 0; i--) {
+            const textObj = this.textObjects[i];
+            if (!textObj) continue;
+            
+            const lineCount = textObj.text.split('\n').length;
+            const w = textObj.width * textObj.scale;
+            const h = textObj.height * textObj.scale;
+            
+            // Simple AABB hit test (without rotation for now)
+            if (x >= textObj.x - 5 && x <= textObj.x + w + 5 &&
+                y >= textObj.y - 5 && y <= textObj.y + h + 5) {
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    // Copy selected text object
+    copySelectedText() {
+        if (this.selectedTextIndex === null || this.selectedTextIndex < 0) return false;
+        const textObj = this.textObjects[this.selectedTextIndex];
+        if (!textObj) return false;
+        
+        const copy = {
+            ...textObj,
+            x: textObj.x + 20,
+            y: textObj.y + 20
+        };
+        this.textObjects.push(copy);
+        this.selectedTextIndex = this.textObjects.length - 1;
+        this.redrawCanvas();
+        return true;
+    }
+    
+    // Delete selected text object
+    deleteSelectedText() {
+        if (this.selectedTextIndex === null || this.selectedTextIndex < 0) return false;
+        this.textObjects.splice(this.selectedTextIndex, 1);
+        this.selectedTextIndex = null;
+        this.redrawCanvas();
+        return true;
+    }
+    
+    // Edit an existing text object by reopening the modal
+    editExistingText(index) {
+        if (index < 0 || index >= this.textObjects.length) return;
+        const textObj = this.textObjects[index];
+        if (!textObj) return;
+        
+        // Store which text object we're editing
+        this.editingTextIndex = index;
+        
+        // Restore text config from the object
+        this.textConfig.text = textObj.text;
+        this.textConfig.fontSize = textObj.fontSize;
+        this.textConfig.color = textObj.color;
+        this.textConfig.fontFamily = textObj.fontFamily;
+        this.textConfig.bold = textObj.bold || false;
+        this.textConfig.italic = textObj.italic || false;
+        
+        // Restore position and transform
+        this.textPosition = { x: textObj.x, y: textObj.y };
+        this.textRotation = textObj.rotation || 0;
+        this.textScale = textObj.scale || 1.0;
+        
+        // Show the modal in edit mode
+        this.showModal(true);
+    }
+    
+    // Get all text objects (for serialization)
+    getTextObjects() {
+        return this.textObjects;
+    }
+    
+    // Set text objects (for deserialization)
+    setTextObjects(objects) {
+        this.textObjects = objects || [];
+    }
+    
+    // Clear all text objects
+    clearTextObjects() {
+        this.textObjects = [];
+        this.selectedTextIndex = null;
+    }
+    
+    // Trigger a canvas redraw 
+    redrawCanvas() {
+        // Clear and redraw canvas contents
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        // Redraw stamped images
+        if (this.drawingEngine) {
+            this.drawingEngine.redrawStampedImages();
+            // Redraw all strokes
+            for (const stroke of this.drawingEngine.strokes) {
+                this.drawingEngine.redrawStroke(stroke);
+            }
+        }
+        
+        // Redraw all text objects
+        this.drawAllTextObjects();
     }
 
     // Interactions

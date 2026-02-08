@@ -209,7 +209,8 @@ window.translations = {
     selection: {
         copy: 'Copier',
         delete: 'Supprimer',
-        done: 'Terminé'
+        done: 'Terminé',
+        edit: 'Modifier'
     },
 
     // Page Navigation

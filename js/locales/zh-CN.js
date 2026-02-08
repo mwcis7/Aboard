@@ -220,7 +220,8 @@ window.translations = {
     selection: {
         copy: '复制',
         delete: '删除',
-        done: '完成'
+        done: '完成',
+        edit: '编辑'
     },
 
     // Page Navigation

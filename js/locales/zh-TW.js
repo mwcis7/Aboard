@@ -217,7 +217,8 @@ window.translations = {
     selection: {
         copy: '複製',
         delete: '刪除',
-        done: '完成'
+        done: '完成',
+        edit: '編輯'
     },
 
     // Page Navigation

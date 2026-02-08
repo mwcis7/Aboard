@@ -97,8 +97,28 @@ class SelectionManager {
                         </svg>
                     </div>
                     
+                    <!-- Rotate 90° button -->
+                    <div class="selection-transform-handle" id="selection-rotate90-handle" title="Rotate 90°">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M21.5 2v6h-6M21 8a9 9 0 1 0-2.67 6.33"/>
+                        </svg>
+                    </div>
+                    
+                    <!-- Flip horizontal button -->
+                    <div class="selection-transform-handle" id="selection-flip-h-handle" title="Flip Horizontal">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                            <path d="M12 3v18M8 6l-5 6 5 6M16 6l5 6-5 6"/>
+                        </svg>
+                    </div>
+                    
                     <!-- Control toolbar with action buttons -->
                     <div class="image-controls-toolbar selection-action-toolbar">
+                        <button id="selection-edit-btn" class="image-control-btn" data-i18n-title="selection.edit" title="Edit" style="display:none;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
                         <button id="selection-copy-btn" class="image-control-btn" data-i18n-title="selection.copy" title="Copy">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -154,6 +174,7 @@ class SelectionManager {
                 if (!e.target.classList.contains('resize-handle') && 
                     !e.target.closest('.resize-handle') &&
                     !e.target.closest('.rotate-handle') &&
+                    !e.target.closest('.selection-transform-handle') &&
                     !e.target.closest('.image-controls-toolbar')) {
                     this.startDrag(e);
                 }
@@ -166,6 +187,7 @@ class SelectionManager {
                 if (!e.target.classList.contains('resize-handle') && 
                     !e.target.closest('.resize-handle') &&
                     !e.target.closest('.rotate-handle') &&
+                    !e.target.closest('.selection-transform-handle') &&
                     !e.target.closest('.image-controls-toolbar')) {
                     this.startDrag(e);
                 }
@@ -178,6 +200,7 @@ class SelectionManager {
                 if (!e.target.classList.contains('resize-handle') && 
                     !e.target.closest('.resize-handle') &&
                     !e.target.closest('.rotate-handle') &&
+                    !e.target.closest('.selection-transform-handle') &&
                     !e.target.closest('.image-controls-toolbar')) {
                     this.startDrag(e);
                 }
@@ -285,9 +308,13 @@ class SelectionManager {
         const copyBtn = document.getElementById('selection-copy-btn');
         const deleteBtn = document.getElementById('selection-delete-btn');
         const doneBtn = document.getElementById('selection-done-btn');
+        const editBtn = document.getElementById('selection-edit-btn');
+        const rotate90Handle = document.getElementById('selection-rotate90-handle');
+        const flipHHandle = document.getElementById('selection-flip-h-handle');
         
         // Add mousedown/pointerdown handlers to prevent events from propagating to document
-        [copyBtn, deleteBtn, doneBtn].forEach(btn => {
+        [copyBtn, deleteBtn, doneBtn, editBtn, rotate90Handle, flipHHandle].forEach(btn => {
+            if (!btn) return;
             btn.addEventListener('mousedown', (e) => {
                 e.stopPropagation();
                 e.preventDefault();
@@ -315,6 +342,30 @@ class SelectionManager {
             e.preventDefault();
             this.finishSelection();
         });
+        
+        if (editBtn) {
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                this.editSelectedText();
+            });
+        }
+        
+        if (rotate90Handle) {
+            rotate90Handle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                this.rotate90();
+            });
+        }
+        
+        if (flipHHandle) {
+            flipHHandle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                this.flipHorizontal();
+            });
+        }
     }
     
     // Normalize angle to 0-360 degrees
@@ -450,6 +501,11 @@ class SelectionManager {
     
     showControls() {
         this.overlay.style.display = 'block';
+        // Show edit button only for text selections
+        const editBtn = document.getElementById('selection-edit-btn');
+        if (editBtn) {
+            editBtn.style.display = (this.selectionType === 'text') ? '' : 'none';
+        }
         this.updateControlBox();
     }
     
@@ -1165,6 +1221,25 @@ class SelectionManager {
             this.saveHistory();
         }
         this.clearSelection();
+    }
+    
+    editSelectedText() {
+        if (this.selectionType !== 'text' || this.selectedIndex === null) return;
+        if (!this.textManager) return;
+        
+        const textObj = this.textManager.textObjects[this.selectedIndex];
+        if (!textObj) return;
+        
+        // Store the index for after editing
+        const editIndex = this.selectedIndex;
+        
+        // Clear the selection overlay first
+        this.hideControls();
+        
+        // Use the text manager's edit method if available
+        if (typeof this.textManager.editExistingText === 'function') {
+            this.textManager.editExistingText(editIndex);
+        }
     }
     
     saveHistory() {

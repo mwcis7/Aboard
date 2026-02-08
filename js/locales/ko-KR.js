@@ -213,7 +213,8 @@ window.translations = {
     selection: {
         copy: '복사',
         delete: '삭제',
-        done: '완료'
+        done: '완료',
+        edit: '편집'
     },
 
     // Page Navigation

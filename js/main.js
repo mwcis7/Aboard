@@ -1359,32 +1359,6 @@ class DrawingBoard {
                 }
             });
         });
-
-        // Select transform buttons (rotate 90, flip H, flip V)
-        const rotate90Btn = document.getElementById('select-rotate90-btn');
-        if (rotate90Btn) {
-            rotate90Btn.addEventListener('click', () => {
-                if (this.selectionManager && this.selectionManager.hasSelection()) {
-                    this.selectionManager.rotate90();
-                }
-            });
-        }
-        const flipHBtn = document.getElementById('select-flip-h-btn');
-        if (flipHBtn) {
-            flipHBtn.addEventListener('click', () => {
-                if (this.selectionManager && this.selectionManager.hasSelection()) {
-                    this.selectionManager.flipHorizontal();
-                }
-            });
-        }
-        const flipVBtn = document.getElementById('select-flip-v-btn');
-        if (flipVBtn) {
-            flipVBtn.addEventListener('click', () => {
-                if (this.selectionManager && this.selectionManager.hasSelection()) {
-                    this.selectionManager.flipVertical();
-                }
-            });
-        }
     }
     
     setupSettingsListeners() {

@@ -220,7 +220,8 @@ window.translations = {
     selection: {
         copy: 'Copy',
         delete: 'Delete',
-        done: 'Done'
+        done: 'Done',
+        edit: 'Edit'
     },
 
     // Page Navigation
