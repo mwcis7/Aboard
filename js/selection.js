@@ -63,9 +63,9 @@ class SelectionManager {
         this.multiTextDragStartPositions = []; // Starting positions for texts in multi-drag
         this.multiBounds = null;
         this.multiRotation = 0; // Accumulated rotation for multi-select
+        this.multiStrokeRotateStart = [];
         this.multiImageRotateStart = [];
         this.multiTextRotateStart = [];
-        this.multiStrokeRotateStart = [];
         
         // Create selection controls overlay
         this.createSelectionControls();
@@ -1595,9 +1595,9 @@ class SelectionManager {
         this.selectedTexts = [];
         this.multiRotation = 0;
         this.multiBounds = null;
+        this.multiStrokeRotateStart = [];
         this.multiImageRotateStart = [];
         this.multiTextRotateStart = [];
-        this.multiStrokeRotateStart = [];
         this.isBoxSelecting = false;
         this.boxSelectStart = null;
         this.boxSelectEnd = null;
