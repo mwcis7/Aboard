@@ -277,6 +277,11 @@ button, a, input[type="button"], input[type="submit"] {
     align-items: center;
 }
 
+/* Background config panel: center content vertically */
+#background-config.active {
+    align-items: center;
+}
+
 .config-group {
     display: flex;
     flex-direction: column;
@@ -866,6 +871,14 @@ button, a, input[type="button"], input[type="submit"] {
     color: #666;
     font-size: 12px;
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.eraser-shape-btn svg {
+    flex-shrink: 0;
 }
 
 .eraser-shape-btn:hover {
@@ -879,8 +892,14 @@ button, a, input[type="button"], input[type="submit"] {
     border-color: var(--theme-color);
 }
 
+.select-mode-options {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
 .select-mode-btn {
-    flex: 1;
+    flex: 0 1 auto;
     padding: 8px 10px;
     border: 3px solid #ddd;
     border-radius: 8px;
@@ -891,6 +910,14 @@ button, a, input[type="button"], input[type="submit"] {
     font-size: 11px;
     font-weight: 500;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.select-mode-btn svg {
+    flex-shrink: 0;
 }
 
 .select-mode-btn:hover {
@@ -1119,6 +1146,14 @@ button, a, input[type="button"], input[type="submit"] {
     font-size: 11px;
     font-weight: 500;
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.pen-type-btn svg {
+    flex-shrink: 0;
 }
 
 .pen-type-btn:hover {
@@ -1664,6 +1699,55 @@ button, a, input[type="button"], input[type="submit"] {
     background-color: #34C759;
 }
 
+/* Selection transform handles (rotate 90, flip) */
+.selection-transform-handle {
+    position: absolute;
+    top: -40px;
+    width: 30px;
+    height: 30px;
+    background-color: var(--theme-color);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
+    z-index: 10;
+    pointer-events: all;
+}
+
+#selection-rotate90-handle {
+    left: calc(50% + 40px);
+    transform: translateX(-50%);
+}
+
+#selection-flip-h-handle {
+    left: calc(50% + 76px);
+    transform: translateX(-50%);
+}
+
+.selection-transform-handle:hover {
+    transform: translateX(-50%) scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.selection-transform-handle:active {
+    transform: translateX(-50%) scale(0.95);
+}
+
+.selection-transform-handle::after {
+    content: '';
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    width: 2px;
+    height: 12px;
+    background-color: var(--theme-color);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
 /* Image controls toolbar */
 .image-controls-toolbar {
     position: absolute;
@@ -1854,19 +1938,19 @@ button, a, input[type="button"], input[type="submit"] {
 .pattern-grid-compact {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
+    gap: 8px;
 }
 
 .pattern-grid-compact .pattern-option-btn {
-    padding: 6px 8px;
-    font-size: 10px;
+    padding: 8px 10px;
+    font-size: 11px;
 }
 
 .compact-sliders {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-top: 8px;
+    margin-top: 16px;
 }
 
 .compact-slider-item {

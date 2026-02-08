@@ -147,7 +147,11 @@ window.translations = {
             mode: '選擇模式',
             clickMode: '點選',
             rectMode: '框選',
-            lassoMode: '套索'
+            lassoMode: '套索',
+            transform: '變換',
+            rotate90: '旋轉90°',
+            flipH: '水平翻轉',
+            flipV: '垂直翻轉'
         }
     },
 
@@ -213,7 +217,10 @@ window.translations = {
     selection: {
         copy: '複製',
         delete: '刪除',
-        done: '完成'
+        done: '完成',
+        edit: '編輯',
+        rotate90: '旋轉90°',
+        flipH: '水平翻轉'
     },
 
     // Page Navigation

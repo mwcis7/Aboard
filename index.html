@@ -97,11 +97,40 @@
             <div class="config-group">
                 <label data-i18n="tools.pen.type">Pen Type</label>
                 <div class="button-size-options pen-type-grid">
-                    <button class="pen-type-btn active" data-pen-type="normal" data-i18n="tools.pen.normal">Normal</button>
-                    <button class="pen-type-btn" data-pen-type="pencil" data-i18n="tools.pen.pencil">Pencil</button>
-                    <button class="pen-type-btn" data-pen-type="ballpoint" data-i18n="tools.pen.ballpoint">Ballpoint</button>
-                    <button class="pen-type-btn" data-pen-type="fountain" data-i18n="tools.pen.fountain">Fountain</button>
-                    <button class="pen-type-btn" data-pen-type="brush" data-i18n="tools.pen.brush">Brush</button>
+                    <button class="pen-type-btn active" data-pen-type="normal">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                        </svg>
+                        <span data-i18n="tools.pen.normal">Normal</span>
+                    </button>
+                    <button class="pen-type-btn" data-pen-type="pencil">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                        </svg>
+                        <span data-i18n="tools.pen.pencil">Pencil</span>
+                    </button>
+                    <button class="pen-type-btn" data-pen-type="ballpoint">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M15.5 3l5 5L7 21.5 2 22l.5-5L15.5 3z"/>
+                            <line x1="14" y1="6" x2="18" y2="10"/>
+                        </svg>
+                        <span data-i18n="tools.pen.ballpoint">Ballpoint</span>
+                    </button>
+                    <button class="pen-type-btn" data-pen-type="fountain">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 2l2 2-8 8-2-2 8-8z"/>
+                            <path d="M12 12c-2 2-4 6-4 8h8c0-2-2-6-4-8z"/>
+                        </svg>
+                        <span data-i18n="tools.pen.fountain">Fountain</span>
+                    </button>
+                    <button class="pen-type-btn" data-pen-type="brush">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18.37 2.63L14 7l-1.59-1.59a2 2 0 00-2.82 0L8 7l9 9 1.59-1.59a2 2 0 000-2.82L17 10l4.37-4.37a2.12 2.12 0 10-3-3z"/>
+                            <path d="M9 8c-2 3-4 3.5-7 4l8 10c2-1 6-5 6-7"/>
+                        </svg>
+                        <span data-i18n="tools.pen.brush">Brush</span>
+                    </button>
                 </div>
                 <!-- Line Style button below pen type -->
                 <button id="pen-line-style-settings-btn" class="open-line-style-btn">
@@ -245,8 +274,18 @@
             <div class="config-group">
                 <label data-i18n="tools.eraser.shape">形状</label>
                 <div class="button-size-options eraser-shape-options">
-                    <button class="eraser-shape-btn active" data-eraser-shape="circle" data-i18n="tools.eraser.shapeCircle">圆形</button>
-                    <button class="eraser-shape-btn" data-eraser-shape="rectangle" data-i18n="tools.eraser.shapeRectangle">方形</button>
+                    <button class="eraser-shape-btn active" data-eraser-shape="circle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                        </svg>
+                        <span data-i18n="tools.eraser.shapeCircle">圆形</span>
+                    </button>
+                    <button class="eraser-shape-btn" data-eraser-shape="rectangle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        </svg>
+                        <span data-i18n="tools.eraser.shapeRectangle">方形</span>
+                    </button>
                 </div>
             </div>
             <div class="config-group">
@@ -350,10 +389,25 @@
         <div id="select-config" class="config-panel">
             <div class="config-group">
                 <label data-i18n="tools.select.mode">Selection Mode</label>
-                <div class="button-size-options">
-                    <button class="select-mode-btn active" data-mode="click" data-i18n="tools.select.clickMode">Click</button>
-                    <button class="select-mode-btn" data-mode="rectangle" data-i18n="tools.select.rectMode">Box Select</button>
-                    <button class="select-mode-btn" data-mode="lasso" data-i18n="tools.select.lassoMode">Lasso</button>
+                <div class="button-size-options select-mode-options">
+                    <button class="select-mode-btn active" data-mode="click">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4l7.07 17 2.51-7.39L21 11.07z"/>
+                        </svg>
+                        <span data-i18n="tools.select.clickMode">Click</span>
+                    </button>
+                    <button class="select-mode-btn" data-mode="rectangle">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="4 2"/>
+                        </svg>
+                        <span data-i18n="tools.select.rectMode">Box Select</span>
+                    </button>
+                    <button class="select-mode-btn" data-mode="lasso">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2C6.48 2 2 5.58 2 10c0 3.07 2.12 5.73 5.2 7.12L6 22l4.5-3.5C11 18.83 11.5 19 12 19c5.52 0 10-3.58 10-8S17.52 2 12 2z" stroke-dasharray="4 2"/>
+                        </svg>
+                        <span data-i18n="tools.select.lassoMode">Lasso</span>
+                    </button>
                 </div>
             </div>
         </div>

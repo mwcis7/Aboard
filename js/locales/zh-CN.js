@@ -150,7 +150,11 @@ window.translations = {
             mode: '选择模式',
             clickMode: '点选',
             rectMode: '框选',
-            lassoMode: '套索'
+            lassoMode: '套索',
+            transform: '变换',
+            rotate90: '旋转90°',
+            flipH: '水平翻转',
+            flipV: '垂直翻转'
         }
     },
 
@@ -216,7 +220,10 @@ window.translations = {
     selection: {
         copy: '复制',
         delete: '删除',
-        done: '完成'
+        done: '完成',
+        edit: '编辑',
+        rotate90: '旋转90°',
+        flipH: '水平翻转'
     },
 
     // Page Navigation

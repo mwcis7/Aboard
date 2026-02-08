@@ -61,6 +61,11 @@ class DrawingBoard {
             this.helpSystem.init();
         }
         
+        // Re-apply i18n translations for dynamically created elements (like selection controls)
+        if (window.i18n && window.i18n.applyTranslations) {
+            window.i18n.applyTranslations();
+        }
+        
         // Canvas fit scale - calculated once on init and window resize
         this.canvasFitScale = 1.0;
         
@@ -2006,8 +2011,25 @@ class DrawingBoard {
                                         computedStyle.transform.includes('translateY');
             const hasExplicitPosition = !hasCenteredPosition && (left !== 'auto' || top !== 'auto' || right !== 'auto' || bottom !== 'auto');
             
-            // Skip panels that are centered and haven't been dragged
+            // For centered panels, check if they overflow the viewport and reposition if needed
             if (hasCenteredPosition && !hasExplicitPosition) {
+                if (rect.right > windowWidth - EDGE_SPACING) {
+                    panel.style.left = `${Math.max(EDGE_SPACING, windowWidth - rect.width - EDGE_SPACING)}px`;
+                    panel.style.right = 'auto';
+                    panel.style.transform = panel.style.transform ? panel.style.transform.replace(/translateX\([^)]*\)/, '') : '';
+                } else if (rect.left < EDGE_SPACING) {
+                    panel.style.left = `${EDGE_SPACING}px`;
+                    panel.style.right = 'auto';
+                    panel.style.transform = panel.style.transform ? panel.style.transform.replace(/translateX\([^)]*\)/, '') : '';
+                }
+                if (rect.bottom > windowHeight - EDGE_SPACING) {
+                    const newBottom = EDGE_SPACING;
+                    panel.style.bottom = `${newBottom}px`;
+                    panel.style.top = 'auto';
+                } else if (rect.top < EDGE_SPACING) {
+                    panel.style.top = `${EDGE_SPACING}px`;
+                    panel.style.bottom = 'auto';
+                }
                 return;
             }
             

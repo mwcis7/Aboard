@@ -144,7 +144,11 @@ window.translations = {
             mode: 'Auswahlmodus',
             clickMode: 'Klick',
             rectMode: 'Bereichsauswahl',
-            lassoMode: 'Lasso'
+            lassoMode: 'Lasso',
+            transform: 'Transformieren',
+            rotate90: '90° drehen',
+            flipH: 'Horizontal spiegeln',
+            flipV: 'Vertikal spiegeln'
         }
     },
 
@@ -207,7 +211,10 @@ window.translations = {
     selection: {
         copy: 'Kopieren',
         delete: 'Löschen',
-        done: 'Fertig'
+        done: 'Fertig',
+        edit: 'Bearbeiten',
+        rotate90: '90° drehen',
+        flipH: 'Horizontal spiegeln'
     },
 
     // Page Navigation

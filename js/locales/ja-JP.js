@@ -144,7 +144,11 @@ window.translations = {
             mode: '選択モード',
             clickMode: 'クリック',
             rectMode: '範囲選択',
-            lassoMode: 'なげなわ'
+            lassoMode: 'なげなわ',
+            transform: '変換',
+            rotate90: '90°回転',
+            flipH: '左右反転',
+            flipV: '上下反転'
         }
     },
 
@@ -209,7 +213,10 @@ window.translations = {
     selection: {
         copy: 'コピー',
         delete: '削除',
-        done: '完了'
+        done: '完了',
+        edit: '編集',
+        rotate90: '90°回転',
+        flipH: '左右反転'
     },
 
     // Page Navigation

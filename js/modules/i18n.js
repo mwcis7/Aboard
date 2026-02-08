@@ -343,7 +343,12 @@ class I18n {
         document.querySelectorAll('.pen-type-btn').forEach(btn => {
             const penType = btn.getAttribute('data-pen-type');
             if (penType && penTypeButtons[penType]) {
-                btn.textContent = this.t(penTypeButtons[penType]);
+                const span = btn.querySelector('span[data-i18n]');
+                if (span) {
+                    span.textContent = this.t(penTypeButtons[penType]);
+                } else {
+                    btn.textContent = this.t(penTypeButtons[penType]);
+                }
             }
         });
         
@@ -356,7 +361,13 @@ class I18n {
         document.querySelectorAll('.eraser-shape-btn').forEach(btn => {
             const shape = btn.getAttribute('data-eraser-shape');
             if (shape) {
-                btn.textContent = shape === 'circle' ? this.t('tools.eraser.shapeCircle') || '圆形' : this.t('tools.eraser.shapeRectangle') || '方形';
+                const text = shape === 'circle' ? this.t('tools.eraser.shapeCircle') || '圆形' : this.t('tools.eraser.shapeRectangle') || '方形';
+                const span = btn.querySelector('span[data-i18n]');
+                if (span) {
+                    span.textContent = text;
+                } else {
+                    btn.textContent = text;
+                }
             }
         });
         
