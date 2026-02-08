@@ -61,6 +61,11 @@ class DrawingBoard {
             this.helpSystem.init();
         }
         
+        // Re-apply i18n translations for dynamically created elements (like selection controls)
+        if (window.i18n && window.i18n.applyTranslations) {
+            window.i18n.applyTranslations();
+        }
+        
         // Canvas fit scale - calculated once on init and window resize
         this.canvasFitScale = 1.0;
         

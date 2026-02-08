@@ -58,8 +58,11 @@ class SelectionManager {
         // Multi-select state
         this.multiDragStartPositions = [];
         this.selectedImages = []; // Array of image indices for multi-select
+        this.selectedTexts = []; // Array of text indices for multi-select
         this.multiImageDragStartPositions = []; // Starting positions for images in multi-drag
+        this.multiTextDragStartPositions = []; // Starting positions for texts in multi-drag
         this.multiBounds = null;
+        this.multiRotation = 0; // Accumulated rotation for multi-select
         
         // Create selection controls overlay
         this.createSelectionControls();
@@ -98,14 +101,14 @@ class SelectionManager {
                     </div>
                     
                     <!-- Rotate 90° button -->
-                    <div class="selection-transform-handle" id="selection-rotate90-handle" title="Rotate 90°">
+                    <div class="selection-transform-handle" id="selection-rotate90-handle" data-i18n-title="selection.rotate90" title="Rotate 90°">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                             <path d="M21.5 2v6h-6M21 8a9 9 0 1 0-2.67 6.33"/>
                         </svg>
                     </div>
                     
                     <!-- Flip horizontal button -->
-                    <div class="selection-transform-handle" id="selection-flip-h-handle" title="Flip Horizontal">
+                    <div class="selection-transform-handle" id="selection-flip-h-handle" data-i18n-title="selection.flipH" title="Flip Horizontal">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
                             <path d="M12 3v18M8 6l-5 6 5 6M16 6l5 6-5 6"/>
                         </svg>
@@ -532,12 +535,11 @@ class SelectionManager {
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             if (!textObj) return;
-            const lineCount = textObj.text.split('\n').length;
             bounds = {
                 x: textObj.x - 5,
                 y: textObj.y - 5,
                 width: textObj.width * textObj.scale + 10,
-                height: textObj.height * lineCount * textObj.scale + 10
+                height: textObj.height * textObj.scale + 10
             };
             rotation = textObj.rotation || 0;
         } else if (this.selectionType === 'image') {
@@ -546,8 +548,13 @@ class SelectionManager {
             bounds = this.drawingEngine.getImageBounds(img);
             rotation = img.rotation || 0;
         } else if (this.selectionType === 'multi') {
-            bounds = this.getMultiBounds();
-            rotation = 0;
+            // During rotation, use the saved original bounds to keep box shape fixed
+            if (this.isRotating && this.multiBounds) {
+                bounds = this.multiBounds;
+            } else {
+                bounds = this.getMultiBounds();
+            }
+            rotation = this.multiRotation || 0;
         }
         
         if (!bounds) return;
@@ -569,6 +576,7 @@ class SelectionManager {
         this.controlBox.style.top = `${actualY}px`;
         this.controlBox.style.width = `${actualWidth}px`;
         this.controlBox.style.height = `${actualHeight}px`;
+        this.controlBox.style.transformOrigin = 'center center';
         this.controlBox.style.transform = `rotate(${rotation}deg)`;
     }
     
@@ -615,6 +623,13 @@ class SelectionManager {
                 const img = this.drawingEngine.stampedImages[idx];
                 if (img) {
                     this.multiImageDragStartPositions.push({ idx, x: img.x, y: img.y });
+                }
+            }
+            this.multiTextDragStartPositions = [];
+            for (const idx of this.selectedTexts) {
+                if (this.textManager && this.textManager.textObjects[idx]) {
+                    const textObj = this.textManager.textObjects[idx];
+                    this.multiTextDragStartPositions.push({ idx, x: textObj.x, y: textObj.y });
                 }
             }
         }
@@ -670,6 +685,13 @@ class SelectionManager {
                     img.y = startPos.y + deltaY;
                 }
             }
+            for (const startPos of this.multiTextDragStartPositions) {
+                if (this.textManager && this.textManager.textObjects[startPos.idx]) {
+                    const textObj = this.textManager.textObjects[startPos.idx];
+                    textObj.x = startPos.x + deltaX;
+                    textObj.y = startPos.y + deltaY;
+                }
+            }
         }
         
         this.updateControlBox();
@@ -702,6 +724,7 @@ class SelectionManager {
                     }
                 }
                 this.multiImageDragStartPositions = [];
+                this.multiTextDragStartPositions = [];
             }
         }
     }
@@ -721,12 +744,11 @@ class SelectionManager {
             }
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
-            const lineCount = textObj.text.split('\n').length;
             this.resizeStartBounds = {
                 x: textObj.x,
                 y: textObj.y,
                 width: textObj.width * textObj.scale,
-                height: textObj.height * lineCount * textObj.scale,
+                height: textObj.height * textObj.scale,
                 scale: textObj.scale
             };
         } else if (this.selectionType === 'image') {
@@ -748,6 +770,16 @@ class SelectionManager {
                 const img = this.drawingEngine.stampedImages[idx];
                 if (img) {
                     this.multiImageResizeStart.push({ idx, x: img.x, y: img.y, width: img.width, height: img.height });
+                }
+            }
+            this.multiTextResizeStart = [];
+            if (this.textManager) {
+                for (const idx of this.selectedTexts) {
+                    const textObj = this.textManager.textObjects[idx];
+                    if (textObj) {
+                        const bounds = this.getTextObjectBounds(idx);
+                        this.multiTextResizeStart.push({ idx, x: textObj.x, y: textObj.y, width: bounds.width, height: bounds.height, scale: textObj.scale });
+                    }
                 }
             }
         }
@@ -854,6 +886,19 @@ class SelectionManager {
                     }
                 }
             }
+            if (this.multiTextResizeStart) {
+                for (const start of this.multiTextResizeStart) {
+                    if (this.textManager && this.textManager.textObjects[start.idx]) {
+                        const textObj = this.textManager.textObjects[start.idx];
+                        const relX = (start.x - startBounds.x) / startBounds.width;
+                        const relY = (start.y - startBounds.y) / startBounds.height;
+                        const scaleRatio = newBounds.width / startBounds.width;
+                        textObj.x = newBounds.x + relX * newBounds.width;
+                        textObj.y = newBounds.y + relY * newBounds.height;
+                        textObj.scale = Math.max(0.1, start.scale * scaleRatio);
+                    }
+                }
+            }
         }
         
         this.updateControlBox();
@@ -886,6 +931,7 @@ class SelectionManager {
                     }
                 }
                 this.multiImageResizeStart = [];
+                this.multiTextResizeStart = [];
             }
         }
     }
@@ -905,19 +951,19 @@ class SelectionManager {
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             if (!textObj) return null;
-            const lineCount = textObj.text.split('\n').length;
             bounds = {
                 x: textObj.x - 5,
                 y: textObj.y - 5,
                 width: textObj.width * textObj.scale + 10,
-                height: textObj.height * lineCount * textObj.scale + 10
+                height: textObj.height * textObj.scale + 10
             };
         } else if (this.selectionType === 'image') {
             const img = this.drawingEngine.stampedImages[this.selectedIndex];
             if (!img) return null;
             bounds = { x: img.x, y: img.y, width: img.width, height: img.height };
         } else if (this.selectionType === 'multi') {
-            bounds = this.getMultiBounds();
+            // During rotation, use the saved original bounds center
+            bounds = (this.isRotating && this.multiBounds) ? this.multiBounds : this.getMultiBounds();
         }
         
         if (!bounds) return null;
@@ -951,7 +997,7 @@ class SelectionManager {
             const img = this.drawingEngine.stampedImages[this.selectedIndex];
             this.rotateStartRotation = img.rotation || 0;
         } else if (this.selectionType === 'multi') {
-            this.rotateStartRotation = 0;
+            this.rotateStartRotation = this.multiRotation;
             this.multiBounds = this.getMultiBounds();
             for (const idx of this.selectedStrokes) {
                 const stroke = this.drawingEngine.strokes[idx];
@@ -967,6 +1013,13 @@ class SelectionManager {
                 const img = this.drawingEngine.stampedImages[idx];
                 if (img) {
                     this.multiImageRotateStart.push({ idx, x: img.x, y: img.y, width: img.width, height: img.height, rotation: img.rotation || 0 });
+                }
+            }
+            this.multiTextRotateStart = [];
+            for (const idx of this.selectedTexts) {
+                if (this.textManager && this.textManager.textObjects[idx]) {
+                    const textObj = this.textManager.textObjects[idx];
+                    this.multiTextRotateStart.push({ idx, x: textObj.x, y: textObj.y, rotation: textObj.rotation || 0 });
                 }
             }
         }
@@ -1020,6 +1073,8 @@ class SelectionManager {
             const centerX = bounds.x + bounds.width / 2;
             const centerY = bounds.y + bounds.height / 2;
             const angleRad = angleDelta * Math.PI / 180;
+            // Update the multi rotation angle for CSS transform
+            this.multiRotation = this.normalizeAngle(this.rotateStartRotation + angleDelta);
             for (const idx of this.selectedStrokes) {
                 const stroke = this.drawingEngine.strokes[idx];
                 if (stroke) {
@@ -1046,6 +1101,24 @@ class SelectionManager {
                         img.x = newCenterX - start.width / 2;
                         img.y = newCenterY - start.height / 2;
                         img.rotation = this.normalizeAngle(start.rotation + angleDelta);
+                    }
+                }
+            }
+            if (this.multiTextRotateStart) {
+                for (const start of this.multiTextRotateStart) {
+                    if (this.textManager && this.textManager.textObjects[start.idx]) {
+                        const textObj = this.textManager.textObjects[start.idx];
+                        const textBounds = this.getTextObjectBounds(start.idx);
+                        if (!textBounds) continue;
+                        const txtCenterX = start.x + textBounds.width / 2;
+                        const txtCenterY = start.y + textBounds.height / 2;
+                        const relX = txtCenterX - centerX;
+                        const relY = txtCenterY - centerY;
+                        const newCenterX = centerX + relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
+                        const newCenterY = centerY + relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
+                        textObj.x = newCenterX - textBounds.width / 2;
+                        textObj.y = newCenterY - textBounds.height / 2;
+                        textObj.rotation = this.normalizeAngle(start.rotation + angleDelta);
                     }
                 }
             }
@@ -1080,6 +1153,9 @@ class SelectionManager {
                     }
                 }
                 this.multiImageRotateStart = [];
+                this.multiTextRotateStart = [];
+                // Keep multiBounds and multiRotation - don't clear them
+                // Recalculate multiBounds from new positions
                 this.multiBounds = null;
             }
         }
@@ -1088,7 +1164,7 @@ class SelectionManager {
     // Action methods
     copySelection() {
         if (this.selectionType === 'multi') {
-            if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0) return false;
+            if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0 && this.selectedTexts.length === 0) return false;
             const newStrokeIndices = [];
             for (const idx of this.selectedStrokes) {
                 const stroke = this.drawingEngine.strokes[idx];
@@ -1123,8 +1199,25 @@ class SelectionManager {
                     newImageIndices.push(this.drawingEngine.stampedImages.length - 1);
                 }
             }
+            const newTextIndices = [];
+            if (this.textManager) {
+                for (const idx of this.selectedTexts) {
+                    const textObj = this.textManager.textObjects[idx];
+                    if (textObj) {
+                        const copiedText = {
+                            ...textObj,
+                            x: textObj.x + this.COPY_OFFSET,
+                            y: textObj.y + this.COPY_OFFSET
+                        };
+                        this.textManager.textObjects.push(copiedText);
+                        newTextIndices.push(this.textManager.textObjects.length - 1);
+                    }
+                }
+            }
             this.selectedStrokes = newStrokeIndices;
             this.selectedImages = newImageIndices;
+            this.selectedTexts = newTextIndices;
+            this.multiRotation = 0;
             this.updateControlBox();
             this.redrawWithSelection();
             this.saveHistory();
@@ -1167,7 +1260,7 @@ class SelectionManager {
     
     deleteSelection() {
         if (this.selectionType === 'multi') {
-            if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0) return false;
+            if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0 && this.selectedTexts.length === 0) return false;
             // Sort indices in descending order to remove from end first
             const sortedStrokes = [...this.selectedStrokes].sort((a, b) => b - a);
             for (const idx of sortedStrokes) {
@@ -1176,6 +1269,12 @@ class SelectionManager {
             const sortedImages = [...this.selectedImages].sort((a, b) => b - a);
             for (const idx of sortedImages) {
                 this.drawingEngine.stampedImages.splice(idx, 1);
+            }
+            if (this.textManager) {
+                const sortedTexts = [...this.selectedTexts].sort((a, b) => b - a);
+                for (const idx of sortedTexts) {
+                    this.textManager.textObjects.splice(idx, 1);
+                }
             }
             this.clearSelection();
             this.redrawCanvas();
@@ -1304,6 +1403,25 @@ class SelectionManager {
                     img.rotation = this.normalizeAngle((img.rotation || 0) + 90);
                 }
             }
+            if (this.textManager) {
+                for (const idx of this.selectedTexts) {
+                    const textObj = this.textManager.textObjects[idx];
+                    if (textObj) {
+                        const textBounds = this.getTextObjectBounds(idx);
+                        if (!textBounds) continue;
+                        const txtCX = textObj.x + textBounds.width / 2;
+                        const txtCY = textObj.y + textBounds.height / 2;
+                        const relX = txtCX - cx;
+                        const relY = txtCY - cy;
+                        const newCX = cx + relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
+                        const newCY = cy + relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
+                        textObj.x = newCX - textBounds.width / 2;
+                        textObj.y = newCY - textBounds.height / 2;
+                        textObj.rotation = this.normalizeAngle((textObj.rotation || 0) + 90);
+                    }
+                }
+            }
+            this.multiRotation = this.normalizeAngle((this.multiRotation || 0) + 90);
         }
         
         this.hasUnsavedChanges = true;
@@ -1345,6 +1463,17 @@ class SelectionManager {
                     const imgCX = img.x + img.width / 2;
                     img.x = 2 * cx - imgCX - img.width / 2;
                     img.flipHorizontal = !(img.flipHorizontal || false);
+                }
+            }
+            if (this.textManager) {
+                for (const idx of this.selectedTexts) {
+                    const textObj = this.textManager.textObjects[idx];
+                    if (textObj) {
+                        const textBounds = this.getTextObjectBounds(idx);
+                        if (!textBounds) continue;
+                        const txtCX = textObj.x + textBounds.width / 2;
+                        textObj.x = 2 * cx - txtCX - textBounds.width / 2;
+                    }
                 }
             }
         }
@@ -1390,6 +1519,17 @@ class SelectionManager {
                     img.flipVertical = !(img.flipVertical || false);
                 }
             }
+            if (this.textManager) {
+                for (const idx of this.selectedTexts) {
+                    const textObj = this.textManager.textObjects[idx];
+                    if (textObj) {
+                        const textBounds = this.getTextObjectBounds(idx);
+                        if (!textBounds) continue;
+                        const txtCY = textObj.y + textBounds.height / 2;
+                        textObj.y = 2 * cy - txtCY - textBounds.height / 2;
+                    }
+                }
+            }
         }
         
         this.hasUnsavedChanges = true;
@@ -1433,7 +1573,7 @@ class SelectionManager {
     }
     
     hasSelection() {
-        return this.selectedIndex !== null || (this.selectionType === 'multi' && (this.selectedStrokes.length > 0 || this.selectedImages.length > 0));
+        return this.selectedIndex !== null || (this.selectionType === 'multi' && (this.selectedStrokes.length > 0 || this.selectedImages.length > 0 || this.selectedTexts.length > 0));
     }
     
     clearSelection() {
@@ -1449,6 +1589,8 @@ class SelectionManager {
         this.hideControls();
         this.selectedStrokes = [];
         this.selectedImages = [];
+        this.selectedTexts = [];
+        this.multiRotation = 0;
         this.multiBounds = null;
         this.isBoxSelecting = false;
         this.boxSelectStart = null;
@@ -1568,15 +1710,26 @@ class SelectionManager {
             }
         }
         
+        // Find text objects whose bounding boxes intersect the selection rectangle
+        const foundTexts = [];
+        if (this.textManager && this.textManager.textObjects) {
+            for (let i = 0; i < this.textManager.textObjects.length; i++) {
+                const bounds = this.getTextObjectBounds(i);
+                if (bounds && this.rectsIntersect(canvasSelRect, bounds)) {
+                    foundTexts.push(i);
+                }
+            }
+        }
+        
         this.boxSelectStart = null;
         this.boxSelectEnd = null;
         
-        this.applyFoundSelection(foundStrokes, foundImages);
+        this.applyFoundSelection(foundStrokes, foundImages, foundTexts);
     }
     
-    // Apply selection from found strokes and images (shared by box and lasso selection)
-    applyFoundSelection(foundStrokes, foundImages) {
-        const totalFound = foundStrokes.length + foundImages.length;
+    // Apply selection from found strokes, images, and texts (shared by box and lasso selection)
+    applyFoundSelection(foundStrokes, foundImages, foundTexts = []) {
+        const totalFound = foundStrokes.length + foundImages.length + foundTexts.length;
         
         if (totalFound === 0) {
             return;
@@ -1584,10 +1737,14 @@ class SelectionManager {
             this.selectStroke(foundStrokes[0]);
         } else if (totalFound === 1 && foundImages.length === 1) {
             this.selectImage(foundImages[0]);
+        } else if (totalFound === 1 && foundTexts.length === 1) {
+            this.selectText(foundTexts[0]);
         } else {
-            // Multi-select: include both strokes and images
+            // Multi-select: include strokes, images, and texts
             this.selectedStrokes = foundStrokes;
             this.selectedImages = foundImages;
+            this.selectedTexts = foundTexts;
+            this.multiRotation = 0;
             this.selectionType = 'multi';
             this.selectedIndex = null;
             this.showControls();
@@ -1602,8 +1759,21 @@ class SelectionManager {
                a.y + a.height > b.y;
     }
     
+    // Get bounds for a text object by index
+    getTextObjectBounds(index) {
+        if (!this.textManager || !this.textManager.textObjects) return null;
+        const textObj = this.textManager.textObjects[index];
+        if (!textObj) return null;
+        return {
+            x: textObj.x,
+            y: textObj.y,
+            width: textObj.width * textObj.scale,
+            height: textObj.height * textObj.scale
+        };
+    }
+    
     getMultiBounds() {
-        if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0) return null;
+        if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0 && this.selectedTexts.length === 0) return null;
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
         for (const idx of this.selectedStrokes) {
             const stroke = this.drawingEngine.strokes[idx];
@@ -1619,6 +1789,14 @@ class SelectionManager {
             const img = this.drawingEngine.stampedImages[idx];
             if (!img) continue;
             const bounds = this.drawingEngine.getImageBounds(img);
+            if (!bounds) continue;
+            minX = Math.min(minX, bounds.x);
+            minY = Math.min(minY, bounds.y);
+            maxX = Math.max(maxX, bounds.x + bounds.width);
+            maxY = Math.max(maxY, bounds.y + bounds.height);
+        }
+        for (const idx of this.selectedTexts) {
+            const bounds = this.getTextObjectBounds(idx);
             if (!bounds) continue;
             minX = Math.min(minX, bounds.x);
             minY = Math.min(minY, bounds.y);
@@ -1713,7 +1891,21 @@ class SelectionManager {
             }
         }
         
-        this.applyFoundSelection(foundStrokes, foundImages);
+        // Find text objects inside lasso
+        const foundTexts = [];
+        if (this.textManager && this.textManager.textObjects) {
+            for (let i = 0; i < this.textManager.textObjects.length; i++) {
+                const bounds = this.getTextObjectBounds(i);
+                if (!bounds) continue;
+                const cx = bounds.x + bounds.width / 2;
+                const cy = bounds.y + bounds.height / 2;
+                if (this.pointInPolygon(cx, cy, canvasLassoPoints)) {
+                    foundTexts.push(i);
+                }
+            }
+        }
+        
+        this.applyFoundSelection(foundStrokes, foundImages, foundTexts);
     }
     
     // Ray-casting point-in-polygon algorithm

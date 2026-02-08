@@ -210,7 +210,9 @@ window.translations = {
         copy: 'Copier',
         delete: 'Supprimer',
         done: 'Terminé',
-        edit: 'Modifier'
+        edit: 'Modifier',
+        rotate90: 'Rotation 90°',
+        flipH: 'Retourner horizontalement'
     },
 
     // Page Navigation

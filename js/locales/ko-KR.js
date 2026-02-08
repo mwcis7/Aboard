@@ -214,7 +214,9 @@ window.translations = {
         copy: '복사',
         delete: '삭제',
         done: '완료',
-        edit: '편집'
+        edit: '편집',
+        rotate90: '90° 회전',
+        flipH: '좌우 뒤집기'
     },
 
     // Page Navigation

@@ -221,7 +221,9 @@ window.translations = {
         copy: 'Copy',
         delete: 'Delete',
         done: 'Done',
-        edit: 'Edit'
+        edit: 'Edit',
+        rotate90: 'Rotate 90°',
+        flipH: 'Flip Horizontal'
     },
 
     // Page Navigation

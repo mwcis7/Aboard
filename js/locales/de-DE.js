@@ -212,7 +212,9 @@ window.translations = {
         copy: 'Kopieren',
         delete: 'Löschen',
         done: 'Fertig',
-        edit: 'Bearbeiten'
+        edit: 'Bearbeiten',
+        rotate90: '90° drehen',
+        flipH: 'Horizontal spiegeln'
     },
 
     // Page Navigation

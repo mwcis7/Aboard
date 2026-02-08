@@ -218,7 +218,9 @@ window.translations = {
         copy: '複製',
         delete: '刪除',
         done: '完成',
-        edit: '編輯'
+        edit: '編輯',
+        rotate90: '旋轉90°',
+        flipH: '水平翻轉'
     },
 
     // Page Navigation
