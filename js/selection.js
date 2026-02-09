@@ -1790,7 +1790,8 @@ class SelectionManager {
     buildTextFontString(textObj, fontSize) {
         const fontStyle = textObj.italic ? 'italic' : 'normal';
         const fontWeight = textObj.bold ? 'bold' : 'normal';
-        return `${fontStyle} ${fontWeight} ${fontSize}px ${textObj.fontFamily}`;
+        const fontFamily = textObj.fontFamily || 'Arial, sans-serif';
+        return `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
     }
 
     getBoundsFromPoints(points) {
