@@ -751,7 +751,6 @@ class InsertTextManager {
         this.ctx.save();
         this.ctx.strokeStyle = '#0066FF';
         this.ctx.lineWidth = 2;
-        this.ctx.setLineDash([5, 3]);
         this.ctx.strokeRect(textObj.x, textObj.y, w, h);
         this.ctx.restore();
     }

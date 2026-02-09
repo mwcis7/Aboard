@@ -146,6 +146,7 @@ class DrawingBoard {
         this.settingsManager.loadSettings();
         this.backgroundManager.drawBackground();
         this.updateUI();
+        this.revealToolbar();
         this.historyManager.saveState();
         
         // Initialize pages array for pagination mode (always on)
@@ -782,9 +783,10 @@ class DrawingBoard {
         // Pen type buttons
         document.querySelectorAll('.pen-type-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                this.drawingEngine.setPenType(e.target.dataset.penType);
+                const targetButton = e.currentTarget;
+                this.drawingEngine.setPenType(targetButton.dataset.penType);
                 document.querySelectorAll('.pen-type-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
+                targetButton.classList.add('active');
             });
         });
         
@@ -3059,6 +3061,14 @@ class DrawingBoard {
         if (updateConfigScale) {
             this.updateConfigAreaScale();
         }
+    }
+
+    revealToolbar() {
+        const toolbar = document.getElementById('toolbar');
+        if (!toolbar) return;
+        requestAnimationFrame(() => {
+            toolbar.classList.remove('toolbar-loading');
+        });
     }
     
     updateConfigAreaScale() {

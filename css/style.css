@@ -450,6 +450,12 @@ button, a, input[type="button"], input[type="submit"] {
     will-change: transform, left, bottom;
 }
 
+#toolbar.toolbar-loading {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
 #toolbar.dragging {
     cursor: grabbing;
 }
@@ -1150,6 +1156,7 @@ button, a, input[type="button"], input[type="submit"] {
     align-items: center;
     justify-content: center;
     gap: 4px;
+    touch-action: manipulation;
 }
 
 .pen-type-btn svg {
