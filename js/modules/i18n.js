@@ -285,6 +285,9 @@ class I18n {
         this.translatePageControls();
     }
 
+    /**
+     * Apply fallback titles for buttons without explicit title attributes.
+     */
     applyFallbackTitles() {
         const elements = document.querySelectorAll('button, [role="button"]');
         elements.forEach(el => {
