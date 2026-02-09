@@ -1358,8 +1358,9 @@ class SelectionManager {
 
         if (this.textManager) {
             for (const textObj of this.clipboard.texts || []) {
-                const copiedText = this.applyPasteOffset(this.createTextCopy(textObj), this.COPY_OFFSET, this.COPY_OFFSET);
-                this.textManager.textObjects.push(copiedText);
+                const copiedText = this.createTextCopy(textObj);
+                const offsetText = this.applyPasteOffset(copiedText, this.COPY_OFFSET, this.COPY_OFFSET);
+                this.textManager.textObjects.push(offsetText);
                 newTextIndices.push(this.textManager.textObjects.length - 1);
             }
         }
@@ -1421,7 +1422,7 @@ class SelectionManager {
             return JSON.parse(JSON.stringify(textObj));
         } catch (error) {
             console.warn('Failed to deep copy text object:', error);
-            // Fallback preserves top-level fields when deep cloning fails.
+            // Fallback preserves top-level fields when deep cloning fails; nested data may be dropped.
             return { ...textObj };
         }
     }
