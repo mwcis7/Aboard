@@ -68,6 +68,7 @@ class SelectionManager {
         this.multiStrokeRotateStart = [];
         this.multiImageRotateStart = [];
         this.multiTextRotateStart = [];
+        this.clipboard = null;
         
         // Create selection controls overlay
         this.createSelectionControls();
@@ -430,6 +431,10 @@ class SelectionManager {
 
     startSelection(e) {
         if (!this.isActive) return false;
+
+        if (!this.hasSelectableContent()) {
+            return false;
+        }
         
         // Don't start new selection if clicking on the selection controls overlay
         if (e.target && e.target.closest && e.target.closest('#selection-controls-overlay')) {
@@ -509,6 +514,7 @@ class SelectionManager {
     
     showControls() {
         this.overlay.style.display = 'block';
+        this.controlBox.classList.toggle('text-selection-only', this.selectionType === 'text');
         // Show edit button only for text selections
         const editBtn = document.getElementById('selection-edit-btn');
         if (editBtn) {
@@ -519,6 +525,7 @@ class SelectionManager {
     
     hideControls() {
         this.overlay.style.display = 'none';
+        this.controlBox.classList.remove('text-selection-only');
     }
     
     updateControlBox() {
@@ -1168,6 +1175,7 @@ class SelectionManager {
     
     // Action methods
     copySelection() {
+        this.cacheSelection();
         if (this.selectionType === 'multi') {
             if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0 && this.selectedTexts.length === 0) return false;
             const newStrokeIndices = [];
@@ -1261,6 +1269,147 @@ class SelectionManager {
         }
         
         return false;
+    }
+
+    hasSelectableContent() {
+        const hasStrokes = this.drawingEngine.strokes.length > 0;
+        const hasImages = this.drawingEngine.stampedImages.length > 0;
+        const hasTexts = this.textManager && this.textManager.textObjects && this.textManager.textObjects.length > 0;
+        return hasStrokes || hasImages || hasTexts;
+    }
+
+    cacheSelection() {
+        if (!this.hasSelection()) return false;
+        const strokes = [];
+        const images = [];
+        const texts = [];
+
+        if (this.selectionType === 'stroke' && this.selectedIndex !== null) {
+            const stroke = this.drawingEngine.strokes[this.selectedIndex];
+            if (stroke) {
+                strokes.push(this.createStrokeCopy(stroke));
+            }
+        } else if (this.selectionType === 'image' && this.selectedIndex !== null) {
+            const img = this.drawingEngine.stampedImages[this.selectedIndex];
+            if (img) {
+                images.push(this.createImageCopy(img));
+            }
+        } else if (this.selectionType === 'text' && this.selectedIndex !== null && this.textManager) {
+            const textObj = this.textManager.textObjects[this.selectedIndex];
+            if (textObj) {
+                texts.push({ ...textObj });
+            }
+        } else if (this.selectionType === 'multi') {
+            for (const idx of this.selectedStrokes) {
+                const stroke = this.drawingEngine.strokes[idx];
+                if (stroke) {
+                    strokes.push(this.createStrokeCopy(stroke));
+                }
+            }
+            for (const idx of this.selectedImages) {
+                const img = this.drawingEngine.stampedImages[idx];
+                if (img) {
+                    images.push(this.createImageCopy(img));
+                }
+            }
+            if (this.textManager) {
+                for (const idx of this.selectedTexts) {
+                    const textObj = this.textManager.textObjects[idx];
+                    if (textObj) {
+                        texts.push({ ...textObj });
+                    }
+                }
+            }
+        }
+
+        if (strokes.length === 0 && images.length === 0 && texts.length === 0) return false;
+        this.clipboard = { strokes, images, texts };
+        return true;
+    }
+
+    pasteClipboard() {
+        if (!this.clipboard) return false;
+        const newStrokeIndices = [];
+        const newImageIndices = [];
+        const newTextIndices = [];
+
+        for (const stroke of this.clipboard.strokes || []) {
+            const copiedStroke = {
+                ...stroke,
+                points: stroke.points.map(p => ({ x: p.x + this.COPY_OFFSET, y: p.y + this.COPY_OFFSET }))
+            };
+            this.drawingEngine.strokes.push(copiedStroke);
+            newStrokeIndices.push(this.drawingEngine.strokes.length - 1);
+        }
+
+        for (const img of this.clipboard.images || []) {
+            const copiedImage = {
+                ...img,
+                x: img.x + this.COPY_OFFSET,
+                y: img.y + this.COPY_OFFSET
+            };
+            this.drawingEngine.stampedImages.push(copiedImage);
+            newImageIndices.push(this.drawingEngine.stampedImages.length - 1);
+        }
+
+        if (this.textManager) {
+            for (const textObj of this.clipboard.texts || []) {
+                const copiedText = {
+                    ...textObj,
+                    x: textObj.x + this.COPY_OFFSET,
+                    y: textObj.y + this.COPY_OFFSET
+                };
+                this.textManager.textObjects.push(copiedText);
+                newTextIndices.push(this.textManager.textObjects.length - 1);
+            }
+        }
+
+        const total = newStrokeIndices.length + newImageIndices.length + newTextIndices.length;
+        if (total === 0) return false;
+
+        if (total === 1 && newStrokeIndices.length === 1) {
+            this.selectStroke(newStrokeIndices[0]);
+        } else if (total === 1 && newImageIndices.length === 1) {
+            this.selectImage(newImageIndices[0]);
+        } else if (total === 1 && newTextIndices.length === 1) {
+            this.selectText(newTextIndices[0]);
+        } else {
+            this.selectedStrokes = newStrokeIndices;
+            this.selectedImages = newImageIndices;
+            this.selectedTexts = newTextIndices;
+            this.multiRotation = 0;
+            this.selectionType = 'multi';
+            this.selectedIndex = null;
+            this.showControls();
+            this.redrawWithSelection();
+        }
+
+        this.saveHistory();
+        return true;
+    }
+
+    createStrokeCopy(stroke) {
+        return {
+            points: stroke.points.map(p => ({ x: p.x, y: p.y })),
+            color: stroke.color,
+            size: stroke.size,
+            penType: stroke.penType,
+            tool: stroke.tool,
+            rotation: stroke.rotation || 0
+        };
+    }
+
+    createImageCopy(img) {
+        return {
+            imageElement: img.imageElement,
+            x: img.x,
+            y: img.y,
+            width: img.width,
+            height: img.height,
+            rotation: img.rotation || 0,
+            flipHorizontal: img.flipHorizontal || false,
+            flipVertical: img.flipVertical || false
+        };
     }
     
     deleteSelection() {

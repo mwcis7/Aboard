@@ -1560,6 +1560,15 @@ button, a, input[type="button"], input[type="submit"] {
     transform-origin: center center;
 }
 
+#selection-controls-box.text-selection-only {
+    border: none;
+    box-shadow: none;
+}
+
+#selection-controls-box.text-selection-only .resize-handle {
+    display: none;
+}
+
 /* Resize handles */
 .resize-handle {
     position: absolute;

@@ -1937,11 +1937,15 @@ class DrawingBoard {
                     }
                 } else if (!isEditableTarget && e.key.toLowerCase() === 'c' && this.selectionManager?.hasSelection()) {
                     e.preventDefault();
-                    this.selectionManager.copySelection();
+                    this.selectionManager.cacheSelection();
+                } else if (!isEditableTarget && e.key.toLowerCase() === 'v') {
+                    e.preventDefault();
+                    this.selectionManager?.pasteClipboard();
                 } else if (!isEditableTarget && e.key.toLowerCase() === 'x' && this.selectionManager?.hasSelection()) {
                     e.preventDefault();
-                    this.selectionManager.copySelection();
-                    this.selectionManager.deleteSelection();
+                    if (this.selectionManager.cacheSelection()) {
+                        this.selectionManager.deleteSelection();
+                    }
                 }
             }
             
