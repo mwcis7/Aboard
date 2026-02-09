@@ -1413,6 +1413,7 @@ class SelectionManager {
             return JSON.parse(JSON.stringify(textObj));
         } catch (error) {
             console.warn('Failed to deep copy text object:', error);
+            // Fallback preserves top-level fields if deep cloning fails (e.g., non-serializable data).
             return { ...textObj };
         }
     }

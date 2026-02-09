@@ -1942,6 +1942,7 @@ class DrawingBoard {
                     this.selectionManager.cacheSelection();
                 } else if (!isEditableTarget && key === 'v') {
                     e.preventDefault();
+                    // Paste from the internal selection clipboard.
                     this.selectionManager?.pasteClipboard();
                 } else if (!isEditableTarget && key === 'x' && this.selectionManager?.hasSelection()) {
                     e.preventDefault();
