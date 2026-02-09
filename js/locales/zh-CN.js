@@ -158,6 +158,15 @@ window.translations = {
         }
     },
 
+    selection: {
+        edit: '编辑',
+        copy: '复制',
+        delete: '删除',
+        done: '完成',
+        rotate90: '旋转90°',
+        flipH: '水平翻转'
+    },
+
     // Line Style Modal
     lineStyleModal: {
         title: '线条样式设置',

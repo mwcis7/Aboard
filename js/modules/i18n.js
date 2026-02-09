@@ -197,6 +197,9 @@ class I18n {
         // Translate title attributes
         const titleElements = document.querySelectorAll('[data-i18n-title]');
         titleElements.forEach(el => {
+            if (el === document.documentElement) {
+                return;
+            }
             const key = el.getAttribute('data-i18n-title');
             const translation = this.t(key);
             if (translation !== key) {
@@ -212,9 +215,13 @@ class I18n {
             // Default title translation
             document.title = this.t('app.title');
         }
+        if (document.documentElement.hasAttribute('title')) {
+            document.documentElement.removeAttribute('title');
+        }
         
         // Auto-translate common elements based on their ID or class
         this.autoTranslateElements();
+        this.applyFallbackTitles();
     }
     
     /**
@@ -278,6 +285,25 @@ class I18n {
         
         // Translate pagination and other controls
         this.translatePageControls();
+    }
+
+    /**
+     * Apply fallback titles for buttons without explicit title attributes.
+     */
+    applyFallbackTitles() {
+        const elements = document.querySelectorAll('button, [role="button"]');
+        elements.forEach(el => {
+            const currentTitle = el.getAttribute('title');
+            if (currentTitle && currentTitle.trim() !== '') {
+                return;
+            }
+            const label = el.getAttribute('aria-label') || el.textContent || '';
+            // Normalize whitespace (tabs, newlines, non-breaking spaces) to keep tooltips single-line and concise.
+            const cleanedLabel = label.replace(/\s+/g, ' ').trim();
+            if (cleanedLabel) {
+                el.title = cleanedLabel;
+            }
+        });
     }
     
     translatePageControls() {

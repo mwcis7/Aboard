@@ -44,6 +44,8 @@ class SelectionManager {
         this.ROTATION_HANDLE_DISTANCE = 30;
         this.HANDLE_THRESHOLD = 10;
         this.MIN_SIZE = 10;
+        this.TEXT_LINE_HEIGHT = 1.2; // Aligns with insert-text line height calculation.
+        this.TEXT_BOUNDS_PADDING = 4;
         
         // For lasso/rectangle selection
         this.selectionMode = 'click'; // 'click', 'rectangle', or 'lasso'
@@ -63,6 +65,10 @@ class SelectionManager {
         this.multiTextDragStartPositions = []; // Starting positions for texts in multi-drag
         this.multiBounds = null;
         this.multiRotation = 0; // Accumulated rotation for multi-select
+        this.multiStrokeRotateStart = [];
+        this.multiImageRotateStart = [];
+        this.multiTextRotateStart = [];
+        this.clipboard = null;
         
         // Create selection controls overlay
         this.createSelectionControls();
@@ -425,6 +431,10 @@ class SelectionManager {
 
     startSelection(e) {
         if (!this.isActive) return false;
+
+        if (!this.hasSelectableContent()) {
+            return false;
+        }
         
         // Don't start new selection if clicking on the selection controls overlay
         if (e.target && e.target.closest && e.target.closest('#selection-controls-overlay')) {
@@ -504,6 +514,7 @@ class SelectionManager {
     
     showControls() {
         this.overlay.style.display = 'block';
+        this.controlBox.classList.toggle('text-selection-only', this.selectionType === 'text');
         // Show edit button only for text selections
         const editBtn = document.getElementById('selection-edit-btn');
         if (editBtn) {
@@ -514,6 +525,7 @@ class SelectionManager {
     
     hideControls() {
         this.overlay.style.display = 'none';
+        this.controlBox.classList.remove('text-selection-only');
     }
     
     updateControlBox() {
@@ -529,18 +541,14 @@ class SelectionManager {
             if (this.isRotating && stroke.originalBounds) {
                 bounds = stroke.originalBounds;
             } else {
-                bounds = this.drawingEngine.getStrokeBounds(stroke);
+                bounds = this.getStrokeSelectionBounds(stroke);
             }
             rotation = stroke.rotation || 0;
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             if (!textObj) return;
-            bounds = {
-                x: textObj.x - 5,
-                y: textObj.y - 5,
-                width: textObj.width * textObj.scale + 10,
-                height: textObj.height * textObj.scale + 10
-            };
+            bounds = this.getTextObjectBounds(this.selectedIndex);
+            if (!bounds) return;
             rotation = textObj.rotation || 0;
         } else if (this.selectionType === 'image') {
             const img = this.drawingEngine.stampedImages[this.selectedIndex];
@@ -552,7 +560,7 @@ class SelectionManager {
             if (this.isRotating && this.multiBounds) {
                 bounds = this.multiBounds;
             } else {
-                bounds = this.getMultiBounds();
+                bounds = this.getMultiSelectionBounds();
             }
             rotation = this.multiRotation || 0;
         }
@@ -744,11 +752,13 @@ class SelectionManager {
             }
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
+            const bounds = this.getTextObjectBounds(this.selectedIndex);
+            if (!bounds) return;
             this.resizeStartBounds = {
-                x: textObj.x,
-                y: textObj.y,
-                width: textObj.width * textObj.scale,
-                height: textObj.height * textObj.scale,
+                x: bounds.x,
+                y: bounds.y,
+                width: bounds.width,
+                height: bounds.height,
                 scale: textObj.scale
             };
         } else if (this.selectionType === 'image') {
@@ -947,23 +957,19 @@ class SelectionManager {
         if (this.selectionType === 'stroke') {
             const stroke = this.drawingEngine.strokes[this.selectedIndex];
             if (!stroke) return null;
-            bounds = stroke.originalBounds || this.drawingEngine.getStrokeBounds(stroke);
+            bounds = (this.isRotating && stroke.originalBounds) ? stroke.originalBounds : this.getStrokeSelectionBounds(stroke);
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             if (!textObj) return null;
-            bounds = {
-                x: textObj.x - 5,
-                y: textObj.y - 5,
-                width: textObj.width * textObj.scale + 10,
-                height: textObj.height * textObj.scale + 10
-            };
+            bounds = this.getTextObjectBounds(this.selectedIndex);
+            if (!bounds) return null;
         } else if (this.selectionType === 'image') {
             const img = this.drawingEngine.stampedImages[this.selectedIndex];
             if (!img) return null;
             bounds = { x: img.x, y: img.y, width: img.width, height: img.height };
         } else if (this.selectionType === 'multi') {
             // During rotation, use the saved original bounds center
-            bounds = (this.isRotating && this.multiBounds) ? this.multiBounds : this.getMultiBounds();
+            bounds = (this.isRotating && this.multiBounds) ? this.multiBounds : this.getMultiSelectionBounds();
         }
         
         if (!bounds) return null;
@@ -985,7 +991,7 @@ class SelectionManager {
         if (this.selectionType === 'stroke') {
             const stroke = this.drawingEngine.strokes[this.selectedIndex];
             this.rotateStartRotation = stroke.rotation || 0;
-            stroke.originalBounds = this.drawingEngine.getStrokeBounds(stroke);
+            stroke.originalBounds = this.getStrokeSelectionBounds(stroke);
             for (let point of stroke.points) {
                 point.originalX = point.x;
                 point.originalY = point.y;
@@ -998,7 +1004,8 @@ class SelectionManager {
             this.rotateStartRotation = img.rotation || 0;
         } else if (this.selectionType === 'multi') {
             this.rotateStartRotation = this.multiRotation;
-            this.multiBounds = this.getMultiBounds();
+            this.multiBounds = this.getMultiSelectionBounds();
+            this.multiStrokeRotateStart = [];
             for (const idx of this.selectedStrokes) {
                 const stroke = this.drawingEngine.strokes[idx];
                 if (stroke) {
@@ -1006,6 +1013,7 @@ class SelectionManager {
                         point.originalX = point.x;
                         point.originalY = point.y;
                     }
+                    this.multiStrokeRotateStart.push({ idx, rotation: stroke.rotation || 0 });
                 }
             }
             this.multiImageRotateStart = [];
@@ -1086,6 +1094,10 @@ class SelectionManager {
                             point.y = centerY + relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
                         }
                     }
+                    const start = this.multiStrokeRotateStart.find(item => item.idx === idx);
+                    if (start) {
+                        stroke.rotation = this.normalizeAngle(start.rotation + angleDelta);
+                    }
                 }
             }
             if (this.multiImageRotateStart) {
@@ -1152,6 +1164,7 @@ class SelectionManager {
                         }
                     }
                 }
+                this.multiStrokeRotateStart = [];
                 this.multiImageRotateStart = [];
                 this.multiTextRotateStart = [];
                 // Clear multiBounds so it recalculates from new positions; keep multiRotation
@@ -1162,6 +1175,8 @@ class SelectionManager {
     
     // Action methods
     copySelection() {
+        // Cache the selection for paste while still duplicating on the canvas.
+        this.cacheSelection();
         if (this.selectionType === 'multi') {
             if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0 && this.selectedTexts.length === 0) return false;
             const newStrokeIndices = [];
@@ -1255,6 +1270,169 @@ class SelectionManager {
         }
         
         return false;
+    }
+
+    hasSelectableContent() {
+        const hasStrokes = this.drawingEngine.strokes.length > 0;
+        const hasImages = this.drawingEngine.stampedImages.length > 0;
+        const hasTexts = this.textManager && this.textManager.textObjects && this.textManager.textObjects.length > 0;
+        return hasStrokes || hasImages || hasTexts;
+    }
+
+    cacheSelection() {
+        if (!this.hasSelection()) {
+            // Clear previous clipboard when nothing is selected.
+            this.clipboard = null;
+            return false;
+        }
+        const cachedStrokes = [];
+        const cachedImages = [];
+        const cachedTexts = [];
+
+        if (this.selectionType === 'stroke' && this.selectedIndex !== null) {
+            const stroke = this.drawingEngine.strokes[this.selectedIndex];
+            if (stroke) {
+                cachedStrokes.push(this.createStrokeCopy(stroke));
+            }
+        } else if (this.selectionType === 'image' && this.selectedIndex !== null) {
+            const img = this.drawingEngine.stampedImages[this.selectedIndex];
+            if (img) {
+                cachedImages.push(this.createImageCopy(img));
+            }
+        } else if (this.selectionType === 'text' && this.selectedIndex !== null && this.textManager) {
+            const textObj = this.textManager.textObjects[this.selectedIndex];
+            if (textObj) {
+                cachedTexts.push(this.createTextCopy(textObj));
+            }
+        } else if (this.selectionType === 'multi') {
+            for (const idx of this.selectedStrokes) {
+                const stroke = this.drawingEngine.strokes[idx];
+                if (stroke) {
+                    cachedStrokes.push(this.createStrokeCopy(stroke));
+                }
+            }
+            for (const idx of this.selectedImages) {
+                const img = this.drawingEngine.stampedImages[idx];
+                if (img) {
+                    cachedImages.push(this.createImageCopy(img));
+                }
+            }
+            if (this.textManager) {
+                for (const idx of this.selectedTexts) {
+                    const textObj = this.textManager.textObjects[idx];
+                    if (textObj) {
+                        cachedTexts.push(this.createTextCopy(textObj));
+                    }
+                }
+            }
+        }
+
+        if (cachedStrokes.length === 0 && cachedImages.length === 0 && cachedTexts.length === 0) {
+            this.clipboard = null;
+            return false;
+        }
+        this.clipboard = { strokes: cachedStrokes, images: cachedImages, texts: cachedTexts };
+        return true;
+    }
+
+    pasteClipboard() {
+        if (!this.clipboard) return false;
+        const newStrokeIndices = [];
+        const newImageIndices = [];
+        const newTextIndices = [];
+
+        for (const stroke of this.clipboard.strokes || []) {
+            const copiedStroke = {
+                ...stroke,
+                points: stroke.points.map(p => ({ x: p.x + this.COPY_OFFSET, y: p.y + this.COPY_OFFSET }))
+            };
+            this.drawingEngine.strokes.push(copiedStroke);
+            newStrokeIndices.push(this.drawingEngine.strokes.length - 1);
+        }
+
+        for (const img of this.clipboard.images || []) {
+            const copiedImage = this.applyPasteOffset({ ...img }, this.COPY_OFFSET, this.COPY_OFFSET);
+            this.drawingEngine.stampedImages.push(copiedImage);
+            newImageIndices.push(this.drawingEngine.stampedImages.length - 1);
+        }
+
+        if (this.textManager) {
+            for (const textObj of this.clipboard.texts || []) {
+                const copiedText = this.createTextCopy(textObj);
+                const offsetText = this.applyPasteOffset(copiedText, this.COPY_OFFSET, this.COPY_OFFSET);
+                this.textManager.textObjects.push(offsetText);
+                newTextIndices.push(this.textManager.textObjects.length - 1);
+            }
+        }
+
+        const total = newStrokeIndices.length + newImageIndices.length + newTextIndices.length;
+        if (total === 0) return false;
+
+        if (total === 1 && newStrokeIndices.length === 1) {
+            this.selectStroke(newStrokeIndices[0]);
+        } else if (total === 1 && newImageIndices.length === 1) {
+            this.selectImage(newImageIndices[0]);
+        } else if (total === 1 && newTextIndices.length === 1) {
+            this.selectText(newTextIndices[0]);
+        } else {
+            this.selectedStrokes = newStrokeIndices;
+            this.selectedImages = newImageIndices;
+            this.selectedTexts = newTextIndices;
+            this.multiRotation = 0;
+            this.selectionType = 'multi';
+            this.selectedIndex = null;
+            this.showControls();
+            this.redrawWithSelection();
+        }
+
+        this.saveHistory();
+        return true;
+    }
+
+    createStrokeCopy(stroke) {
+        return {
+            points: stroke.points.map(p => ({ x: p.x, y: p.y })),
+            color: stroke.color,
+            size: stroke.size,
+            penType: stroke.penType,
+            tool: stroke.tool,
+            rotation: stroke.rotation || 0
+        };
+    }
+
+    createImageCopy(img) {
+        return {
+            imageElement: img.imageElement,
+            x: img.x,
+            y: img.y,
+            width: img.width,
+            height: img.height,
+            rotation: img.rotation || 0,
+            flipHorizontal: img.flipHorizontal || false,
+            flipVertical: img.flipVertical || false
+        };
+    }
+
+    createTextCopy(textObj) {
+        // Use structuredClone when available; fallback for environments without it (e.g., older embedded browsers).
+        if (typeof structuredClone === 'function') {
+            return structuredClone(textObj);
+        }
+        try {
+            return JSON.parse(JSON.stringify(textObj));
+        } catch (error) {
+            console.warn('Failed to deep copy text object:', error);
+            // Fallback preserves top-level fields when deep cloning fails; nested data may be dropped.
+            return { ...textObj };
+        }
+    }
+
+    applyPasteOffset(obj, offsetX, offsetY) {
+        return {
+            ...obj,
+            x: obj.x + offsetX,
+            y: obj.y + offsetY
+        };
     }
     
     deleteSelection() {
@@ -1363,6 +1541,7 @@ class SelectionManager {
                 point.x = cx + relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
                 point.y = cy + relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
             }
+            stroke.rotation = this.normalizeAngle((stroke.rotation || 0) + 90);
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             if (!textObj) return;
@@ -1386,6 +1565,7 @@ class SelectionManager {
                         point.x = cx + relX * Math.cos(angleRad) - relY * Math.sin(angleRad);
                         point.y = cy + relX * Math.sin(angleRad) + relY * Math.cos(angleRad);
                     }
+                    stroke.rotation = this.normalizeAngle((stroke.rotation || 0) + 90);
                 }
             }
             for (const idx of this.selectedImages) {
@@ -1591,6 +1771,9 @@ class SelectionManager {
         this.selectedTexts = [];
         this.multiRotation = 0;
         this.multiBounds = null;
+        this.multiStrokeRotateStart = [];
+        this.multiImageRotateStart = [];
+        this.multiTextRotateStart = [];
         this.isBoxSelecting = false;
         this.boxSelectStart = null;
         this.boxSelectEnd = null;
@@ -1713,7 +1896,7 @@ class SelectionManager {
         const foundTexts = [];
         if (this.textManager && this.textManager.textObjects) {
             for (let i = 0; i < this.textManager.textObjects.length; i++) {
-                const bounds = this.getTextObjectBounds(i);
+                const bounds = this.getTextObjectSelectionBounds(i);
                 if (bounds && this.rectsIntersect(canvasSelRect, bounds)) {
                     foundTexts.push(i);
                 }
@@ -1757,53 +1940,178 @@ class SelectionManager {
                a.y < b.y + b.height &&
                a.y + a.height > b.y;
     }
+
+    rotatePoint(x, y, centerX, centerY, angleDeg) {
+        const angleRad = angleDeg * Math.PI / 180;
+        const cos = Math.cos(angleRad);
+        const sin = Math.sin(angleRad);
+        const relX = x - centerX;
+        const relY = y - centerY;
+        return {
+            x: centerX + relX * cos - relY * sin,
+            y: centerY + relX * sin + relY * cos
+        };
+    }
+
+    /**
+     * Build a CSS font string for text measurements.
+     * @param {Object} textObj - Text object containing font settings.
+     * @param {number} fontSize - Font size in pixels.
+     * @returns {string} CSS font string, e.g. "italic bold 16px Arial".
+     */
+    buildTextFontString(textObj, fontSize) {
+        const fontStyle = textObj.italic ? 'italic' : 'normal';
+        const fontWeight = textObj.bold ? 'bold' : 'normal';
+        const fontFamily = textObj.fontFamily || 'Arial, sans-serif';
+        return `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
+    }
+
+    getBoundsFromPoints(points) {
+        if (!points || points.length === 0) return null;
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (const point of points) {
+            if (!point) continue;
+            minX = Math.min(minX, point.x);
+            minY = Math.min(minY, point.y);
+            maxX = Math.max(maxX, point.x);
+            maxY = Math.max(maxY, point.y);
+        }
+        if (minX === Infinity) return null;
+        return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+    }
+
+    getStrokeSelectionBounds(stroke) {
+        if (!stroke) return null;
+        const bounds = this.drawingEngine.getStrokeBounds(stroke);
+        if (!bounds) return null;
+        const rotation = stroke.rotation || 0;
+        if (!rotation) return bounds;
+        const centerX = bounds.x + bounds.width / 2;
+        const centerY = bounds.y + bounds.height / 2;
+        const unrotatedPoints = stroke.points.map(point =>
+            this.rotatePoint(point.x, point.y, centerX, centerY, -rotation)
+        );
+        return this.getBoundsFromPoints(unrotatedPoints);
+    }
+
+    getImageCornerPoints(img) {
+        if (!img) return [];
+        const corners = [
+            { x: img.x, y: img.y },
+            { x: img.x + img.width, y: img.y },
+            { x: img.x + img.width, y: img.y + img.height },
+            { x: img.x, y: img.y + img.height }
+        ];
+        const rotation = img.rotation || 0;
+        if (!rotation) return corners;
+        const centerX = img.x + img.width / 2;
+        const centerY = img.y + img.height / 2;
+        return corners.map(point => this.rotatePoint(point.x, point.y, centerX, centerY, rotation));
+    }
+
+    getTextCornerPoints(textObj, bounds) {
+        if (!textObj || !bounds) return [];
+        const corners = [
+            { x: bounds.x, y: bounds.y },
+            { x: bounds.x + bounds.width, y: bounds.y },
+            { x: bounds.x + bounds.width, y: bounds.y + bounds.height },
+            { x: bounds.x, y: bounds.y + bounds.height }
+        ];
+        const rotation = textObj.rotation || 0;
+        if (!rotation) return corners;
+        const centerX = bounds.x + bounds.width / 2;
+        const centerY = bounds.y + bounds.height / 2;
+        return corners.map(point => this.rotatePoint(point.x, point.y, centerX, centerY, rotation));
+    }
+
+    getMultiSelectionBounds() {
+        if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0 && this.selectedTexts.length === 0) return null;
+        const points = [];
+        for (const idx of this.selectedStrokes) {
+            const stroke = this.drawingEngine.strokes[idx];
+            if (!stroke) continue;
+            for (const point of stroke.points) {
+                points.push({ x: point.x, y: point.y });
+            }
+        }
+        for (const idx of this.selectedImages) {
+            const img = this.drawingEngine.stampedImages[idx];
+            points.push(...this.getImageCornerPoints(img));
+        }
+        if (this.textManager) {
+            for (const idx of this.selectedTexts) {
+                const textObj = this.textManager.textObjects[idx];
+                const bounds = this.getTextObjectBounds(idx);
+                points.push(...this.getTextCornerPoints(textObj, bounds));
+            }
+        }
+        const axisBounds = this.getBoundsFromPoints(points);
+        if (!axisBounds) return null;
+        const rotation = this.multiRotation || 0;
+        if (!rotation) return axisBounds;
+        const centerX = axisBounds.x + axisBounds.width / 2;
+        const centerY = axisBounds.y + axisBounds.height / 2;
+        const unrotatedPoints = points.map(point =>
+            this.rotatePoint(point.x, point.y, centerX, centerY, -rotation)
+        );
+        return this.getBoundsFromPoints(unrotatedPoints);
+    }
+
+    getTextObjectSelectionBounds(index) {
+        if (!this.textManager || !this.textManager.textObjects) return null;
+        const textObj = this.textManager.textObjects[index];
+        const bounds = this.getTextObjectBounds(index);
+        if (!textObj || !bounds) return null;
+        const corners = this.getTextCornerPoints(textObj, bounds);
+        return this.getBoundsFromPoints(corners);
+    }
+
+    polygonIntersectsRect(polygon, rect) {
+        if (!polygon || polygon.length === 0 || !rect) return false;
+        const corners = [
+            { x: rect.x, y: rect.y },
+            { x: rect.x + rect.width, y: rect.y },
+            { x: rect.x + rect.width, y: rect.y + rect.height },
+            { x: rect.x, y: rect.y + rect.height }
+        ];
+        if (corners.some(corner => this.pointInPolygon(corner.x, corner.y, polygon))) {
+            return true;
+        }
+        if (polygon.some(point => point.x >= rect.x && point.x <= rect.x + rect.width &&
+            point.y >= rect.y && point.y <= rect.y + rect.height)) {
+            return true;
+        }
+        return false;
+    }
     
     // Get bounds for a text object by index
     getTextObjectBounds(index) {
         if (!this.textManager || !this.textManager.textObjects) return null;
         const textObj = this.textManager.textObjects[index];
         if (!textObj) return null;
+        const fontSize = textObj.fontSize * textObj.scale;
+        const text = textObj.text || '';
+        const lines = text.split('\n');
+        let maxWidth = 0;
+        const previousFont = this.ctx.font;
+        this.ctx.font = this.buildTextFontString(textObj, fontSize);
+        lines.forEach(line => {
+            const metrics = this.ctx.measureText(line);
+            maxWidth = Math.max(maxWidth, metrics.width);
+        });
+        this.ctx.font = previousFont;
+        const lineHeight = fontSize * this.TEXT_LINE_HEIGHT;
+        const padding = this.TEXT_BOUNDS_PADDING;
         return {
             x: textObj.x,
             y: textObj.y,
-            width: textObj.width * textObj.scale,
-            height: textObj.height * textObj.scale
+            width: maxWidth + padding * 2,
+            height: lines.length * lineHeight + padding * 2
         };
     }
     
     getMultiBounds() {
-        if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0 && this.selectedTexts.length === 0) return null;
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        for (const idx of this.selectedStrokes) {
-            const stroke = this.drawingEngine.strokes[idx];
-            if (!stroke) continue;
-            const bounds = this.drawingEngine.getStrokeBounds(stroke);
-            if (!bounds) continue;
-            minX = Math.min(minX, bounds.x);
-            minY = Math.min(minY, bounds.y);
-            maxX = Math.max(maxX, bounds.x + bounds.width);
-            maxY = Math.max(maxY, bounds.y + bounds.height);
-        }
-        for (const idx of this.selectedImages) {
-            const img = this.drawingEngine.stampedImages[idx];
-            if (!img) continue;
-            const bounds = this.drawingEngine.getImageBounds(img);
-            if (!bounds) continue;
-            minX = Math.min(minX, bounds.x);
-            minY = Math.min(minY, bounds.y);
-            maxX = Math.max(maxX, bounds.x + bounds.width);
-            maxY = Math.max(maxY, bounds.y + bounds.height);
-        }
-        for (const idx of this.selectedTexts) {
-            const bounds = this.getTextObjectBounds(idx);
-            if (!bounds) continue;
-            minX = Math.min(minX, bounds.x);
-            minY = Math.min(minY, bounds.y);
-            maxX = Math.max(maxX, bounds.x + bounds.width);
-            maxY = Math.max(maxY, bounds.y + bounds.height);
-        }
-        if (minX === Infinity) return null;
-        return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+        return this.getMultiSelectionBounds();
     }
     
     // Lasso selection methods
@@ -1894,11 +2202,12 @@ class SelectionManager {
         const foundTexts = [];
         if (this.textManager && this.textManager.textObjects) {
             for (let i = 0; i < this.textManager.textObjects.length; i++) {
-                const bounds = this.getTextObjectBounds(i);
+                const bounds = this.getTextObjectSelectionBounds(i);
                 if (!bounds) continue;
                 const cx = bounds.x + bounds.width / 2;
                 const cy = bounds.y + bounds.height / 2;
-                if (this.pointInPolygon(cx, cy, canvasLassoPoints)) {
+                if (this.pointInPolygon(cx, cy, canvasLassoPoints) ||
+                    this.polygonIntersectsRect(canvasLassoPoints, bounds)) {
                     foundTexts.push(i);
                 }
             }

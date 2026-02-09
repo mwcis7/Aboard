@@ -158,6 +158,15 @@ window.translations = {
         }
     },
 
+    selection: {
+        edit: 'Edit',
+        copy: 'Copy',
+        delete: 'Delete',
+        done: 'Done',
+        rotate90: 'Rotate 90°',
+        flipH: 'Flip Horizontal'
+    },
+
     // Line Style Modal
     lineStyleModal: {
         title: 'Line Style Settings',

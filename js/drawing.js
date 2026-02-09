@@ -32,10 +32,11 @@ class DrawingEngine {
         this.multiLinePendingPoint = null; // Accumulate short segments
         
         // Multi-line drawing constants
-        this.MULTI_LINE_MIN_DISTANCE = 1.2; // Minimum distance threshold for multi-line drawing (balanced for smooth curves at slow speeds)
+        this.MULTI_LINE_MIN_DISTANCE = 0.3; // Minimum distance threshold for multi-line drawing (smooth response at slower speeds)
+        this.MULTI_LINE_POINT_DISTANCE = 0.25; // Point spacing threshold to capture slow movement without jitter
         this.MULTI_LINE_BLEND_MIN = 0.7; // Minimum blend factor for perpendicular smoothing
         this.MULTI_LINE_BLEND_MAX = 0.95; // Maximum blend factor
-        this.MULTI_LINE_BLEND_SCALE = 50; // Scale factor for blend calculation
+        this.MULTI_LINE_BLEND_SCALE = 80; // Scale factor for blend calculation
         
         // Drawing buffer
         this.points = [];
@@ -253,9 +254,10 @@ class DrawingEngine {
                 }
             }
 
+            const minPointDistance = this.penLineStyle === 'multi' ? this.MULTI_LINE_POINT_DISTANCE : 0.5;
             if (this.lastPoint &&
-                Math.abs(pos.x - this.lastPoint.x) < 0.5 &&
-                Math.abs(pos.y - this.lastPoint.y) < 0.5) {
+                Math.abs(pos.x - this.lastPoint.x) < minPointDistance &&
+                Math.abs(pos.y - this.lastPoint.y) < minPointDistance) {
                 continue;
             }
 
@@ -367,11 +369,16 @@ class DrawingEngine {
         // Skip drawing if points are too close (causes unstable perpendiculars)
         // Minimum distance threshold to prevent dots and artifacts when drawing slowly
         if (length < this.MULTI_LINE_MIN_DISTANCE) {
-            // For very short segments, accumulate in pending point
             if (!this.multiLinePendingPoint) {
                 this.multiLinePendingPoint = currPoint;
+                return;
             }
-            return;
+            const pendingDx = currPoint.x - this.multiLinePendingPoint.x;
+            const pendingDy = currPoint.y - this.multiLinePendingPoint.y;
+            const pendingLength = Math.sqrt(pendingDx * pendingDx + pendingDy * pendingDy);
+            if (pendingLength < this.MULTI_LINE_MIN_DISTANCE) {
+                return;
+            }
         }
         
         // If we had a pending point, use it as the actual previous point
@@ -792,7 +799,8 @@ class DrawingEngine {
             color: stroke.color,
             size: stroke.size,
             penType: stroke.penType,
-            tool: stroke.tool
+            tool: stroke.tool,
+            rotation: stroke.rotation || 0
         };
         
         this.strokes.push(copiedStroke);

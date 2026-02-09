@@ -450,6 +450,12 @@ button, a, input[type="button"], input[type="submit"] {
     will-change: transform, left, bottom;
 }
 
+#toolbar.toolbar-loading {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
 #toolbar.dragging {
     cursor: grabbing;
 }
@@ -1150,6 +1156,7 @@ button, a, input[type="button"], input[type="submit"] {
     align-items: center;
     justify-content: center;
     gap: 4px;
+    touch-action: manipulation;
 }
 
 .pen-type-btn svg {
@@ -1551,6 +1558,15 @@ button, a, input[type="button"], input[type="submit"] {
     cursor: move;
     box-shadow: 0 0 0 1px rgba(0, 122, 255, 0.1);
     transform-origin: center center;
+}
+
+#selection-controls-box.text-selection-only {
+    border: none;
+    box-shadow: none;
+}
+
+#selection-controls-box.text-selection-only .resize-handle {
+    display: none;
 }
 
 /* Resize handles */

@@ -417,22 +417,28 @@ Aboard/
 │   └── modules/           # 功能模块
 │       ├── timer.js       # 计时器模块
 │       ├── time-display-controls.js # 时间显示控制
-│       ├── time-display-settings.js # 时间显示设置
+│       ├── browser-check.js # 浏览器兼容性检查
 │       ├── edge-drawing.js # 边缘绘制模块（沿教具边缘画线）
-│       ├── teaching-tools.js # 教具功能模块
-│       ├── shape-drawing.js # 形状绘制模块（支持直线、矩形、圆形）
+│       ├── gif-manager.js # GIF动图管理模块
+│       ├── help-system.js # 帮助系统模块
+│       ├── i18n.js        # 国际化核心模块
+│       ├── insert-text-manager.js # 文字插入管理模块
+│       ├── libgif.js      # GIF解析库
+│       ├── line-style-modal.js # 线条样式设置弹窗模块
+│       ├── project-manager.js # 项目管理模块
+│       ├── pwa-manager.js # PWA管理模块
 │       ├── random-picker.js # 点名器模块
+│       ├── rich-text-parser.js # 富文本解析模块
+│       ├── script-loader.js # 脚本加载模块
 │       ├── scoreboard.js  # 计分板模块
 │       ├── settings-manager.js # 设置管理模块
-│       ├── toast-manager.js # 消息提示模块
-│       ├── line-style-modal.js # 线条样式设置弹窗模块
-│       ├── i18n.js        # 国际化核心模块
-│       ├── help-system.js # 帮助系统模块
-│       ├── browser-check.js # 浏览器兼容性检查
-│       ├── gif-manager.js # GIF动图管理模块
-│       ├── libgif.js      # GIF解析库
+│       ├── shape-drawing.js # 形状绘制模块（支持直线、矩形、圆形）
 │       ├── storage-manager.js # 存储管理模块
-│       └── project-manager.js # 项目管理模块
+│       ├── teaching-tools.js # 教具功能模块
+│       ├── time-display-controls.js # 时间显示控制
+│       ├── time-display-settings.js # 时间显示设置
+│       ├── timer.js       # 计时器模块
+│       └── toast-manager.js # 消息提示模块
 ├── img/                    # 图片资源目录
 │   ├── ruler_1.png        # 直尺样式1
 │   ├── ruler_2.png        # 直尺样式2
@@ -447,9 +453,6 @@ Aboard/
 │   ├── gentle-alarm.MP3   # 柔和提示音
 │   ├── digital-beep.MP3   # 数字提示音
 │   └── README.md          # 音频文件说明
-├── tests/                  # 测试文件夹
-│   └── manual/            # 手动测试
-│       └── verify_architecture.spec.js
 └── README.md              # 项目文档（简体中文）
 ```
 

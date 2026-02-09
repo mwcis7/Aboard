@@ -265,24 +265,27 @@
 /* Toolbar */
 #insert-text-box .text-controls-toolbar {
     position: absolute;
-    bottom: -70px;
+    --text-toolbar-button-size: clamp(28px, calc(var(--toolbar-button-size, 48px) * 0.6 + 0.3vw), 48px);
+    --text-toolbar-gap: clamp(6px, calc(var(--text-toolbar-button-size) * 0.2), 10px);
+    --text-toolbar-padding: clamp(8px, calc(var(--text-toolbar-button-size) * 0.25), 12px);
+    bottom: calc(var(--text-toolbar-button-size) * -1.45);
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 10px;
-    padding: 12px;
+    gap: var(--text-toolbar-gap);
+    padding: var(--text-toolbar-padding);
     background-color: white;
-    border-radius: 12px;
+    border-radius: calc(var(--text-toolbar-button-size) * 0.25);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     pointer-events: all;
     z-index: 10;
 }
 
 #insert-text-box .text-control-btn {
-    width: 48px;
-    height: 48px;
+    width: var(--text-toolbar-button-size);
+    height: var(--text-toolbar-button-size);
     border: none;
-    border-radius: 10px;
+    border-radius: calc(var(--text-toolbar-button-size) * 0.22);
     background-color: #f0f0f0;
     cursor: pointer;
     display: flex;

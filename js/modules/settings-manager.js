@@ -233,6 +233,8 @@ class SettingsManager {
         const toolbarGap = Math.max(2, buttonSize * TOOLBAR_GAP_RATIO);
         const isVertical = toolbar.classList.contains('vertical');
         
+        document.documentElement.style.setProperty('--toolbar-button-size', `${buttonSize}px`);
+
         // Apply toolbar container styles (vertical: more padding on Y axis, horizontal: more on X axis)
         toolbar.style.padding = isVertical 
             ? `${toolbarPadding}px ${toolbarPaddingSecondary}px` 

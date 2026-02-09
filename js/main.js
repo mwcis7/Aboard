@@ -146,6 +146,7 @@ class DrawingBoard {
         this.settingsManager.loadSettings();
         this.backgroundManager.drawBackground();
         this.updateUI();
+        this.revealToolbar();
         this.historyManager.saveState();
         
         // Initialize pages array for pagination mode (always on)
@@ -782,9 +783,14 @@ class DrawingBoard {
         // Pen type buttons
         document.querySelectorAll('.pen-type-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                this.drawingEngine.setPenType(e.target.dataset.penType);
+                const targetButton = e.currentTarget;
+                const penType = targetButton.dataset.penType;
+                if (!penType) {
+                    return;
+                }
+                this.drawingEngine.setPenType(penType);
                 document.querySelectorAll('.pen-type-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
+                targetButton.classList.add('active');
             });
         });
         
@@ -1916,17 +1922,40 @@ class DrawingBoard {
     
     setupKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
+            const isEditableTarget = e.target &&
+                (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable);
             if (e.ctrlKey || e.metaKey) {
-                if (e.key === 'z' && !e.shiftKey) {
+                const key = e.key.toLowerCase();
+                if (key === 'z' && !e.shiftKey) {
                     e.preventDefault();
                     if (this.historyManager.undo()) {
                         this.updateUI();
                     }
-                } else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) {
+                } else if (key === 'y' || (key === 'z' && e.shiftKey)) {
                     e.preventDefault();
                     if (this.historyManager.redo()) {
                         this.updateUI();
                     }
+                } else if (!isEditableTarget && key === 'c' && this.selectionManager?.hasSelection()) {
+                    e.preventDefault();
+                    // Copy to the internal selection clipboard (not the system clipboard).
+                    this.selectionManager.cacheSelection();
+                } else if (!isEditableTarget && key === 'v') {
+                    e.preventDefault();
+                    // Paste from the internal selection clipboard.
+                    this.selectionManager?.pasteClipboard();
+                } else if (!isEditableTarget && key === 'x' && this.selectionManager?.hasSelection()) {
+                    e.preventDefault();
+                    if (this.selectionManager.cacheSelection()) {
+                        this.selectionManager.deleteSelection();
+                    }
+                }
+            }
+            
+            if (!isEditableTarget && (e.key === 'Delete' || e.key === 'Backspace')) {
+                if (this.selectionManager?.hasSelection()) {
+                    e.preventDefault();
+                    this.selectionManager.deleteSelection();
                 }
             }
             
@@ -3059,6 +3088,15 @@ class DrawingBoard {
         if (updateConfigScale) {
             this.updateConfigAreaScale();
         }
+    }
+
+    revealToolbar() {
+        const toolbar = document.getElementById('toolbar');
+        if (!toolbar) return;
+        // Reveal toolbar after sizing is applied to avoid a flash of unstyled content.
+        requestAnimationFrame(() => {
+            toolbar.classList.remove('toolbar-loading');
+        });
     }
     
     updateConfigAreaScale() {
