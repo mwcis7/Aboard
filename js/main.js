@@ -3070,6 +3070,7 @@ class DrawingBoard {
     revealToolbar() {
         const toolbar = document.getElementById('toolbar');
         if (!toolbar) return;
+        // Reveal toolbar after sizing is applied to avoid a flash of unstyled content.
         requestAnimationFrame(() => {
             toolbar.classList.remove('toolbar-loading');
         });
