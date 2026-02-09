@@ -33,7 +33,7 @@ class DrawingEngine {
         
         // Multi-line drawing constants
         this.MULTI_LINE_MIN_DISTANCE = 0.3; // Minimum distance threshold for multi-line drawing (smooth response at slower speeds)
-        this.MULTI_LINE_POINT_DISTANCE = 0.25; // Minimum point spacing for multi-line drawing
+        this.MULTI_LINE_POINT_DISTANCE = 0.25; // Point spacing threshold to capture slow movement without jitter
         this.MULTI_LINE_BLEND_MIN = 0.7; // Minimum blend factor for perpendicular smoothing
         this.MULTI_LINE_BLEND_MAX = 0.95; // Maximum blend factor
         this.MULTI_LINE_BLEND_SCALE = 80; // Scale factor for blend calculation
