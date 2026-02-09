@@ -784,7 +784,11 @@ class DrawingBoard {
         document.querySelectorAll('.pen-type-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const targetButton = e.currentTarget;
-                this.drawingEngine.setPenType(targetButton.dataset.penType);
+                const penType = targetButton.dataset.penType;
+                if (!penType) {
+                    return;
+                }
+                this.drawingEngine.setPenType(penType);
                 document.querySelectorAll('.pen-type-btn').forEach(b => b.classList.remove('active'));
                 targetButton.classList.add('active');
             });
