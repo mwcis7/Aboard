@@ -1922,6 +1922,8 @@ class DrawingBoard {
     
     setupKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
+            const isEditableTarget = e.target &&
+                (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable);
             if (e.ctrlKey || e.metaKey) {
                 if (e.key === 'z' && !e.shiftKey) {
                     e.preventDefault();
@@ -1933,6 +1935,20 @@ class DrawingBoard {
                     if (this.historyManager.redo()) {
                         this.updateUI();
                     }
+                } else if (!isEditableTarget && e.key.toLowerCase() === 'c' && this.selectionManager?.hasSelection()) {
+                    e.preventDefault();
+                    this.selectionManager.copySelection();
+                } else if (!isEditableTarget && e.key.toLowerCase() === 'x' && this.selectionManager?.hasSelection()) {
+                    e.preventDefault();
+                    this.selectionManager.copySelection();
+                    this.selectionManager.deleteSelection();
+                }
+            }
+            
+            if (!isEditableTarget && (e.key === 'Delete' || e.key === 'Backspace')) {
+                if (this.selectionManager?.hasSelection()) {
+                    e.preventDefault();
+                    this.selectionManager.deleteSelection();
                 }
             }
             
