@@ -1280,6 +1280,7 @@ class SelectionManager {
 
     cacheSelection() {
         if (!this.hasSelection()) {
+            // Clear previous clipboard when nothing is selected.
             this.clipboard = null;
             return false;
         }
@@ -1411,7 +1412,7 @@ class SelectionManager {
     }
 
     createTextCopy(textObj) {
-        // Use structuredClone when available; fallback for older browsers.
+        // Use structuredClone when available; fallback for environments without it.
         if (typeof structuredClone === 'function') {
             return structuredClone(textObj);
         }
@@ -1419,7 +1420,7 @@ class SelectionManager {
             return JSON.parse(JSON.stringify(textObj));
         } catch (error) {
             console.warn('Failed to deep copy text object:', error);
-            // Fallback preserves top-level fields if deep cloning fails (e.g., non-serializable data).
+            // Fallback preserves top-level fields when deep cloning fails.
             return { ...textObj };
         }
     }
