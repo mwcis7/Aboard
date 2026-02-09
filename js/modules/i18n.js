@@ -297,11 +297,7 @@ class I18n {
             if (currentTitle && currentTitle.trim() !== '') {
                 return;
             }
-            let label = el.getAttribute('aria-label');
-            if (!label) {
-                const isVisible = el.offsetParent !== null || el.getClientRects().length > 0;
-                label = isVisible ? el.textContent : '';
-            }
+            const label = el.getAttribute('aria-label') || el.textContent || '';
             // Normalize whitespace (tabs, newlines, non-breaking spaces) to keep tooltips single-line and concise.
             const cleanedLabel = label.replace(/\s+/g, ' ').trim();
             if (cleanedLabel) {

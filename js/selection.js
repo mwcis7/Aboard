@@ -1921,13 +1921,13 @@ class SelectionManager {
         const text = textObj.text || '';
         const lines = text.split('\n');
         let maxWidth = 0;
-        this.ctx.save();
+        const previousFont = this.ctx.font;
         this.ctx.font = this.buildTextFontString(textObj, fontSize);
         lines.forEach(line => {
             const metrics = this.ctx.measureText(line);
             maxWidth = Math.max(maxWidth, metrics.width);
         });
-        this.ctx.restore();
+        this.ctx.font = previousFont;
         const lineHeight = fontSize * this.TEXT_LINE_HEIGHT;
         const padding = this.TEXT_BOUNDS_PADDING;
         return {
