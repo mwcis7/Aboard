@@ -286,16 +286,13 @@ class I18n {
     }
 
     applyFallbackTitles() {
-        const elements = new Set([
-            ...document.querySelectorAll('button'),
-            ...document.querySelectorAll('[role="button"]')
-        ]);
+        const elements = document.querySelectorAll('button, [role="button"]');
         elements.forEach(el => {
             const currentTitle = el.getAttribute('title');
             if (currentTitle && currentTitle.trim() !== '') {
                 return;
             }
-            const label = el.getAttribute('aria-label') || el.textContent || '';
+            const label = el.getAttribute('aria-label') || el.innerText || '';
             const cleanedLabel = label.replace(/\s+/g, ' ').trim();
             if (cleanedLabel) {
                 el.title = cleanedLabel;

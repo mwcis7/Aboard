@@ -1781,6 +1781,12 @@ class SelectionManager {
         };
     }
 
+    buildTextFontString(textObj, fontSize) {
+        const fontStyle = textObj.italic ? 'italic' : 'normal';
+        const fontWeight = textObj.bold ? 'bold' : 'normal';
+        return `${fontStyle} ${fontWeight} ${fontSize}px ${textObj.fontFamily}`;
+    }
+
     getBoundsFromPoints(points) {
         if (!points || points.length === 0) return null;
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -1904,14 +1910,12 @@ class SelectionManager {
         if (!this.textManager || !this.textManager.textObjects) return null;
         const textObj = this.textManager.textObjects[index];
         if (!textObj) return null;
-        const fontStyle = textObj.italic ? 'italic' : 'normal';
-        const fontWeight = textObj.bold ? 'bold' : 'normal';
         const fontSize = textObj.fontSize * (textObj.scale || 1);
         const text = textObj.text || '';
         const lines = text.split('\n');
         let maxWidth = 0;
         this.ctx.save();
-        this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${textObj.fontFamily}`;
+        this.ctx.font = this.buildTextFontString(textObj, fontSize);
         lines.forEach(line => {
             const metrics = this.ctx.measureText(line);
             maxWidth = Math.max(maxWidth, metrics.width);
