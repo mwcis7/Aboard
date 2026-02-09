@@ -44,6 +44,8 @@ class SelectionManager {
         this.ROTATION_HANDLE_DISTANCE = 30;
         this.HANDLE_THRESHOLD = 10;
         this.MIN_SIZE = 10;
+        this.TEXT_LINE_HEIGHT = 1.2;
+        this.TEXT_BOUNDS_PADDING = 4;
         
         // For lasso/rectangle selection
         this.selectionMode = 'click'; // 'click', 'rectangle', or 'lasso'
@@ -1915,8 +1917,8 @@ class SelectionManager {
             maxWidth = Math.max(maxWidth, metrics.width);
         });
         this.ctx.restore();
-        const lineHeight = fontSize * 1.2;
-        const padding = 4;
+        const lineHeight = fontSize * this.TEXT_LINE_HEIGHT;
+        const padding = this.TEXT_BOUNDS_PADDING;
         return {
             x: textObj.x,
             y: textObj.y,
