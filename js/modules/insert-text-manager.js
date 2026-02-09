@@ -170,7 +170,7 @@ class InsertTextManager {
             <div id="insert-text-modal" class="modal">
                 <div class="modal-content text-input-modal-content">
                     <div class="modal-header">
-                        <h2 data-i18n="tools.text.insertTitle"></h2>
+                        <h2 id="insert-text-modal-title" data-i18n="tools.text.insertTitle"></h2>
                         <button id="insert-text-modal-close-btn" class="modal-close-btn">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -548,7 +548,7 @@ class InsertTextManager {
         const input = document.getElementById('insert-text-input');
 
         // Update modal title to indicate editing mode
-        const modalTitle = this.modal.querySelector('h2[data-i18n="tools.text.insertTitle"]');
+        const modalTitle = document.getElementById('insert-text-modal-title');
         if (modalTitle) {
             if (isEditing) {
                 const editLabel = window.i18n ? window.i18n.t('tools.text.editTitle') : 'Edit Text';
@@ -589,11 +589,15 @@ class InsertTextManager {
         }
 
         this.textConfig.text = text;
-        this.closeModal();
 
         // When editing an existing text object, update it directly in-place
         // without showing the overlay (preserves position, scale, rotation)
-        if (this.editingTextIndex !== null) {
+        const isEditing = this.editingTextIndex !== null;
+        
+        // Close modal (this resets editingTextIndex, so we check isEditing first)
+        this.modal.classList.remove('show');
+
+        if (isEditing) {
             this.stampText();
             return;
         }
