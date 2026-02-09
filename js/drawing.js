@@ -370,7 +370,8 @@ class DrawingEngine {
         // Minimum distance threshold to prevent dots and artifacts when drawing slowly
         if (length < this.MULTI_LINE_MIN_DISTANCE) {
             if (!this.multiLinePendingPoint) {
-                this.multiLinePendingPoint = prevPoint;
+                this.multiLinePendingPoint = currPoint;
+                return;
             }
             const pendingDx = currPoint.x - this.multiLinePendingPoint.x;
             const pendingDy = currPoint.y - this.multiLinePendingPoint.y;
