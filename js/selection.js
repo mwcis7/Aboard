@@ -1175,6 +1175,7 @@ class SelectionManager {
     
     // Action methods
     copySelection() {
+        // Cache the selection for paste while still duplicating on the canvas.
         this.cacheSelection();
         if (this.selectionType === 'multi') {
             if (this.selectedStrokes.length === 0 && this.selectedImages.length === 0 && this.selectedTexts.length === 0) return false;
@@ -1412,7 +1413,7 @@ class SelectionManager {
     }
 
     createTextCopy(textObj) {
-        // Use structuredClone when available; fallback for environments without it.
+        // Use structuredClone when available; fallback for environments without it (e.g., older embedded browsers).
         if (typeof structuredClone === 'function') {
             return structuredClone(textObj);
         }
