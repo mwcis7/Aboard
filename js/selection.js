@@ -1916,7 +1916,7 @@ class SelectionManager {
         if (!this.textManager || !this.textManager.textObjects) return null;
         const textObj = this.textManager.textObjects[index];
         if (!textObj) return null;
-        const fontSize = textObj.fontSize * (textObj.scale || 1);
+        const fontSize = textObj.fontSize * textObj.scale;
         const text = textObj.text || '';
         const lines = text.split('\n');
         let maxWidth = 0;
