@@ -1405,7 +1405,10 @@ class SelectionManager {
     }
 
     createTextCopy(textObj) {
-        return { ...textObj };
+        const copy = typeof structuredClone === 'function'
+            ? structuredClone(textObj)
+            : JSON.parse(JSON.stringify(textObj));
+        return copy;
     }
 
     applyPasteOffset(obj, offsetX, offsetY) {

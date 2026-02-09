@@ -1938,7 +1938,9 @@ class DrawingBoard {
                     }
                 } else if (!isEditableTarget && key === 'c' && this.selectionManager?.hasSelection()) {
                     e.preventDefault();
-                    this.selectionManager.cacheSelection();
+                    if (!this.selectionManager.cacheSelection()) {
+                        return;
+                    }
                 } else if (!isEditableTarget && key === 'v') {
                     e.preventDefault();
                     this.selectionManager?.pasteClipboard();
