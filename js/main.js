@@ -1939,7 +1939,9 @@ class DrawingBoard {
                 } else if (!isEditableTarget && key === 'c' && this.selectionManager?.hasSelection()) {
                     e.preventDefault();
                     // Copy to the internal selection clipboard (not the system clipboard).
-                    this.selectionManager.cacheSelection();
+                    if (!this.selectionManager.cacheSelection()) {
+                        return;
+                    }
                 } else if (!isEditableTarget && key === 'v') {
                     e.preventDefault();
                     // Paste from the internal selection clipboard.

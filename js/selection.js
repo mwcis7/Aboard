@@ -1279,7 +1279,10 @@ class SelectionManager {
     }
 
     cacheSelection() {
-        if (!this.hasSelection()) return false;
+        if (!this.hasSelection()) {
+            this.clipboard = null;
+            return false;
+        }
         const cachedStrokes = [];
         const cachedImages = [];
         const cachedTexts = [];
@@ -1322,7 +1325,10 @@ class SelectionManager {
             }
         }
 
-        if (cachedStrokes.length === 0 && cachedImages.length === 0 && cachedTexts.length === 0) return false;
+        if (cachedStrokes.length === 0 && cachedImages.length === 0 && cachedTexts.length === 0) {
+            this.clipboard = null;
+            return false;
+        }
         this.clipboard = { strokes: cachedStrokes, images: cachedImages, texts: cachedTexts };
         return true;
     }
@@ -1405,7 +1411,7 @@ class SelectionManager {
     }
 
     createTextCopy(textObj) {
-        // Use structuredClone when available, fallback for older browsers.
+        // Use structuredClone when available; fallback for older browsers.
         if (typeof structuredClone === 'function') {
             return structuredClone(textObj);
         }
