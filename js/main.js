@@ -4406,7 +4406,16 @@ class DrawingBoard {
                 backgroundImageData: this.backgroundManager.backgroundImageData,
                 uploadedImages: this.uploadedImages,
                 // Text objects for selection support after restore
-                textObjects: this.insertTextManager ? this.insertTextManager.getTextObjects() : []
+                textObjects: this.insertTextManager ? this.insertTextManager.getTextObjects() : [],
+                // Strokes for selection support after restore
+                strokes: this.drawingEngine.strokes.map(s => ({
+                    points: s.points.map(p => ({ x: p.x, y: p.y })),
+                    color: s.color,
+                    size: s.size,
+                    penType: s.penType,
+                    tool: s.tool,
+                    rotation: s.rotation || 0
+                }))
             };
 
             const data = {
@@ -4507,6 +4516,16 @@ class DrawingBoard {
                         this.insertTextManager = new InsertTextManager(this.canvas, this.ctx, this.historyManager, this.drawingEngine);
                     }
                     this.insertTextManager.setTextObjects(settings.textObjects);
+                }
+
+                // Restore strokes for selection support
+                if (settings.strokes && settings.strokes.length > 0) {
+                    this.drawingEngine.strokes = settings.strokes;
+                }
+
+                // Link selection manager to text manager for selection to work
+                if (this.insertTextManager) {
+                    this.selectionManager.setTextManager(this.insertTextManager);
                 }
             }
 

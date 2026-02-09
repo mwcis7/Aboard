@@ -1561,12 +1561,11 @@ button, a, input[type="button"], input[type="submit"] {
 }
 
 #selection-controls-box.text-selection-only {
-    border: none;
-    box-shadow: none;
+    /* Text selections now show the same border and resize handles as other types */
 }
 
 #selection-controls-box.text-selection-only .resize-handle {
-    display: none;
+    /* Show resize handles for text selections */
 }
 
 /* Resize handles */

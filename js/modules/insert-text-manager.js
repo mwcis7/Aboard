@@ -547,6 +547,18 @@ class InsertTextManager {
 
         const input = document.getElementById('insert-text-input');
 
+        // Update modal title to indicate editing mode
+        const modalTitle = this.modal.querySelector('h2[data-i18n="tools.text.insertTitle"]');
+        if (modalTitle) {
+            if (isEditing) {
+                const editLabel = window.i18n ? window.i18n.t('tools.text.editTitle') : 'Edit Text';
+                modalTitle.textContent = editLabel;
+            } else {
+                const insertLabel = window.i18n ? window.i18n.t('tools.text.insertTitle') : 'Insert Text';
+                modalTitle.textContent = insertLabel;
+            }
+        }
+
         if (isEditing) {
             input.value = this.textConfig.text;
             document.getElementById('insert-text-size-slider').value = this.textConfig.fontSize;
@@ -565,6 +577,8 @@ class InsertTextManager {
 
     closeModal() {
         this.modal.classList.remove('show');
+        // Reset editing state if user cancels the modal
+        this.editingTextIndex = null;
     }
 
     confirmModal() {
@@ -577,7 +591,14 @@ class InsertTextManager {
         this.textConfig.text = text;
         this.closeModal();
 
-        // Show Overlay
+        // When editing an existing text object, update it directly in-place
+        // without showing the overlay (preserves position, scale, rotation)
+        if (this.editingTextIndex !== null) {
+            this.stampText();
+            return;
+        }
+
+        // Show Overlay for new text insertion
         this.showOverlay();
     }
 
@@ -746,10 +767,21 @@ class InsertTextManager {
         if (!textObj) return;
         
         const bounds = this.getTextBounds(textObj);
+        const rotation = textObj.rotation || 0;
         
         this.ctx.save();
         this.ctx.strokeStyle = '#0066FF';
         this.ctx.lineWidth = 2;
+        
+        // Apply the same rotation as the text object so the border moves/rotates with it
+        if (rotation !== 0) {
+            const centerX = bounds.x + bounds.width / 2;
+            const centerY = bounds.y + bounds.height / 2;
+            this.ctx.translate(centerX, centerY);
+            this.ctx.rotate(rotation * Math.PI / 180);
+            this.ctx.translate(-centerX, -centerY);
+        }
+        
         this.ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
         this.ctx.restore();
     }
