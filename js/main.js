@@ -1938,6 +1938,7 @@ class DrawingBoard {
                     }
                 } else if (!isEditableTarget && key === 'c' && this.selectionManager?.hasSelection()) {
                     e.preventDefault();
+                    // Copy to the internal selection clipboard (not the system clipboard).
                     this.selectionManager.cacheSelection();
                 } else if (!isEditableTarget && key === 'v') {
                     e.preventDefault();

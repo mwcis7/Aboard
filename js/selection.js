@@ -1405,6 +1405,7 @@ class SelectionManager {
     }
 
     createTextCopy(textObj) {
+        // Use structuredClone when available, fallback for older browsers.
         if (typeof structuredClone === 'function') {
             return structuredClone(textObj);
         }
