@@ -1405,10 +1405,15 @@ class SelectionManager {
     }
 
     createTextCopy(textObj) {
-        const copy = typeof structuredClone === 'function'
-            ? structuredClone(textObj)
-            : JSON.parse(JSON.stringify(textObj));
-        return copy;
+        if (typeof structuredClone === 'function') {
+            return structuredClone(textObj);
+        }
+        try {
+            return JSON.parse(JSON.stringify(textObj));
+        } catch (error) {
+            console.warn('Failed to deep copy text object:', error);
+            return { ...textObj };
+        }
     }
 
     applyPasteOffset(obj, offsetX, offsetY) {
