@@ -1785,7 +1785,7 @@ class SelectionManager {
      * Build a CSS font string for text measurements.
      * @param {Object} textObj - Text object containing font settings.
      * @param {number} fontSize - Font size in pixels.
-     * @returns {string} CSS font string.
+     * @returns {string} CSS font string, e.g. "italic bold 16px Arial".
      */
     buildTextFontString(textObj, fontSize) {
         const fontStyle = textObj.italic ? 'italic' : 'normal';

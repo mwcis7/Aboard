@@ -298,7 +298,7 @@ class I18n {
                 return;
             }
             const label = el.getAttribute('aria-label') || el.innerText || '';
-            // Normalize whitespace to keep tooltips single-line and concise.
+            // Normalize whitespace (including special whitespace) to keep tooltips single-line and concise.
             const cleanedLabel = label.replace(/\s+/g, ' ').trim();
             if (cleanedLabel) {
                 el.title = cleanedLabel;
