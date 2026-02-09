@@ -743,11 +743,13 @@ class SelectionManager {
             }
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
+            const bounds = this.getTextObjectBounds(this.selectedIndex);
+            if (!bounds) return;
             this.resizeStartBounds = {
-                x: textObj.x,
-                y: textObj.y,
-                width: textObj.width * textObj.scale,
-                height: textObj.height * textObj.scale,
+                x: bounds.x,
+                y: bounds.y,
+                width: bounds.width,
+                height: bounds.height,
                 scale: textObj.scale
             };
         } else if (this.selectionType === 'image') {
@@ -1900,11 +1902,26 @@ class SelectionManager {
         if (!this.textManager || !this.textManager.textObjects) return null;
         const textObj = this.textManager.textObjects[index];
         if (!textObj) return null;
+        const fontStyle = textObj.italic ? 'italic' : 'normal';
+        const fontWeight = textObj.bold ? 'bold' : 'normal';
+        const fontSize = textObj.fontSize * (textObj.scale || 1);
+        const text = textObj.text || '';
+        const lines = text.split('\n');
+        let maxWidth = 0;
+        this.ctx.save();
+        this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${textObj.fontFamily}`;
+        lines.forEach(line => {
+            const metrics = this.ctx.measureText(line);
+            maxWidth = Math.max(maxWidth, metrics.width);
+        });
+        this.ctx.restore();
+        const lineHeight = fontSize * 1.2;
+        const padding = 4;
         return {
             x: textObj.x,
             y: textObj.y,
-            width: textObj.width * textObj.scale,
-            height: textObj.height * textObj.scale
+            width: maxWidth + padding * 2,
+            height: lines.length * lineHeight + padding * 2
         };
     }
     
