@@ -644,17 +644,18 @@ class InsertTextManager {
     }
 
     stampText() {
-        const fontSize = this.textConfig.fontSize * this.textScale;
         const fontStyle = this.textConfig.italic ? 'italic' : 'normal';
         const fontWeight = this.textConfig.bold ? 'bold' : 'normal';
+        const baseFontSize = this.textConfig.fontSize;
         
-        // Measure text dimensions
+        // Measure text dimensions at base (unscaled) font size so that
+        // width/height are consistent with scale multiplication elsewhere.
         this.ctx.save();
-        this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${this.textConfig.fontFamily}`;
+        this.ctx.font = `${fontStyle} ${fontWeight} ${baseFontSize}px ${this.textConfig.fontFamily}`;
         this.ctx.textBaseline = 'top';
         
         const lines = this.textConfig.text.split('\n');
-        const lineHeight = fontSize * 1.2;
+        const baseLineHeight = baseFontSize * 1.2;
         
         let maxWidth = 0;
         lines.forEach(line => {
@@ -668,7 +669,7 @@ class InsertTextManager {
             text: this.textConfig.text,
             x: this.textPosition.x,
             y: this.textPosition.y,
-            fontSize: this.textConfig.fontSize,
+            fontSize: baseFontSize,
             color: this.textConfig.color,
             fontFamily: this.textConfig.fontFamily,
             bold: this.textConfig.bold || false,
@@ -676,7 +677,7 @@ class InsertTextManager {
             rotation: this.textRotation,
             scale: this.textScale,
             width: maxWidth + 8, // Include padding
-            height: lines.length * lineHeight + 8
+            height: lines.length * baseLineHeight + 8
         };
         
         if (this.editingTextIndex !== null && this.editingTextIndex < this.textObjects.length) {
@@ -744,14 +745,12 @@ class InsertTextManager {
         const textObj = this.textObjects[this.selectedTextIndex];
         if (!textObj) return;
         
-        const lineCount = textObj.text.split('\n').length;
-        const w = textObj.width * textObj.scale;
-        const h = textObj.height * textObj.scale;
+        const bounds = this.getTextBounds(textObj);
         
         this.ctx.save();
         this.ctx.strokeStyle = '#0066FF';
         this.ctx.lineWidth = 2;
-        this.ctx.strokeRect(textObj.x, textObj.y, w, h);
+        this.ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
         this.ctx.restore();
     }
     
@@ -761,17 +760,42 @@ class InsertTextManager {
             const textObj = this.textObjects[i];
             if (!textObj) continue;
             
-            const lineCount = textObj.text.split('\n').length;
-            const w = textObj.width * textObj.scale;
-            const h = textObj.height * textObj.scale;
+            const bounds = this.getTextBounds(textObj);
             
             // Simple AABB hit test (without rotation for now)
-            if (x >= textObj.x && x <= textObj.x + w &&
-                y >= textObj.y && y <= textObj.y + h) {
+            if (x >= bounds.x && x <= bounds.x + bounds.width &&
+                y >= bounds.y && y <= bounds.y + bounds.height) {
                 return i;
             }
         }
         return -1;
+    }
+
+    // Calculate bounds for a text object matching the actual drawn text size
+    getTextBounds(textObj) {
+        const fontSize = textObj.fontSize * textObj.scale;
+        const fontStyle = textObj.italic ? 'italic' : 'normal';
+        const fontWeight = textObj.bold ? 'bold' : 'normal';
+        const padding = 4;
+        
+        this.ctx.save();
+        this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${textObj.fontFamily}`;
+        
+        const lines = textObj.text.split('\n');
+        const lineHeight = fontSize * 1.2;
+        let maxWidth = 0;
+        lines.forEach(line => {
+            const m = this.ctx.measureText(line);
+            if (m.width > maxWidth) maxWidth = m.width;
+        });
+        this.ctx.restore();
+        
+        return {
+            x: textObj.x,
+            y: textObj.y,
+            width: maxWidth + padding * 2,
+            height: lines.length * lineHeight + padding * 2
+        };
     }
     
     // Copy selected text object
