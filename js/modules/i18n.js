@@ -215,7 +215,9 @@ class I18n {
             // Default title translation
             document.title = this.t('app.title');
         }
-        document.documentElement.removeAttribute('title');
+        if (document.documentElement.hasAttribute('title')) {
+            document.documentElement.removeAttribute('title');
+        }
         
         // Auto-translate common elements based on their ID or class
         this.autoTranslateElements();
@@ -295,7 +297,7 @@ class I18n {
             if (currentTitle && currentTitle.trim() !== '') {
                 return;
             }
-            const label = el.getAttribute('aria-label') || el.innerText || el.textContent || '';
+            const label = el.getAttribute('aria-label') || el.innerText || '';
             // Normalize whitespace to keep tooltips single-line and concise.
             const cleanedLabel = label.replace(/\s+/g, ' ').trim();
             if (cleanedLabel) {
