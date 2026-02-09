@@ -297,7 +297,7 @@ class I18n {
             if (currentTitle && currentTitle.trim() !== '') {
                 return;
             }
-            const label = el.getAttribute('aria-label') || el.textContent || '';
+            const label = el.getAttribute('aria-label') || el.innerText || '';
             // Normalize whitespace (tabs, newlines, non-breaking spaces) to keep tooltips single-line and concise.
             const cleanedLabel = label.replace(/\s+/g, ' ').trim();
             if (cleanedLabel) {

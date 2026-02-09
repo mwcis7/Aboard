@@ -44,7 +44,7 @@ class SelectionManager {
         this.ROTATION_HANDLE_DISTANCE = 30;
         this.HANDLE_THRESHOLD = 10;
         this.MIN_SIZE = 10;
-        this.TEXT_LINE_HEIGHT = 1.2;
+        this.TEXT_LINE_HEIGHT = 1.2; // Aligns with insert-text line height calculation.
         this.TEXT_BOUNDS_PADDING = 4;
         
         // For lasso/rectangle selection
