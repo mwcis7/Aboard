@@ -1280,50 +1280,50 @@ class SelectionManager {
 
     cacheSelection() {
         if (!this.hasSelection()) return false;
-        const strokes = [];
-        const images = [];
-        const texts = [];
+        const cachedStrokes = [];
+        const cachedImages = [];
+        const cachedTexts = [];
 
         if (this.selectionType === 'stroke' && this.selectedIndex !== null) {
             const stroke = this.drawingEngine.strokes[this.selectedIndex];
             if (stroke) {
-                strokes.push(this.createStrokeCopy(stroke));
+                cachedStrokes.push(this.createStrokeCopy(stroke));
             }
         } else if (this.selectionType === 'image' && this.selectedIndex !== null) {
             const img = this.drawingEngine.stampedImages[this.selectedIndex];
             if (img) {
-                images.push(this.createImageCopy(img));
+                cachedImages.push(this.createImageCopy(img));
             }
         } else if (this.selectionType === 'text' && this.selectedIndex !== null && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             if (textObj) {
-                texts.push({ ...textObj });
+                cachedTexts.push(this.createTextCopy(textObj));
             }
         } else if (this.selectionType === 'multi') {
             for (const idx of this.selectedStrokes) {
                 const stroke = this.drawingEngine.strokes[idx];
                 if (stroke) {
-                    strokes.push(this.createStrokeCopy(stroke));
+                    cachedStrokes.push(this.createStrokeCopy(stroke));
                 }
             }
             for (const idx of this.selectedImages) {
                 const img = this.drawingEngine.stampedImages[idx];
                 if (img) {
-                    images.push(this.createImageCopy(img));
+                    cachedImages.push(this.createImageCopy(img));
                 }
             }
             if (this.textManager) {
                 for (const idx of this.selectedTexts) {
                     const textObj = this.textManager.textObjects[idx];
                     if (textObj) {
-                        texts.push({ ...textObj });
+                        cachedTexts.push(this.createTextCopy(textObj));
                     }
                 }
             }
         }
 
-        if (strokes.length === 0 && images.length === 0 && texts.length === 0) return false;
-        this.clipboard = { strokes, images, texts };
+        if (cachedStrokes.length === 0 && cachedImages.length === 0 && cachedTexts.length === 0) return false;
+        this.clipboard = { strokes: cachedStrokes, images: cachedImages, texts: cachedTexts };
         return true;
     }
 
@@ -1343,22 +1343,14 @@ class SelectionManager {
         }
 
         for (const img of this.clipboard.images || []) {
-            const copiedImage = {
-                ...img,
-                x: img.x + this.COPY_OFFSET,
-                y: img.y + this.COPY_OFFSET
-            };
+            const copiedImage = this.applyPasteOffset({ ...img }, this.COPY_OFFSET, this.COPY_OFFSET);
             this.drawingEngine.stampedImages.push(copiedImage);
             newImageIndices.push(this.drawingEngine.stampedImages.length - 1);
         }
 
         if (this.textManager) {
             for (const textObj of this.clipboard.texts || []) {
-                const copiedText = {
-                    ...textObj,
-                    x: textObj.x + this.COPY_OFFSET,
-                    y: textObj.y + this.COPY_OFFSET
-                };
+                const copiedText = this.applyPasteOffset(this.createTextCopy(textObj), this.COPY_OFFSET, this.COPY_OFFSET);
                 this.textManager.textObjects.push(copiedText);
                 newTextIndices.push(this.textManager.textObjects.length - 1);
             }
@@ -1409,6 +1401,18 @@ class SelectionManager {
             rotation: img.rotation || 0,
             flipHorizontal: img.flipHorizontal || false,
             flipVertical: img.flipVertical || false
+        };
+    }
+
+    createTextCopy(textObj) {
+        return { ...textObj };
+    }
+
+    applyPasteOffset(obj, offsetX, offsetY) {
+        return {
+            ...obj,
+            x: obj.x + offsetX,
+            y: obj.y + offsetY
         };
     }
     

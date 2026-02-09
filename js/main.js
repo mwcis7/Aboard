@@ -1925,23 +1925,24 @@ class DrawingBoard {
             const isEditableTarget = e.target &&
                 (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable);
             if (e.ctrlKey || e.metaKey) {
-                if (e.key === 'z' && !e.shiftKey) {
+                const key = e.key.toLowerCase();
+                if (key === 'z' && !e.shiftKey) {
                     e.preventDefault();
                     if (this.historyManager.undo()) {
                         this.updateUI();
                     }
-                } else if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) {
+                } else if (key === 'y' || (key === 'z' && e.shiftKey)) {
                     e.preventDefault();
                     if (this.historyManager.redo()) {
                         this.updateUI();
                     }
-                } else if (!isEditableTarget && e.key.toLowerCase() === 'c' && this.selectionManager?.hasSelection()) {
+                } else if (!isEditableTarget && key === 'c' && this.selectionManager?.hasSelection()) {
                     e.preventDefault();
                     this.selectionManager.cacheSelection();
-                } else if (!isEditableTarget && e.key.toLowerCase() === 'v') {
+                } else if (!isEditableTarget && key === 'v') {
                     e.preventDefault();
                     this.selectionManager?.pasteClipboard();
-                } else if (!isEditableTarget && e.key.toLowerCase() === 'x' && this.selectionManager?.hasSelection()) {
+                } else if (!isEditableTarget && key === 'x' && this.selectionManager?.hasSelection()) {
                     e.preventDefault();
                     if (this.selectionManager.cacheSelection()) {
                         this.selectionManager.deleteSelection();
