@@ -808,36 +808,44 @@ class InsertTextManager {
         this.ctx.rotate((textObj.rotation || 0) * Math.PI / 180);
         this.ctx.translate(-centerX, -centerY);
         
+        // Pre-calculate decoration constants
+        const hasDecorations = textObj.underline || textObj.strikethrough;
+        const decorationStrokeWidth = hasDecorations ? Math.max(1, fontSize * 0.05) : 0;
+        const UNDERLINE_Y_OFFSET = 1.05;
+        const STRIKETHROUGH_Y_OFFSET = 0.55;
+        
         lines.forEach((line, i) => {
             const padding = 4;
             const lineX = textObj.x + padding;
             const lineY = textObj.y + padding + (i * lineHeight);
             this.ctx.fillText(line, lineX, lineY);
             
-            // Draw text decorations
-            const lineWidth = this.ctx.measureText(line).width;
-            if (lineWidth > 0) {
-                this.ctx.save();
-                this.ctx.strokeStyle = textObj.color;
-                this.ctx.lineWidth = Math.max(1, fontSize * 0.05);
-                
-                if (textObj.underline) {
-                    const underlineY = lineY + fontSize * 1.05;
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(lineX, underlineY);
-                    this.ctx.lineTo(lineX + lineWidth, underlineY);
-                    this.ctx.stroke();
+            // Draw text decorations (underline, strikethrough)
+            if (hasDecorations) {
+                const lineWidth = this.ctx.measureText(line).width;
+                if (lineWidth > 0) {
+                    this.ctx.save();
+                    this.ctx.strokeStyle = textObj.color;
+                    this.ctx.lineWidth = decorationStrokeWidth;
+                    
+                    if (textObj.underline) {
+                        const underlineY = lineY + fontSize * UNDERLINE_Y_OFFSET;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(lineX, underlineY);
+                        this.ctx.lineTo(lineX + lineWidth, underlineY);
+                        this.ctx.stroke();
+                    }
+                    
+                    if (textObj.strikethrough) {
+                        const strikeY = lineY + fontSize * STRIKETHROUGH_Y_OFFSET;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(lineX, strikeY);
+                        this.ctx.lineTo(lineX + lineWidth, strikeY);
+                        this.ctx.stroke();
+                    }
+                    
+                    this.ctx.restore();
                 }
-                
-                if (textObj.strikethrough) {
-                    const strikeY = lineY + fontSize * 0.55;
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(lineX, strikeY);
-                    this.ctx.lineTo(lineX + lineWidth, strikeY);
-                    this.ctx.stroke();
-                }
-                
-                this.ctx.restore();
             }
         });
         
