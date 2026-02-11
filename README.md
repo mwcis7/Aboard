@@ -49,7 +49,7 @@ graph LR
     click H "https://dev.aboard.pp.ua" "最新测试"
 ```
 
-## 最近更新 (Recent Updates)
+## 最近更新
 - **配置管理**：支持导出和导入应用配置（JSON格式），并在导入时智能对比差异，让个性化设置轻松迁移。
 - **性能优化**：实现了功能模块的按需加载（Lazy Loading），大幅提升首屏加载速度。
 - **UI 优化**：统一了导出弹窗和时间设置弹窗的界面风格，视觉体验更一致。
@@ -367,18 +367,20 @@ Aboard/
 ├── css/
 │   ├── style.css          # 主样式表
 │   └── modules/           # 模块化样式
-│       ├── timer.css      # 计时器样式
-│       ├── time-display.css # 时间显示样式
+│       ├── diff.css       # 设置对比样式
 │       ├── export.css     # 导出功能样式
 │       ├── feature-area.css # 功能区样式
-│       ├── teaching-tools.css # 教具功能样式
-│       ├── shape.css      # 形状工具样式
+│       ├── insert-image.css # 插入图片样式
+│       ├── insert-text.css # 文字插入样式
 │       ├── line-style-modal.css # 线条样式设置弹窗样式
+│       ├── project.css    # 项目管理样式
 │       ├── random-picker.css # 点名器样式
 │       ├── scoreboard.css # 计分板样式
-│       ├── insert-image.css # 插入图片样式
-│       ├── toast.css      # 消息提示样式
-│       └── diff.css       # 设置对比样式
+│       ├── shape.css      # 形状工具样式
+│       ├── teaching-tools.css # 教具功能样式
+│       ├── time-display.css # 时间显示样式
+│       ├── timer.css      # 计时器样式
+│       └── toast.css      # 消息提示样式
 ├── js/
 │   ├── main.js            # 主应用入口
 │   ├── drawing.js         # 绘图引擎模块
@@ -415,8 +417,6 @@ Aboard/
 │   │       ├── de-DE.js   # 德语帮助
 │   │       └── es-ES.js   # 西班牙语帮助
 │   └── modules/           # 功能模块
-│       ├── timer.js       # 计时器模块
-│       ├── time-display-controls.js # 时间显示控制
 │       ├── browser-check.js # 浏览器兼容性检查
 │       ├── edge-drawing.js # 边缘绘制模块（沿教具边缘画线）
 │       ├── gif-manager.js # GIF动图管理模块
@@ -429,10 +429,10 @@ Aboard/
 │       ├── pwa-manager.js # PWA管理模块
 │       ├── random-picker.js # 点名器模块
 │       ├── rich-text-parser.js # 富文本解析模块
-│       ├── script-loader.js # 脚本加载模块
 │       ├── scoreboard.js  # 计分板模块
+│       ├── script-loader.js # 脚本加载模块
 │       ├── settings-manager.js # 设置管理模块
-│       ├── shape-drawing.js # 形状绘制模块（支持直线、矩形、圆形）
+│       ├── shape-drawing.js # 形状绘制模块
 │       ├── storage-manager.js # 存储管理模块
 │       ├── teaching-tools.js # 教具功能模块
 │       ├── time-display-controls.js # 时间显示控制
