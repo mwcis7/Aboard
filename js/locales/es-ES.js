@@ -131,6 +131,8 @@ window.translations = {
             style: 'Estilo',
             bold: 'Negrita',
             italic: 'Cursiva',
+            underline: 'Subrayado',
+            strikethrough: 'Tachado',
             uploadFont: 'Cargar fuente',
             customFonts: 'Fuentes personalizadas',
             fontUploadSuccess: '¡Fuente cargada exitosamente!',

@@ -139,6 +139,8 @@ window.translations = {
             style: 'Style',
             bold: 'Bold',
             italic: 'Italic',
+            underline: 'Underline',
+            strikethrough: 'Strikethrough',
             uploadFont: 'Upload Font',
             customFonts: 'Custom Fonts',
             fontUploadSuccess: 'Font uploaded successfully!',

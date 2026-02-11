@@ -133,6 +133,8 @@ window.translations = {
             style: 'スタイル',
             bold: '太字',
             italic: '斜体',
+            underline: '下線',
+            strikethrough: '取り消し線',
             uploadFont: 'フォントをアップロード',
             customFonts: 'カスタムフォント',
             fontUploadSuccess: 'フォントがアップロードされました！',

@@ -133,6 +133,8 @@ window.translations = {
             style: 'Stil',
             bold: 'Fett',
             italic: 'Kursiv',
+            underline: 'Unterstrichen',
+            strikethrough: 'Durchgestrichen',
             uploadFont: 'Schriftart hochladen',
             customFonts: 'Benutzerdefinierte Schriftarten',
             fontUploadSuccess: 'Schriftart erfolgreich hochgeladen!',

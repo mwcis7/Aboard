@@ -194,6 +194,18 @@ class I18n {
             }
         });
         
+        // Translate placeholder attributes (for elements that have data-i18n-placeholder but no data-i18n)
+        const placeholderElements = document.querySelectorAll('[data-i18n-placeholder]');
+        placeholderElements.forEach(el => {
+            const placeholderKey = el.getAttribute('data-i18n-placeholder');
+            if (placeholderKey) {
+                const translation = this.t(placeholderKey);
+                if (translation !== placeholderKey) {
+                    el.placeholder = translation;
+                }
+            }
+        });
+        
         // Translate title attributes
         const titleElements = document.querySelectorAll('[data-i18n-title]');
         titleElements.forEach(el => {

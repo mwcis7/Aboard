@@ -136,6 +136,8 @@ window.translations = {
             style: '樣式',
             bold: '粗體',
             italic: '斜體',
+            underline: '底線',
+            strikethrough: '刪除線',
             uploadFont: '上傳字體',
             customFonts: '自訂字體',
             fontUploadSuccess: '字體上傳成功！',

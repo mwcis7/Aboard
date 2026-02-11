@@ -16,7 +16,9 @@ class InsertTextManager {
             color: '#000000',
             fontFamily: 'sans-serif',
             bold: false,
-            italic: false
+            italic: false,
+            underline: false,
+            strikethrough: false
         };
 
         // Custom fonts storage
@@ -218,6 +220,19 @@ class InsertTextManager {
                                             <line x1="15" y1="4" x2="9" y2="20"></line>
                                         </svg>
                                     </button>
+                                    <button id="insert-text-underline-btn" class="text-style-btn" data-i18n-title="tools.text.underline" aria-label="Underline" aria-pressed="false">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"></path>
+                                            <line x1="4" y1="21" x2="20" y2="21"></line>
+                                        </svg>
+                                    </button>
+                                    <button id="insert-text-strikethrough-btn" class="text-style-btn" data-i18n-title="tools.text.strikethrough" aria-label="Strikethrough" aria-pressed="false">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="4" y1="12" x2="20" y2="12"></line>
+                                            <path d="M17.5 7.5c0-2-1.5-3.5-5.5-3.5S6.5 5.5 6.5 7.5c0 2 1.5 3 5.5 4.5"></path>
+                                            <path d="M6.5 16.5c0 2 1.5 3.5 5.5 3.5s5.5-1.5 5.5-3.5c0-2-1.5-3-5.5-4.5"></path>
+                                        </svg>
+                                    </button>
                                 </div>
                             </div>
 
@@ -417,6 +432,26 @@ class InsertTextManager {
             });
         }
 
+        // Underline Button
+        const underlineBtn = document.getElementById('insert-text-underline-btn');
+        if (underlineBtn) {
+            underlineBtn.addEventListener('click', () => {
+                this.textConfig.underline = !this.textConfig.underline;
+                underlineBtn.classList.toggle('active', this.textConfig.underline);
+                underlineBtn.setAttribute('aria-pressed', this.textConfig.underline.toString());
+            });
+        }
+
+        // Strikethrough Button
+        const strikethroughBtn = document.getElementById('insert-text-strikethrough-btn');
+        if (strikethroughBtn) {
+            strikethroughBtn.addEventListener('click', () => {
+                this.textConfig.strikethrough = !this.textConfig.strikethrough;
+                strikethroughBtn.classList.toggle('active', this.textConfig.strikethrough);
+                strikethroughBtn.setAttribute('aria-pressed', this.textConfig.strikethrough.toString());
+            });
+        }
+
         // Color Picking
         document.querySelectorAll('#insert-text-modal .color-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -514,7 +549,9 @@ class InsertTextManager {
             color: '#000000',
             fontFamily: 'sans-serif',
             bold: false,
-            italic: false
+            italic: false,
+            underline: false,
+            strikethrough: false
         };
         // Reset slider
         document.getElementById('insert-text-size-slider').value = 48;
@@ -525,11 +562,15 @@ class InsertTextManager {
         const fontSelect = document.getElementById('insert-text-font-select');
         if (fontSelect) fontSelect.value = 'sans-serif';
 
-        // Reset bold/italic buttons
+        // Reset bold/italic/underline/strikethrough buttons
         const boldBtn = document.getElementById('insert-text-bold-btn');
         const italicBtn = document.getElementById('insert-text-italic-btn');
+        const underlineBtn = document.getElementById('insert-text-underline-btn');
+        const strikethroughBtn = document.getElementById('insert-text-strikethrough-btn');
         if (boldBtn) boldBtn.classList.remove('active');
         if (italicBtn) italicBtn.classList.remove('active');
+        if (underlineBtn) underlineBtn.classList.remove('active');
+        if (strikethroughBtn) strikethroughBtn.classList.remove('active');
 
         // Reset active color to black
         document.querySelectorAll('#insert-text-modal .color-btn').forEach(b => b.classList.remove('active'));
@@ -565,11 +606,15 @@ class InsertTextManager {
             document.getElementById('insert-text-size-value').textContent = this.textConfig.fontSize;
             document.getElementById('insert-text-font-select').value = this.textConfig.fontFamily;
             
-            // Restore bold/italic states
+            // Restore bold/italic/underline/strikethrough states
             const boldBtn = document.getElementById('insert-text-bold-btn');
             const italicBtn = document.getElementById('insert-text-italic-btn');
+            const underlineBtn = document.getElementById('insert-text-underline-btn');
+            const strikethroughBtn = document.getElementById('insert-text-strikethrough-btn');
             if (boldBtn) boldBtn.classList.toggle('active', this.textConfig.bold);
             if (italicBtn) italicBtn.classList.toggle('active', this.textConfig.italic);
+            if (underlineBtn) underlineBtn.classList.toggle('active', this.textConfig.underline);
+            if (strikethroughBtn) strikethroughBtn.classList.toggle('active', this.textConfig.strikethrough);
         }
 
         input.focus();
@@ -658,6 +703,11 @@ class InsertTextManager {
         this.textContentDiv.style.fontFamily = this.textConfig.fontFamily;
         this.textContentDiv.style.fontWeight = this.textConfig.bold ? 'bold' : 'normal';
         this.textContentDiv.style.fontStyle = this.textConfig.italic ? 'italic' : 'normal';
+        // Build text-decoration value
+        const decorations = [];
+        if (this.textConfig.underline) decorations.push('underline');
+        if (this.textConfig.strikethrough) decorations.push('line-through');
+        this.textContentDiv.style.textDecoration = decorations.length > 0 ? decorations.join(' ') : 'none';
         this.textContentDiv.textContent = this.textConfig.text;
 
         this.controlBox.style.transform = `rotate(${this.textRotation}deg)`;
@@ -699,6 +749,8 @@ class InsertTextManager {
             fontFamily: this.textConfig.fontFamily,
             bold: this.textConfig.bold || false,
             italic: this.textConfig.italic || false,
+            underline: this.textConfig.underline || false,
+            strikethrough: this.textConfig.strikethrough || false,
             rotation: this.textRotation,
             scale: this.textScale,
             width: maxWidth + 8, // Include padding
@@ -758,7 +810,35 @@ class InsertTextManager {
         
         lines.forEach((line, i) => {
             const padding = 4;
-            this.ctx.fillText(line, textObj.x + padding, textObj.y + padding + (i * lineHeight));
+            const lineX = textObj.x + padding;
+            const lineY = textObj.y + padding + (i * lineHeight);
+            this.ctx.fillText(line, lineX, lineY);
+            
+            // Draw text decorations
+            const lineWidth = this.ctx.measureText(line).width;
+            if (lineWidth > 0) {
+                this.ctx.save();
+                this.ctx.strokeStyle = textObj.color;
+                this.ctx.lineWidth = Math.max(1, fontSize * 0.05);
+                
+                if (textObj.underline) {
+                    const underlineY = lineY + fontSize * 1.05;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(lineX, underlineY);
+                    this.ctx.lineTo(lineX + lineWidth, underlineY);
+                    this.ctx.stroke();
+                }
+                
+                if (textObj.strikethrough) {
+                    const strikeY = lineY + fontSize * 0.55;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(lineX, strikeY);
+                    this.ctx.lineTo(lineX + lineWidth, strikeY);
+                    this.ctx.stroke();
+                }
+                
+                this.ctx.restore();
+            }
         });
         
         this.ctx.restore();
@@ -876,6 +956,8 @@ class InsertTextManager {
         this.textConfig.fontFamily = textObj.fontFamily;
         this.textConfig.bold = textObj.bold || false;
         this.textConfig.italic = textObj.italic || false;
+        this.textConfig.underline = textObj.underline || false;
+        this.textConfig.strikethrough = textObj.strikethrough || false;
         
         // Restore position and transform
         this.textPosition = { x: textObj.x, y: textObj.y };
