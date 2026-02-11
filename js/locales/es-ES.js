@@ -123,6 +123,7 @@ window.translations = {
         },
         text: {
             insertTitle: 'Insertar texto',
+            editTitle: 'Editar texto',
             placeholder: 'Ingrese el texto aquí',
             size: 'Tamaño',
             color: 'Color',

@@ -125,6 +125,7 @@ window.translations = {
         },
         text: {
             insertTitle: 'Text einfügen',
+            editTitle: 'Text bearbeiten',
             placeholder: 'Text hier eingeben',
             size: 'Größe',
             color: 'Farbe',

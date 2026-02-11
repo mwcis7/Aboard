@@ -768,6 +768,8 @@ class DrawingBoard {
                 this.applyZoom(false); // Apply new fit scale without updating config-area
                 // Update toolbar text visibility on resize
                 this.settingsManager.updateToolbarTextVisibility();
+                // Reposition config-area to stay properly positioned above toolbar
+                this.positionConfigArea();
                 // Reposition toolbars to ensure they stay within viewport
                 this.repositionToolbarsOnResize();
                 // Reposition modals to ensure they stay within viewport

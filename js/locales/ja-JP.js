@@ -125,6 +125,7 @@ window.translations = {
         },
         text: {
             insertTitle: 'テキスト挿入',
+            editTitle: 'テキスト編集',
             placeholder: 'ここにテキストを入力',
             size: 'サイズ',
             color: '色',

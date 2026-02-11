@@ -131,6 +131,7 @@ window.translations = {
         },
         text: {
             insertTitle: '插入文字',
+            editTitle: '编辑文字',
             placeholder: '在此输入文字',
             size: '大小',
             color: '颜色',
@@ -308,7 +309,7 @@ window.translations = {
         general: {
             title: '通用设置',
             language: '语言',
-            languageHint: '选择界面语言 / Choose interface language',
+            languageHint: '选择界面语言',
             globalFont: '全局字体',
             globalFontHint: '选择应用程序使用的字体',
             fonts: {
