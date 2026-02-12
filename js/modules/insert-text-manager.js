@@ -953,7 +953,7 @@ class InsertTextManager {
     }
 
     drawDecorationLine(x, y, width, style, lineWidth, color) {
-        const DOTTED_SPACING_MULTIPLIER = 2.2;
+        const DOTTED_SPACING_MULTIPLIER = 2.2; // Dot spacing relative to line width for better legibility.
         this.ctx.save();
         this.ctx.strokeStyle = color;
         this.ctx.lineWidth = lineWidth;

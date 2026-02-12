@@ -2147,8 +2147,8 @@ class DrawingBoard {
         const availableWidth = Math.max(1, windowWidth - rect.width);
         const availableHeight = Math.max(1, windowHeight - rect.height);
 
-        panel.dataset.relativeLeft = Math.min(1, Math.max(0, rect.left / availableWidth)).toFixed(4);
-        panel.dataset.relativeTop = Math.min(1, Math.max(0, rect.top / availableHeight)).toFixed(4);
+        panel.dataset.relativeLeft = Math.min(1, Math.max(0, rect.left / availableWidth)).toFixed(3);
+        panel.dataset.relativeTop = Math.min(1, Math.max(0, rect.top / availableHeight)).toFixed(3);
     }
     
     repositionModalsOnResize() {
