@@ -55,6 +55,7 @@ class InsertTextManager {
         this.DEFAULT_DECORATION_WIDTH = 2;
         this.DOTTED_LINE_GAP_MULTIPLIER = 2.2; // Gap = lineWidth * 2.2 keeps dots legible down to 12px fonts.
         this.MIN_FONT_SIZE = 12;
+        this.DEFAULT_MAX_FONT_SIZE = 200;
 
         this.createControls();
         this.setupEventListeners();
@@ -244,24 +245,26 @@ class InsertTextManager {
                                 </div>
                             </div>
 
-                            <div class="text-control-group">
-                                <label data-i18n="tools.text.decorationStyle">Line Style</label>
-                                <select id="insert-text-decoration-style" class="format-select" aria-label="Decoration style">
-                                    <option value="solid" data-i18n="tools.lineStyle.solid">Solid</option>
-                                    <option value="dashed" data-i18n="tools.lineStyle.dashed">Dashed</option>
-                                    <option value="dotted" data-i18n="tools.lineStyle.dotted">Dotted</option>
-                                    <option value="wavy" data-i18n="tools.lineStyle.wavy">Wavy</option>
-                                </select>
-                            </div>
+                            <div id="text-decoration-settings" class="text-decoration-settings">
+                                <div class="text-control-group">
+                                    <label data-i18n="tools.text.decorationStyle">Line Style</label>
+                                    <select id="insert-text-decoration-style" class="format-select" aria-label="Decoration style">
+                                        <option value="solid" data-i18n="tools.lineStyle.solid">Solid</option>
+                                        <option value="dashed" data-i18n="tools.lineStyle.dashed">Dashed</option>
+                                        <option value="dotted" data-i18n="tools.lineStyle.dotted">Dotted</option>
+                                        <option value="wavy" data-i18n="tools.lineStyle.wavy">Wavy</option>
+                                    </select>
+                                </div>
 
-                            <div class="text-control-group">
-                                <label><span data-i18n="tools.text.decorationWidth">Line Width</span>: <span id="insert-text-decoration-width-value">2</span>px</label>
-                                <input type="range" id="insert-text-decoration-width" min="1" max="8" value="2" class="slider touch-friendly-slider">
-                            </div>
+                                <div class="text-control-group">
+                                    <label><span data-i18n="tools.text.decorationWidth">Line Width</span>: <span id="insert-text-decoration-width-value">2</span>px</label>
+                                    <input type="range" id="insert-text-decoration-width" min="1" max="8" value="2" class="slider touch-friendly-slider">
+                                </div>
 
-                            <div class="text-control-group">
-                                <label data-i18n="tools.text.decorationColor">Line Color</label>
-                                <input type="color" id="insert-text-decoration-color" class="text-decoration-color-input" value="#000000" aria-label="Decoration color">
+                                <div class="text-control-group">
+                                    <label data-i18n="tools.text.decorationColor">Line Color</label>
+                                    <input type="color" id="insert-text-decoration-color" class="text-decoration-color-input" value="#000000" aria-label="Decoration color">
+                                </div>
                             </div>
 
                             <div class="text-control-group">
@@ -426,6 +429,7 @@ class InsertTextManager {
             if (this.isActive) {
                 this.updateOverlay();
             }
+            this.updateSizeSliderRange();
         });
 
         const decorationStyleSelect = document.getElementById('insert-text-decoration-style');
@@ -504,6 +508,7 @@ class InsertTextManager {
                 this.textConfig.underline = !this.textConfig.underline;
                 underlineBtn.classList.toggle('active', this.textConfig.underline);
                 underlineBtn.setAttribute('aria-pressed', this.textConfig.underline.toString());
+                this.updateDecorationControlsVisibility();
                 if (this.isActive) {
                     this.updateOverlay();
                 }
@@ -517,6 +522,7 @@ class InsertTextManager {
                 this.textConfig.strikethrough = !this.textConfig.strikethrough;
                 strikethroughBtn.classList.toggle('active', this.textConfig.strikethrough);
                 strikethroughBtn.setAttribute('aria-pressed', this.textConfig.strikethrough.toString());
+                this.updateDecorationControlsVisibility();
                 if (this.isActive) {
                     this.updateOverlay();
                 }
@@ -631,6 +637,7 @@ class InsertTextManager {
         // Reset slider
         document.getElementById('insert-text-size-slider').value = 48;
         document.getElementById('insert-text-size-value').textContent = '48';
+        this.updateSizeSliderRange();
         document.getElementById('insert-text-input').value = '';
 
         const decorationStyleSelect = document.getElementById('insert-text-decoration-style');
@@ -661,6 +668,7 @@ class InsertTextManager {
         document.querySelector('.color-btn[data-text-color="#000000"]').classList.add('active');
         const customLabel = document.querySelector('label[for="insert-text-custom-color"]');
         if (customLabel) customLabel.classList.remove('active');
+        this.updateDecorationControlsVisibility();
 
         this.showModal();
     }
@@ -686,6 +694,7 @@ class InsertTextManager {
 
         if (isEditing) {
             input.value = this.textConfig.text;
+            this.updateSizeSliderRange();
             document.getElementById('insert-text-size-slider').value = this.textConfig.fontSize;
             document.getElementById('insert-text-size-value').textContent = this.textConfig.fontSize;
             document.getElementById('insert-text-font-select').value = this.textConfig.fontFamily;
@@ -708,6 +717,7 @@ class InsertTextManager {
             if (underlineBtn) underlineBtn.classList.toggle('active', this.textConfig.underline);
             if (strikethroughBtn) strikethroughBtn.classList.toggle('active', this.textConfig.strikethrough);
         }
+        this.updateDecorationControlsVisibility();
 
         input.focus();
     }
@@ -754,6 +764,20 @@ class InsertTextManager {
         if (this.isActive) {
             this.updateOverlay();
         }
+    }
+
+    updateDecorationControlsVisibility() {
+        const decorationSettings = document.getElementById('text-decoration-settings');
+        if (!decorationSettings) return;
+        const shouldShow = this.textConfig.underline || this.textConfig.strikethrough;
+        decorationSettings.style.display = shouldShow ? 'flex' : 'none';
+    }
+
+    updateSizeSliderRange() {
+        const sizeSlider = document.getElementById('insert-text-size-slider');
+        if (!sizeSlider) return;
+        const maxValue = Math.max(this.DEFAULT_MAX_FONT_SIZE, Math.ceil(this.textConfig.fontSize));
+        sizeSlider.max = maxValue;
     }
 
     showOverlay() {
@@ -1247,6 +1271,7 @@ class InsertTextManager {
         const sizeValue = document.getElementById('insert-text-size-value');
         if (sizeSlider) sizeSlider.value = newFontSize;
         if (sizeValue) sizeValue.textContent = newFontSize;
+        this.updateSizeSliderRange();
 
         this.updateOverlay();
     }
