@@ -208,14 +208,25 @@ class PWAManager {
 
     loadVersion() {
         fetch('version.txt', { cache: 'no-store' })
-            .then(response => response.ok ? response.text() : '')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to load version.txt: ${response.status}`);
+                }
+                return response.text();
+            })
             .then(text => {
                 const version = text.trim();
                 if (!version) return;
+                if (!/^\d+\.\d+\.\d+$/.test(version)) {
+                    console.warn('Invalid version format in version.txt:', version);
+                    return;
+                }
                 this.version = version;
                 this.updateVersionDisplays();
             })
-            .catch(() => {});
+            .catch(error => {
+                console.warn('Failed to load version.txt:', error);
+            });
     }
 
     registerServiceWorker() {
