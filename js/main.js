@@ -2147,8 +2147,15 @@ class DrawingBoard {
         const availableWidth = Math.max(1, windowWidth - rect.width);
         const availableHeight = Math.max(1, windowHeight - rect.height);
 
-        panel.dataset.relativeLeft = Math.min(1, Math.max(0, rect.left / availableWidth)).toFixed(3);
-        panel.dataset.relativeTop = Math.min(1, Math.max(0, rect.top / availableHeight)).toFixed(3);
+        const nextLeft = Math.min(1, Math.max(0, rect.left / availableWidth)).toFixed(3);
+        const nextTop = Math.min(1, Math.max(0, rect.top / availableHeight)).toFixed(3);
+
+        if (panel.dataset.relativeLeft !== nextLeft) {
+            panel.dataset.relativeLeft = nextLeft;
+        }
+        if (panel.dataset.relativeTop !== nextTop) {
+            panel.dataset.relativeTop = nextTop;
+        }
     }
     
     repositionModalsOnResize() {

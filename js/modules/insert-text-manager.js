@@ -53,6 +53,7 @@ class InsertTextManager {
         this.editingTextIndex = null; // Index of text being edited
 
         this.DEFAULT_DECORATION_WIDTH = 2;
+        this.DOTTED_SPACING_MULTIPLIER = 2.2;
 
         this.createControls();
         this.setupEventListeners();
@@ -953,7 +954,6 @@ class InsertTextManager {
     }
 
     drawDecorationLine(x, y, width, style, lineWidth, color) {
-        const DOTTED_SPACING_MULTIPLIER = 2.2; // Dot spacing relative to line width for better legibility.
         this.ctx.save();
         this.ctx.strokeStyle = color;
         this.ctx.lineWidth = lineWidth;
@@ -963,7 +963,7 @@ class InsertTextManager {
         if (style === 'dashed') {
             this.ctx.setLineDash([lineWidth * 4, lineWidth * 2]);
         } else if (style === 'dotted') {
-            this.ctx.setLineDash([lineWidth, lineWidth * DOTTED_SPACING_MULTIPLIER]);
+            this.ctx.setLineDash([lineWidth, lineWidth * this.DOTTED_SPACING_MULTIPLIER]);
         } else {
             this.ctx.setLineDash([]);
         }
@@ -1125,10 +1125,14 @@ class InsertTextManager {
         if (!textObj) return;
         const scale = textObj.scale || 1;
         if (scale !== 1) {
-            textObj.fontSize = (textObj.fontSize || 0) * scale;
+            const baseFontSize = textObj.fontSize || 48;
+            textObj.fontSize = baseFontSize * scale;
             textObj.scale = 1;
         } else if (typeof textObj.scale === 'undefined') {
             textObj.scale = 1;
+        }
+        if (!textObj.fontSize) {
+            textObj.fontSize = 48;
         }
         if (!textObj.decorationStyle) textObj.decorationStyle = 'solid';
         if (!textObj.decorationColor) textObj.decorationColor = textObj.color || '#000000';
