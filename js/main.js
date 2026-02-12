@@ -194,9 +194,9 @@ class DrawingBoard {
             const desiredCoverage = 0.7;
             const minimumScale = 0.9;
             const safeFitScale = Math.max(MIN_FIT_SCALE, this.canvasFitScale);
-            const coverageScale = desiredCoverage / safeFitScale; // canvasScale = desiredCoverage / fitScale.
-            const targetScale = Math.max(minimumScale, coverageScale);
-            const initialScale = Math.min(this.MAX_CANVAS_SCALE, targetScale);
+            const scaleForCoverage = desiredCoverage / safeFitScale; // canvasScale = desiredCoverage / fitScale.
+            const boundedScale = Math.max(minimumScale, scaleForCoverage);
+            const initialScale = Math.min(this.MAX_CANVAS_SCALE, boundedScale);
             this.drawingEngine.canvasScale = initialScale;
             localStorage.setItem('canvasScale', initialScale);
         }
