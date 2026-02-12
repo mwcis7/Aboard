@@ -207,7 +207,7 @@ class PWAManager {
     }
 
     loadVersion() {
-        fetch('version.txt', { cache: 'no-store' })
+        fetch('version.txt')
             .then(response => {
                 if (!response.ok) {
                     throw new Error(`Failed to load version.txt: ${response.status}`);
@@ -217,7 +217,7 @@ class PWAManager {
             .then(text => {
                 const version = text.trim();
                 if (!version) return;
-                if (!/^\d+\.\d+\.\d+$/.test(version)) {
+                if (!/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(version)) {
                     console.warn('Invalid version format in version.txt:', version);
                     return;
                 }
