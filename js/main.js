@@ -192,12 +192,12 @@ class DrawingBoard {
         if (!savedScale) {
             const MIN_FIT_SCALE = 0.01;
             const DESIRED_COVERAGE = 0.7;
-            const MINIMUM_SCALE = 0.9;
+            const MINIMUM_DEFAULT_SCALE = 0.9;
             const safeFitScale = Math.max(MIN_FIT_SCALE, this.canvasFitScale);
-            // Compute canvasScale so finalScale (= fitScale * canvasScale) meets desired coverage.
+            // Compute canvasScale so fitScale * canvasScale meets desired coverage.
             const scaleForCoverage = DESIRED_COVERAGE / safeFitScale;
             // Keep a higher default scale so the canvas starts larger than the minimum target.
-            const boundedScale = Math.max(MINIMUM_SCALE, scaleForCoverage);
+            const boundedScale = Math.max(MINIMUM_DEFAULT_SCALE, scaleForCoverage);
             const initialScale = Math.min(this.MAX_CANVAS_SCALE, boundedScale);
             this.drawingEngine.canvasScale = initialScale;
             localStorage.setItem('canvasScale', initialScale);
