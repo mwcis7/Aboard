@@ -71,6 +71,7 @@ class SelectionManager {
         this.clipboard = null;
         this.layerMenuVisible = false;
         this.layerMenuOutsideListener = null;
+        this.layerMenuOutsideListenerAttached = false;
         
         // Create selection controls overlay
         this.createSelectionControls();
@@ -413,15 +414,17 @@ class SelectionManager {
             });
         }
 
-        if (this.layerMenuOutsideListener) {
-            document.removeEventListener('mousedown', this.layerMenuOutsideListener);
+        if (!this.layerMenuOutsideListener) {
+            this.layerMenuOutsideListener = (e) => {
+                if (!this.layerMenuVisible || !this.layerMenu || !this.layerButton) return;
+                if (this.layerMenu.contains(e.target) || this.layerButton.contains(e.target)) return;
+                this.hideLayerMenu();
+            };
         }
-        this.layerMenuOutsideListener = (e) => {
-            if (!this.layerMenuVisible || !this.layerMenu || !this.layerButton) return;
-            if (this.layerMenu.contains(e.target) || this.layerButton.contains(e.target)) return;
-            this.hideLayerMenu();
-        };
-        document.addEventListener('mousedown', this.layerMenuOutsideListener);
+        if (!this.layerMenuOutsideListenerAttached) {
+            document.addEventListener('mousedown', this.layerMenuOutsideListener);
+            this.layerMenuOutsideListenerAttached = true;
+        }
     }
 
     toggleLayerMenu() {
