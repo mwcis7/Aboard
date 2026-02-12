@@ -70,6 +70,7 @@ class SelectionManager {
         this.multiTextRotateStart = [];
         this.clipboard = null;
         this.layerMenuVisible = false;
+        this.layerMenuOutsideListener = null;
         
         // Create selection controls overlay
         this.createSelectionControls();
@@ -412,11 +413,14 @@ class SelectionManager {
             });
         }
 
-        document.addEventListener('mousedown', (e) => {
-            if (!this.layerMenuVisible || !this.layerMenu || !this.layerButton) return;
-            if (this.layerMenu.contains(e.target) || this.layerButton.contains(e.target)) return;
-            this.hideLayerMenu();
-        });
+        if (!this.layerMenuOutsideListener) {
+            this.layerMenuOutsideListener = (e) => {
+                if (!this.layerMenuVisible || !this.layerMenu || !this.layerButton) return;
+                if (this.layerMenu.contains(e.target) || this.layerButton.contains(e.target)) return;
+                this.hideLayerMenu();
+            };
+            document.addEventListener('mousedown', this.layerMenuOutsideListener);
+        }
     }
 
     toggleLayerMenu() {
