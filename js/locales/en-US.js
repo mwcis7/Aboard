@@ -141,6 +141,9 @@ window.translations = {
             italic: 'Italic',
             underline: 'Underline',
             strikethrough: 'Strikethrough',
+            decorationStyle: 'Line Style',
+            decorationWidth: 'Line Width',
+            decorationColor: 'Line Color',
             uploadFont: 'Upload Font',
             customFonts: 'Custom Fonts',
             fontUploadSuccess: 'Font uploaded successfully!',
@@ -167,7 +170,12 @@ window.translations = {
         delete: 'Delete',
         done: 'Done',
         rotate90: 'Rotate 90°',
-        flipH: 'Flip Horizontal'
+        flipH: 'Flip Horizontal',
+        layer: 'Layer',
+        layerFront: 'Bring to Front',
+        layerBack: 'Send to Back',
+        layerUp: 'Move Forward',
+        layerDown: 'Move Backward'
     },
 
     // Line Style Modal
@@ -235,7 +243,12 @@ window.translations = {
         done: 'Done',
         edit: 'Edit',
         rotate90: 'Rotate 90°',
-        flipH: 'Flip Horizontal'
+        flipH: 'Flip Horizontal',
+        layer: 'Layer',
+        layerFront: 'Bring to Front',
+        layerBack: 'Send to Back',
+        layerUp: 'Move Forward',
+        layerDown: 'Move Backward'
     },
 
     // Page Navigation

@@ -138,6 +138,9 @@ window.translations = {
             italic: '斜體',
             underline: '底線',
             strikethrough: '刪除線',
+            decorationStyle: '線型',
+            decorationWidth: '線條粗細',
+            decorationColor: '線條顏色',
             uploadFont: '上傳字體',
             customFonts: '自訂字體',
             fontUploadSuccess: '字體上傳成功！',
@@ -164,7 +167,12 @@ window.translations = {
         delete: '刪除',
         done: '完成',
         rotate90: '旋轉90°',
-        flipH: '水平翻轉'
+        flipH: '水平翻轉',
+        layer: '圖層',
+        layerFront: '置於頂層',
+        layerBack: '置於底層',
+        layerUp: '上移一層',
+        layerDown: '下移一層'
     },
 
     // Line Style Modal
@@ -232,7 +240,12 @@ window.translations = {
         done: '完成',
         edit: '編輯',
         rotate90: '旋轉90°',
-        flipH: '水平翻轉'
+        flipH: '水平翻轉',
+        layer: '圖層',
+        layerFront: '置於頂層',
+        layerBack: '置於底層',
+        layerUp: '上移一層',
+        layerDown: '下移一層'
     },
 
     // Page Navigation

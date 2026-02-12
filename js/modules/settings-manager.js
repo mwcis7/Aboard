@@ -1,10 +1,17 @@
 // Settings Management Module
 // Handles application settings and preferences
+const largeScreenWidth = 1920;
+const highDpiRatio = 1.5;
 
 class SettingsManager {
     constructor() {
-        this.toolbarSize = parseInt(localStorage.getItem('toolbarSize')) || 65;
-        this.configScale = parseFloat(localStorage.getItem('configScale')) || 1.0;
+        const storedToolbarSize = localStorage.getItem('toolbarSize');
+        const storedConfigScale = localStorage.getItem('configScale');
+        const isLargeScreen = window.innerWidth >= largeScreenWidth;
+        const isHighDpi = (window.devicePixelRatio || 1) >= highDpiRatio;
+        const isHighResDisplay = isLargeScreen || isHighDpi;
+        this.toolbarSize = storedToolbarSize ? parseInt(storedToolbarSize) : (isHighResDisplay ? 60 : 55);
+        this.configScale = storedConfigScale ? parseFloat(storedConfigScale) : (isHighResDisplay ? 1.1 : 1.0);
         this.controlPosition = localStorage.getItem('controlPosition') || 'top-right';
         this.edgeSnapEnabled = localStorage.getItem('edgeSnapEnabled') !== 'false';
         this.touchZoomEnabled = localStorage.getItem('touchZoomEnabled') !== 'false';
