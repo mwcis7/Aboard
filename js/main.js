@@ -187,13 +187,14 @@ class DrawingBoard {
         // On startup or refresh, set canvas to a larger default scale and center it
         // Only apply if no saved scale exists
         const savedScale = localStorage.getItem('canvasScale');
+        // Always calculate fit scale for applyZoom and default coverage logic.
         this.canvasFitScale = this.calculateCanvasFitScale();
         if (!savedScale) {
             const MIN_FIT_SCALE = 0.01;
             const desiredCoverage = 0.7;
             const minimumScale = 0.9;
             const safeFitScale = Math.max(MIN_FIT_SCALE, this.canvasFitScale);
-            const coverageScale = desiredCoverage / safeFitScale; // coverage = fitScale * canvasScale.
+            const coverageScale = desiredCoverage / safeFitScale; // canvasScale = desiredCoverage / fitScale.
             const targetScale = Math.max(minimumScale, coverageScale);
             const initialScale = Math.min(this.MAX_CANVAS_SCALE, targetScale);
             this.drawingEngine.canvasScale = initialScale;
