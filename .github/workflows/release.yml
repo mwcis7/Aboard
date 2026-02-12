@@ -28,6 +28,11 @@ jobs:
             before=$(git rev-parse "${after}^" 2>/dev/null || true)
           fi
 
+          if [ ! -f index.html ]; then
+            echo "index.html not found" >&2
+            exit 1
+          fi
+
           version=$(grep -oP 'v\d+\.\d+\.\d+' index.html | head -1 | sed 's/^v//')
           if [ -z "$version" ]; then
             echo "Version not found in index.html" >&2
