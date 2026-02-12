@@ -194,7 +194,7 @@ class DrawingBoard {
             const DESIRED_COVERAGE = 0.7;
             const MINIMUM_SCALE = 0.9;
             const safeFitScale = Math.max(MIN_FIT_SCALE, this.canvasFitScale);
-            const scaleForCoverage = DESIRED_COVERAGE / safeFitScale; // scaleForCoverage = desiredCoverage / safeFitScale.
+            const scaleForCoverage = DESIRED_COVERAGE / safeFitScale; // Scale to reach 70% viewport coverage.
             const boundedScale = Math.max(MINIMUM_SCALE, scaleForCoverage);
             const initialScale = Math.min(this.MAX_CANVAS_SCALE, boundedScale);
             this.drawingEngine.canvasScale = initialScale;
