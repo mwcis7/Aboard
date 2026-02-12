@@ -135,6 +135,9 @@ window.translations = {
             italic: '기울임',
             underline: '밑줄',
             strikethrough: '취소선',
+            decorationStyle: '선 스타일',
+            decorationWidth: '선 두께',
+            decorationColor: '선 색상',
             uploadFont: '글꼴 업로드',
             customFonts: '사용자 정의 글꼴',
             fontUploadSuccess: '글꼴이 업로드되었습니다!',
@@ -161,7 +164,12 @@ window.translations = {
         delete: '삭제',
         done: '완료',
         rotate90: '90° 회전',
-        flipH: '좌우 반전'
+        flipH: '좌우 반전',
+        layer: '레이어',
+        layerFront: '맨 앞으로',
+        layerBack: '맨 뒤로',
+        layerUp: '앞으로 한 단계',
+        layerDown: '뒤로 한 단계'
     },
 
     // Line Style Modal
@@ -228,7 +236,12 @@ window.translations = {
         done: '완료',
         edit: '편집',
         rotate90: '90° 회전',
-        flipH: '좌우 뒤집기'
+        flipH: '좌우 뒤집기',
+        layer: '레이어',
+        layerFront: '맨 앞으로',
+        layerBack: '맨 뒤로',
+        layerUp: '앞으로 한 단계',
+        layerDown: '뒤로 한 단계'
     },
 
     // Page Navigation

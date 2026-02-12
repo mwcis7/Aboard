@@ -18,7 +18,10 @@ class InsertTextManager {
             bold: false,
             italic: false,
             underline: false,
-            strikethrough: false
+            strikethrough: false,
+            decorationStyle: 'solid',
+            decorationColor: '#000000',
+            decorationWidth: 2
         };
 
         // Custom fonts storage
@@ -38,6 +41,7 @@ class InsertTextManager {
 
         this.resizeHandle = null;
         this.resizeStartScale = 1.0;
+        this.resizeStartFontSize = 48;
         this.resizeStartPos = { x: 0, y: 0 };
 
         this.rotateStartAngle = 0;
@@ -47,6 +51,12 @@ class InsertTextManager {
         this.textObjects = [];
         this.selectedTextIndex = null;
         this.editingTextIndex = null; // Index of text being edited
+
+        this.DEFAULT_DECORATION_WIDTH = 2;
+        this.DOTTED_LINE_GAP_MULTIPLIER = 2.2; // Gap = lineWidth * 2.2 keeps dots legible down to 12px fonts.
+        this.MIN_FONT_SIZE = 12;
+        this.DEFAULT_MAX_FONT_SIZE = 200;
+        this.MAX_FONT_SIZE_LIMIT = 10000;
 
         this.createControls();
         this.setupEventListeners();
@@ -236,6 +246,28 @@ class InsertTextManager {
                                 </div>
                             </div>
 
+                            <div id="text-decoration-settings" class="text-decoration-settings" aria-hidden="true">
+                                <div class="text-control-group">
+                                    <label data-i18n="tools.text.decorationStyle">Line Style</label>
+                                    <select id="insert-text-decoration-style" class="format-select" aria-label="Decoration style">
+                                        <option value="solid" data-i18n="tools.lineStyle.solid">Solid</option>
+                                        <option value="dashed" data-i18n="tools.lineStyle.dashed">Dashed</option>
+                                        <option value="dotted" data-i18n="tools.lineStyle.dotted">Dotted</option>
+                                        <option value="wavy" data-i18n="tools.lineStyle.wavy">Wavy</option>
+                                    </select>
+                                </div>
+
+                                <div class="text-control-group">
+                                    <label><span data-i18n="tools.text.decorationWidth">Line Width</span>: <span id="insert-text-decoration-width-value">2</span>px</label>
+                                    <input type="range" id="insert-text-decoration-width" min="1" max="8" value="2" class="slider touch-friendly-slider">
+                                </div>
+
+                                <div class="text-control-group">
+                                    <label data-i18n="tools.text.decorationColor">Line Color</label>
+                                    <input type="color" id="insert-text-decoration-color" class="text-decoration-color-input" value="#000000" aria-label="Decoration color">
+                                </div>
+                            </div>
+
                             <div class="text-control-group">
                                 <label><span data-i18n="tools.text.size">Size</span>: <span id="insert-text-size-value">48</span>px</label>
                                 <input type="range" id="insert-text-size-slider" min="12" max="200" value="48" class="slider touch-friendly-slider">
@@ -394,7 +426,45 @@ class InsertTextManager {
         sizeSlider.addEventListener('input', (e) => {
             sizeValue.textContent = e.target.value;
             this.textConfig.fontSize = parseInt(e.target.value);
+            this.textScale = 1.0;
+            if (this.isActive) {
+                this.updateOverlay();
+            }
+            this.updateSizeSliderRange();
         });
+
+        const decorationStyleSelect = document.getElementById('insert-text-decoration-style');
+        if (decorationStyleSelect) {
+            decorationStyleSelect.addEventListener('change', (e) => {
+                this.textConfig.decorationStyle = e.target.value;
+                if (this.isActive) {
+                    this.updateOverlay();
+                }
+            });
+        }
+
+        const decorationWidthSlider = document.getElementById('insert-text-decoration-width');
+        const decorationWidthValue = document.getElementById('insert-text-decoration-width-value');
+        if (decorationWidthSlider && decorationWidthValue) {
+            decorationWidthSlider.addEventListener('input', (e) => {
+                const widthValue = parseInt(e.target.value);
+                decorationWidthValue.textContent = e.target.value;
+                this.textConfig.decorationWidth = widthValue;
+                if (this.isActive) {
+                    this.updateOverlay();
+                }
+            });
+        }
+
+        const decorationColorInput = document.getElementById('insert-text-decoration-color');
+        if (decorationColorInput) {
+            decorationColorInput.addEventListener('input', (e) => {
+                this.textConfig.decorationColor = e.target.value;
+                if (this.isActive) {
+                    this.updateOverlay();
+                }
+            });
+        }
 
         // Font Selection
         const fontSelect = document.getElementById('insert-text-font-select');
@@ -439,6 +509,10 @@ class InsertTextManager {
                 this.textConfig.underline = !this.textConfig.underline;
                 underlineBtn.classList.toggle('active', this.textConfig.underline);
                 underlineBtn.setAttribute('aria-pressed', this.textConfig.underline.toString());
+                this.updateDecorationControlsVisibility();
+                if (this.isActive) {
+                    this.updateOverlay();
+                }
             });
         }
 
@@ -449,6 +523,10 @@ class InsertTextManager {
                 this.textConfig.strikethrough = !this.textConfig.strikethrough;
                 strikethroughBtn.classList.toggle('active', this.textConfig.strikethrough);
                 strikethroughBtn.setAttribute('aria-pressed', this.textConfig.strikethrough.toString());
+                this.updateDecorationControlsVisibility();
+                if (this.isActive) {
+                    this.updateOverlay();
+                }
             });
         }
 
@@ -551,12 +629,26 @@ class InsertTextManager {
             bold: false,
             italic: false,
             underline: false,
-            strikethrough: false
+            strikethrough: false,
+            decorationStyle: 'solid',
+            decorationColor: '#000000',
+            decorationWidth: this.DEFAULT_DECORATION_WIDTH
         };
+        this.textScale = 1.0;
         // Reset slider
         document.getElementById('insert-text-size-slider').value = 48;
         document.getElementById('insert-text-size-value').textContent = '48';
+        this.updateSizeSliderRange();
         document.getElementById('insert-text-input').value = '';
+
+        const decorationStyleSelect = document.getElementById('insert-text-decoration-style');
+        if (decorationStyleSelect) decorationStyleSelect.value = 'solid';
+        const decorationWidthSlider = document.getElementById('insert-text-decoration-width');
+        const decorationWidthValue = document.getElementById('insert-text-decoration-width-value');
+        if (decorationWidthSlider) decorationWidthSlider.value = this.DEFAULT_DECORATION_WIDTH;
+        if (decorationWidthValue) decorationWidthValue.textContent = this.DEFAULT_DECORATION_WIDTH;
+        const decorationColorInput = document.getElementById('insert-text-decoration-color');
+        if (decorationColorInput) decorationColorInput.value = '#000000';
 
         // Reset font
         const fontSelect = document.getElementById('insert-text-font-select');
@@ -577,6 +669,7 @@ class InsertTextManager {
         document.querySelector('.color-btn[data-text-color="#000000"]').classList.add('active');
         const customLabel = document.querySelector('label[for="insert-text-custom-color"]');
         if (customLabel) customLabel.classList.remove('active');
+        this.updateDecorationControlsVisibility();
 
         this.showModal();
     }
@@ -602,9 +695,18 @@ class InsertTextManager {
 
         if (isEditing) {
             input.value = this.textConfig.text;
+            this.updateSizeSliderRange();
             document.getElementById('insert-text-size-slider').value = this.textConfig.fontSize;
             document.getElementById('insert-text-size-value').textContent = this.textConfig.fontSize;
             document.getElementById('insert-text-font-select').value = this.textConfig.fontFamily;
+            const decorationStyleSelect = document.getElementById('insert-text-decoration-style');
+            if (decorationStyleSelect) decorationStyleSelect.value = this.textConfig.decorationStyle || 'solid';
+            const decorationWidthSlider = document.getElementById('insert-text-decoration-width');
+            const decorationWidthValue = document.getElementById('insert-text-decoration-width-value');
+            if (decorationWidthSlider) decorationWidthSlider.value = this.textConfig.decorationWidth || this.DEFAULT_DECORATION_WIDTH;
+            if (decorationWidthValue) decorationWidthValue.textContent = this.textConfig.decorationWidth || this.DEFAULT_DECORATION_WIDTH;
+            const decorationColorInput = document.getElementById('insert-text-decoration-color');
+            if (decorationColorInput) decorationColorInput.value = this.textConfig.decorationColor || this.textConfig.color;
             
             // Restore bold/italic/underline/strikethrough states
             const boldBtn = document.getElementById('insert-text-bold-btn');
@@ -616,6 +718,7 @@ class InsertTextManager {
             if (underlineBtn) underlineBtn.classList.toggle('active', this.textConfig.underline);
             if (strikethroughBtn) strikethroughBtn.classList.toggle('active', this.textConfig.strikethrough);
         }
+        this.updateDecorationControlsVisibility();
 
         input.focus();
     }
@@ -652,7 +755,31 @@ class InsertTextManager {
     }
 
     updateColor(color) {
+        const previousColor = this.textConfig.color;
         this.textConfig.color = color;
+        if (!this.textConfig.decorationColor || this.textConfig.decorationColor === previousColor) {
+            this.textConfig.decorationColor = color;
+            const decorationColorInput = document.getElementById('insert-text-decoration-color');
+            if (decorationColorInput) decorationColorInput.value = color;
+        }
+        if (this.isActive) {
+            this.updateOverlay();
+        }
+    }
+
+    updateDecorationControlsVisibility() {
+        const decorationSettings = document.getElementById('text-decoration-settings');
+        if (!decorationSettings) return;
+        const shouldShow = this.textConfig.underline || this.textConfig.strikethrough;
+        decorationSettings.style.display = shouldShow ? 'flex' : 'none';
+        decorationSettings.setAttribute('aria-hidden', (!shouldShow).toString());
+    }
+
+    updateSizeSliderRange() {
+        const sizeSlider = document.getElementById('insert-text-size-slider');
+        if (!sizeSlider) return;
+        const maxValue = Math.max(this.DEFAULT_MAX_FONT_SIZE, Math.ceil(this.textConfig.fontSize));
+        sizeSlider.max = Math.min(this.MAX_FONT_SIZE_LIMIT, maxValue);
     }
 
     showOverlay() {
@@ -698,16 +825,20 @@ class InsertTextManager {
         this.controlBox.style.left = `${screenX}px`;
         this.controlBox.style.top = `${screenY}px`;
 
-        this.textContentDiv.style.fontSize = `${this.textConfig.fontSize * this.textScale * scaleX}px`; // Apply zoom scale to font
+        const effectiveFontSize = this.textConfig.fontSize * this.textScale;
+        this.textContentDiv.style.fontSize = `${effectiveFontSize * scaleX}px`; // Apply zoom scale to font
         this.textContentDiv.style.color = this.textConfig.color;
         this.textContentDiv.style.fontFamily = this.textConfig.fontFamily;
         this.textContentDiv.style.fontWeight = this.textConfig.bold ? 'bold' : 'normal';
         this.textContentDiv.style.fontStyle = this.textConfig.italic ? 'italic' : 'normal';
-        // Build text-decoration value
-        const decorations = [];
-        if (this.textConfig.underline) decorations.push('underline');
-        if (this.textConfig.strikethrough) decorations.push('line-through');
-        this.textContentDiv.style.textDecoration = decorations.length > 0 ? decorations.join(' ') : 'none';
+        const decorationLines = [];
+        if (this.textConfig.underline) decorationLines.push('underline');
+        if (this.textConfig.strikethrough) decorationLines.push('line-through');
+        this.textContentDiv.style.textDecorationLine = decorationLines.length > 0 ? decorationLines.join(' ') : 'none';
+        this.textContentDiv.style.textDecorationStyle = this.textConfig.decorationStyle || 'solid';
+        this.textContentDiv.style.textDecorationColor = this.textConfig.decorationColor || this.textConfig.color;
+        const decorationWidth = this.textConfig.decorationWidth || this.DEFAULT_DECORATION_WIDTH;
+        this.textContentDiv.style.textDecorationThickness = `${decorationWidth}px`;
         this.textContentDiv.textContent = this.textConfig.text;
 
         this.controlBox.style.transform = `rotate(${this.textRotation}deg)`;
@@ -722,15 +853,19 @@ class InsertTextManager {
         const fontStyle = this.textConfig.italic ? 'italic' : 'normal';
         const fontWeight = this.textConfig.bold ? 'bold' : 'normal';
         const baseFontSize = this.textConfig.fontSize;
+        const effectiveFontSize = baseFontSize * this.textScale;
+        // Normalize to a single font size before inserting the text object.
+        this.textConfig.fontSize = effectiveFontSize;
+        this.textScale = 1.0;
         
         // Measure text dimensions at base (unscaled) font size so that
         // width/height are consistent with scale multiplication elsewhere.
         this.ctx.save();
-        this.ctx.font = `${fontStyle} ${fontWeight} ${baseFontSize}px ${this.textConfig.fontFamily}`;
+        this.ctx.font = `${fontStyle} ${fontWeight} ${effectiveFontSize}px ${this.textConfig.fontFamily}`;
         this.ctx.textBaseline = 'top';
         
         const lines = this.textConfig.text.split('\n');
-        const baseLineHeight = baseFontSize * 1.2;
+        const baseLineHeight = effectiveFontSize * 1.2;
         
         let maxWidth = 0;
         lines.forEach(line => {
@@ -744,15 +879,18 @@ class InsertTextManager {
             text: this.textConfig.text,
             x: this.textPosition.x,
             y: this.textPosition.y,
-            fontSize: baseFontSize,
+            fontSize: effectiveFontSize,
             color: this.textConfig.color,
             fontFamily: this.textConfig.fontFamily,
             bold: this.textConfig.bold || false,
             italic: this.textConfig.italic || false,
             underline: this.textConfig.underline || false,
             strikethrough: this.textConfig.strikethrough || false,
+            decorationStyle: this.textConfig.decorationStyle || 'solid',
+            decorationColor: this.textConfig.decorationColor || this.textConfig.color,
+            decorationWidth: this.textConfig.decorationWidth || this.DEFAULT_DECORATION_WIDTH,
             rotation: this.textRotation,
-            scale: this.textScale,
+            scale: 1,
             width: maxWidth + 8, // Include padding
             height: lines.length * baseLineHeight + 8
         };
@@ -782,9 +920,10 @@ class InsertTextManager {
     
     // Draw a single text object
     drawTextObject(textObj) {
+        this.normalizeTextObjectScale(textObj);
         this.ctx.save();
         
-        const fontSize = textObj.fontSize * textObj.scale;
+        const fontSize = textObj.fontSize;
         const fontStyle = textObj.italic ? 'italic' : 'normal';
         const fontWeight = textObj.bold ? 'bold' : 'normal';
         this.ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${textObj.fontFamily}`;
@@ -810,7 +949,9 @@ class InsertTextManager {
         
         // Pre-calculate decoration constants
         const hasDecorations = textObj.underline || textObj.strikethrough;
-        const decorationStrokeWidth = hasDecorations ? Math.max(1, fontSize * 0.05) : 0;
+        const decorationStrokeWidth = hasDecorations ? (textObj.decorationWidth || Math.max(1, fontSize * 0.05)) : 0;
+        const decorationColor = textObj.decorationColor || textObj.color;
+        const decorationStyle = textObj.decorationStyle || 'solid';
         const UNDERLINE_Y_OFFSET = 1.05;
         const STRIKETHROUGH_Y_OFFSET = 0.55;
         
@@ -824,31 +965,58 @@ class InsertTextManager {
             if (hasDecorations) {
                 const lineWidth = this.ctx.measureText(line).width;
                 if (lineWidth > 0) {
-                    this.ctx.save();
-                    this.ctx.strokeStyle = textObj.color;
-                    this.ctx.lineWidth = decorationStrokeWidth;
-                    
                     if (textObj.underline) {
                         const underlineY = lineY + fontSize * UNDERLINE_Y_OFFSET;
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(lineX, underlineY);
-                        this.ctx.lineTo(lineX + lineWidth, underlineY);
-                        this.ctx.stroke();
+                        this.drawDecorationLine(lineX, underlineY, lineWidth, decorationStyle, decorationStrokeWidth, decorationColor);
                     }
                     
                     if (textObj.strikethrough) {
                         const strikeY = lineY + fontSize * STRIKETHROUGH_Y_OFFSET;
-                        this.ctx.beginPath();
-                        this.ctx.moveTo(lineX, strikeY);
-                        this.ctx.lineTo(lineX + lineWidth, strikeY);
-                        this.ctx.stroke();
+                        this.drawDecorationLine(lineX, strikeY, lineWidth, decorationStyle, decorationStrokeWidth, decorationColor);
                     }
-                    
-                    this.ctx.restore();
                 }
             }
         });
         
+        this.ctx.restore();
+    }
+
+    drawDecorationLine(x, y, width, style, lineWidth, color) {
+        this.ctx.save();
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = lineWidth;
+        this.ctx.lineCap = 'round';
+        this.ctx.lineJoin = 'round';
+
+        if (style === 'dashed') {
+            this.ctx.setLineDash([lineWidth * 4, lineWidth * 2]);
+        } else if (style === 'dotted') {
+            this.ctx.setLineDash([lineWidth, lineWidth * this.DOTTED_LINE_GAP_MULTIPLIER]);
+        } else {
+            this.ctx.setLineDash([]);
+        }
+
+        if (style === 'wavy') {
+            const amplitude = Math.max(1, lineWidth * 1.2);
+            const wavelength = Math.max(6, lineWidth * 4);
+            const step = Math.max(2, wavelength / 4);
+            this.ctx.beginPath();
+            for (let offset = 0; offset <= width; offset += step) {
+                const waveY = y + Math.sin((offset / wavelength) * Math.PI * 2) * amplitude;
+                if (offset === 0) {
+                    this.ctx.moveTo(x + offset, waveY);
+                } else {
+                    this.ctx.lineTo(x + offset, waveY);
+                }
+            }
+            this.ctx.stroke();
+        } else {
+            this.ctx.beginPath();
+            this.ctx.moveTo(x, y);
+            this.ctx.lineTo(x + width, y);
+            this.ctx.stroke();
+        }
+
         this.ctx.restore();
     }
     
@@ -897,7 +1065,8 @@ class InsertTextManager {
 
     // Calculate bounds for a text object matching the actual drawn text size
     getTextBounds(textObj) {
-        const fontSize = textObj.fontSize * textObj.scale;
+        this.normalizeTextObjectScale(textObj);
+        const fontSize = textObj.fontSize;
         const fontStyle = textObj.italic ? 'italic' : 'normal';
         const fontWeight = textObj.bold ? 'bold' : 'normal';
         const padding = 4;
@@ -953,6 +1122,8 @@ class InsertTextManager {
         if (index < 0 || index >= this.textObjects.length) return;
         const textObj = this.textObjects[index];
         if (!textObj) return;
+
+        this.normalizeTextObjectScale(textObj);
         
         // Store which text object we're editing
         this.editingTextIndex = index;
@@ -966,14 +1137,35 @@ class InsertTextManager {
         this.textConfig.italic = textObj.italic || false;
         this.textConfig.underline = textObj.underline || false;
         this.textConfig.strikethrough = textObj.strikethrough || false;
+        this.textConfig.decorationStyle = textObj.decorationStyle || 'solid';
+        this.textConfig.decorationColor = textObj.decorationColor || textObj.color || '#000000';
+        this.textConfig.decorationWidth = textObj.decorationWidth || this.DEFAULT_DECORATION_WIDTH;
         
         // Restore position and transform
         this.textPosition = { x: textObj.x, y: textObj.y };
         this.textRotation = textObj.rotation || 0;
-        this.textScale = textObj.scale || 1.0;
+        this.textScale = 1.0;
         
         // Show the modal in edit mode
         this.showModal(true);
+    }
+
+    normalizeTextObjectScale(textObj) {
+        if (!textObj) return;
+        const scale = textObj.scale || 1;
+        if (scale !== 1) {
+            const baseFontSize = textObj.fontSize || 48;
+            textObj.fontSize = baseFontSize * scale;
+            textObj.scale = 1;
+        } else if (typeof textObj.scale === 'undefined') {
+            textObj.scale = 1;
+        }
+        if (!textObj.fontSize) {
+            textObj.fontSize = 48;
+        }
+        if (!textObj.decorationStyle) textObj.decorationStyle = 'solid';
+        if (!textObj.decorationColor) textObj.decorationColor = textObj.color || '#000000';
+        if (!textObj.decorationWidth) textObj.decorationWidth = this.DEFAULT_DECORATION_WIDTH;
     }
     
     // Get all text objects (for serialization)
@@ -984,6 +1176,7 @@ class InsertTextManager {
     // Set text objects (for deserialization)
     setTextObjects(objects) {
         this.textObjects = objects || [];
+        this.textObjects.forEach(textObj => this.normalizeTextObjectScale(textObj));
     }
     
     // Clear all text objects
@@ -1051,7 +1244,8 @@ class InsertTextManager {
         this.isResizing = true;
         this.resizeHandle = handle;
         this.resizeStartPos = this.getClientPos(e);
-        this.resizeStartScale = this.textScale;
+        this.resizeStartScale = 1.0;
+        this.resizeStartFontSize = this.textConfig.fontSize;
     }
 
     resize(e) {
@@ -1070,7 +1264,16 @@ class InsertTextManager {
 
         // Sensitivity
         const sensitivity = 0.01;
-        this.textScale = Math.max(0.1, this.resizeStartScale + (change * sensitivity));
+        const scaleFactor = Math.max(0.1, this.resizeStartScale + (change * sensitivity));
+        const newFontSize = Math.max(this.MIN_FONT_SIZE, Math.round(this.resizeStartFontSize * scaleFactor));
+        this.textConfig.fontSize = newFontSize;
+        this.textScale = 1.0;
+
+        const sizeSlider = document.getElementById('insert-text-size-slider');
+        const sizeValue = document.getElementById('insert-text-size-value');
+        if (sizeSlider) sizeSlider.value = newFontSize;
+        if (sizeValue) sizeValue.textContent = newFontSize;
+        this.updateSizeSliderRange();
 
         this.updateOverlay();
     }

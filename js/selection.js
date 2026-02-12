@@ -69,6 +69,9 @@ class SelectionManager {
         this.multiImageRotateStart = [];
         this.multiTextRotateStart = [];
         this.clipboard = null;
+        this.layerMenuVisible = false;
+        this.layerMenuOutsideListener = null;
+        this.layerMenuOutsideListenerAttached = false;
         
         // Create selection controls overlay
         this.createSelectionControls();
@@ -134,6 +137,21 @@ class SelectionManager {
                                 <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
                             </svg>
                         </button>
+                        <div class="selection-layer-menu-wrapper">
+                            <button id="selection-layer-btn" class="image-control-btn" data-i18n-title="selection.layer" title="Layer">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                    <path d="M2 12l10 5 10-5"></path>
+                                    <path d="M2 17l10 5 10-5"></path>
+                                </svg>
+                            </button>
+                            <div id="selection-layer-menu" class="selection-layer-menu">
+                                <button class="selection-layer-item" data-layer-action="bring-to-front" data-i18n="selection.layerFront">Bring to Front</button>
+                                <button class="selection-layer-item" data-layer-action="send-to-back" data-i18n="selection.layerBack">Send to Back</button>
+                                <button class="selection-layer-item" data-layer-action="move-forward" data-i18n="selection.layerUp">Move Forward</button>
+                                <button class="selection-layer-item" data-layer-action="move-backward" data-i18n="selection.layerDown">Move Backward</button>
+                            </div>
+                        </div>
                         <button id="selection-delete-btn" class="image-control-btn image-cancel-btn" data-i18n-title="selection.delete" title="Delete">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="3 6 5 6 21 6"></polyline>
@@ -154,6 +172,8 @@ class SelectionManager {
         
         this.overlay = document.getElementById('selection-controls-overlay');
         this.controlBox = document.getElementById('selection-controls-box');
+        this.layerMenu = document.getElementById('selection-layer-menu');
+        this.layerButton = document.getElementById('selection-layer-btn');
         
         // Box selection rectangle overlay
         this.boxSelectDiv = document.createElement('div');
@@ -320,9 +340,11 @@ class SelectionManager {
         const editBtn = document.getElementById('selection-edit-btn');
         const rotate90Handle = document.getElementById('selection-rotate90-handle');
         const flipHHandle = document.getElementById('selection-flip-h-handle');
+        const layerBtn = document.getElementById('selection-layer-btn');
+        const layerMenu = document.getElementById('selection-layer-menu');
         
         // Add mousedown/pointerdown handlers to prevent events from propagating to document
-        [copyBtn, deleteBtn, doneBtn, editBtn, rotate90Handle, flipHHandle].forEach(btn => {
+        [copyBtn, deleteBtn, doneBtn, editBtn, rotate90Handle, flipHHandle, layerBtn].forEach(btn => {
             if (!btn) return;
             btn.addEventListener('mousedown', (e) => {
                 e.stopPropagation();
@@ -375,6 +397,124 @@ class SelectionManager {
                 this.flipHorizontal();
             });
         }
+
+        if (layerBtn && layerMenu) {
+            layerBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                this.toggleLayerMenu();
+            });
+
+            layerMenu.querySelectorAll('[data-layer-action]').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    this.applyLayerAction(item.dataset.layerAction);
+                });
+            });
+        }
+
+        if (!this.layerMenuOutsideListener) {
+            this.layerMenuOutsideListener = (e) => {
+                if (!this.layerMenuVisible || !this.layerMenu || !this.layerButton) return;
+                if (this.layerMenu.contains(e.target) || this.layerButton.contains(e.target)) return;
+                this.hideLayerMenu();
+            };
+        }
+        if (!this.layerMenuOutsideListenerAttached) {
+            document.addEventListener('mousedown', this.layerMenuOutsideListener);
+            this.layerMenuOutsideListenerAttached = true;
+        }
+    }
+
+    toggleLayerMenu() {
+        if (!this.layerMenu) return;
+        if (this.layerMenuVisible) {
+            this.hideLayerMenu();
+        } else {
+            this.showLayerMenu();
+        }
+    }
+
+    showLayerMenu() {
+        if (!this.layerMenu) return;
+        this.layerMenu.classList.add('show');
+        this.layerMenuVisible = true;
+    }
+
+    hideLayerMenu() {
+        if (!this.layerMenu) return;
+        this.layerMenu.classList.remove('show');
+        this.layerMenuVisible = false;
+    }
+
+    updateLayerMenuVisibility() {
+        if (!this.layerButton) return;
+        const shouldShowLayerButton = this.selectionType && this.selectionType !== 'multi';
+        this.layerButton.style.display = shouldShowLayerButton ? '' : 'none';
+        if (!shouldShowLayerButton) {
+            this.hideLayerMenu();
+        }
+    }
+
+    applyLayerAction(action) {
+        if (!this.hasSelection() || this.selectionType === 'multi') return;
+
+        let collection = null;
+        let updateSelection = null;
+        if (this.selectionType === 'stroke') {
+            collection = this.drawingEngine.strokes;
+            updateSelection = (index) => {
+                this.selectedIndex = index;
+                this.drawingEngine.selectStroke(index);
+            };
+        } else if (this.selectionType === 'image') {
+            collection = this.drawingEngine.stampedImages;
+            updateSelection = (index) => {
+                this.selectedIndex = index;
+                this.drawingEngine.selectImage(index);
+            };
+        } else if (this.selectionType === 'text' && this.textManager) {
+            collection = this.textManager.textObjects;
+            updateSelection = (index) => {
+                this.selectedIndex = index;
+                this.textManager.selectedTextIndex = index;
+            };
+        }
+
+        if (!collection || this.selectedIndex === null) return;
+
+        const maxIndex = collection.length - 1;
+        let targetIndex = this.selectedIndex;
+        switch (action) {
+            case 'bring-to-front':
+                targetIndex = maxIndex;
+                break;
+            case 'send-to-back':
+                targetIndex = 0;
+                break;
+            case 'move-forward':
+                targetIndex = Math.min(maxIndex, this.selectedIndex + 1);
+                break;
+            case 'move-backward':
+                targetIndex = Math.max(0, this.selectedIndex - 1);
+                break;
+            default:
+                return;
+        }
+
+        if (targetIndex === this.selectedIndex) {
+            this.hideLayerMenu();
+            return;
+        }
+
+        const [item] = collection.splice(this.selectedIndex, 1);
+        collection.splice(targetIndex, 0, item);
+        updateSelection(targetIndex);
+        this.hideLayerMenu();
+        this.redrawWithSelection();
+        this.updateControlBox();
+        this.saveHistory();
     }
     
     // Normalize angle to 0-360 degrees
@@ -515,6 +655,8 @@ class SelectionManager {
     showControls() {
         this.overlay.style.display = 'block';
         this.controlBox.classList.toggle('text-selection-only', this.selectionType === 'text');
+        this.hideLayerMenu();
+        this.updateLayerMenuVisibility();
         // Show edit button only for text selections
         const editBtn = document.getElementById('selection-edit-btn');
         if (editBtn) {
@@ -526,6 +668,7 @@ class SelectionManager {
     hideControls() {
         this.overlay.style.display = 'none';
         this.controlBox.classList.remove('text-selection-only');
+        this.hideLayerMenu();
     }
     
     updateControlBox() {
@@ -752,6 +895,9 @@ class SelectionManager {
             }
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
+            if (typeof this.textManager.normalizeTextObjectScale === 'function') {
+                this.textManager.normalizeTextObjectScale(textObj);
+            }
             const bounds = this.getTextObjectBounds(this.selectedIndex);
             if (!bounds) return;
             this.resizeStartBounds = {
@@ -759,7 +905,7 @@ class SelectionManager {
                 y: bounds.y,
                 width: bounds.width,
                 height: bounds.height,
-                scale: textObj.scale
+                fontSize: textObj.fontSize
             };
         } else if (this.selectionType === 'image') {
             const img = this.drawingEngine.stampedImages[this.selectedIndex];
@@ -787,8 +933,11 @@ class SelectionManager {
                 for (const idx of this.selectedTexts) {
                     const textObj = this.textManager.textObjects[idx];
                     if (textObj) {
+                        if (typeof this.textManager.normalizeTextObjectScale === 'function') {
+                            this.textManager.normalizeTextObjectScale(textObj);
+                        }
                         const bounds = this.getTextObjectBounds(idx);
-                        this.multiTextResizeStart.push({ idx, x: textObj.x, y: textObj.y, width: bounds.width, height: bounds.height, scale: textObj.scale });
+                        this.multiTextResizeStart.push({ idx, x: textObj.x, y: textObj.y, width: bounds.width, height: bounds.height, fontSize: textObj.fontSize });
                     }
                 }
             }
@@ -858,7 +1007,9 @@ class SelectionManager {
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             const scaleRatio = newBounds.width / startBounds.width;
-            textObj.scale = Math.max(0.1, startBounds.scale * scaleRatio);
+            const minFontSize = (this.textManager && this.textManager.MIN_FONT_SIZE) ? this.textManager.MIN_FONT_SIZE : 12;
+            textObj.fontSize = Math.max(minFontSize, startBounds.fontSize * scaleRatio);
+            textObj.scale = 1;
             textObj.x = newBounds.x;
             textObj.y = newBounds.y;
         } else if (this.selectionType === 'image') {
@@ -903,9 +1054,11 @@ class SelectionManager {
                         const relX = (start.x - startBounds.x) / startBounds.width;
                         const relY = (start.y - startBounds.y) / startBounds.height;
                         const scaleRatio = newBounds.width / startBounds.width;
+                        const minFontSize = (this.textManager && this.textManager.MIN_FONT_SIZE) ? this.textManager.MIN_FONT_SIZE : 12;
                         textObj.x = newBounds.x + relX * newBounds.width;
                         textObj.y = newBounds.y + relY * newBounds.height;
-                        textObj.scale = Math.max(0.1, start.scale * scaleRatio);
+                        textObj.fontSize = Math.max(minFontSize, start.fontSize * scaleRatio);
+                        textObj.scale = 1;
                     }
                 }
             }
@@ -1773,6 +1926,7 @@ class SelectionManager {
         this.selectionType = null;
         this.selectedIndex = null;
         this.hasUnsavedChanges = false;
+        this.hideLayerMenu();
         this.drawingEngine.deselectStroke();
         this.drawingEngine.deselectImage();
         this.drawingEngine.selectedImageIndex = null;
@@ -2120,7 +2274,7 @@ class SelectionManager {
         if (!this.textManager || !this.textManager.textObjects) return null;
         const textObj = this.textManager.textObjects[index];
         if (!textObj) return null;
-        const fontSize = textObj.fontSize * textObj.scale;
+        const fontSize = textObj.fontSize * (textObj.scale || 1);
         const text = textObj.text || '';
         const lines = text.split('\n');
         let maxWidth = 0;

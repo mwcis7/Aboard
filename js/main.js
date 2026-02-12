@@ -1,5 +1,8 @@
 // Main Application Class
 // Integrates all modules and handles user interactions
+const DEFAULT_MIN_FIT_SCALE = 0.1;
+const DEFAULT_TARGET_COVERAGE = 0.7;
+const DEFAULT_MIN_DEFAULT_SCALE = 0.9;
 
 class DrawingBoard {
     constructor() {
@@ -184,16 +187,21 @@ class DrawingBoard {
     
     
     initializeCanvasView() {
-        // On startup or refresh, set canvas to 80% of browser window size and center it
+        // On startup or refresh, set canvas to a larger default scale and center it
         // Only apply if no saved scale exists
         const savedScale = localStorage.getItem('canvasScale');
-        if (!savedScale) {
-            this.drawingEngine.canvasScale = 0.80;
-            localStorage.setItem('canvasScale', 0.80);
-        }
-        
-        // Calculate initial fit scale
+        // Always calculate fit scale for applyZoom and default coverage logic.
         this.canvasFitScale = this.calculateCanvasFitScale();
+        if (!savedScale) {
+            const safeFitScale = Math.max(DEFAULT_MIN_FIT_SCALE, this.canvasFitScale);
+            // Compute canvasScale so fitScale * canvasScale meets desired coverage.
+            const scaleForCoverage = DEFAULT_TARGET_COVERAGE / safeFitScale;
+            // Keep a higher default scale so the canvas starts larger than the minimum target.
+            const boundedScale = Math.max(DEFAULT_MIN_DEFAULT_SCALE, scaleForCoverage);
+            const initialScale = Math.min(this.MAX_CANVAS_SCALE, boundedScale);
+            this.drawingEngine.canvasScale = initialScale;
+            localStorage.setItem('canvasScale', initialScale);
+        }
         
         // Always center the canvas on startup/refresh
         // Note: This ensures the canvas is properly centered after each page load,
@@ -2026,7 +2034,11 @@ class DrawingBoard {
         panels.forEach(panel => {
             if (!panel) return;
             
-            const rect = panel.getBoundingClientRect();
+            let rect = panel.getBoundingClientRect();
+            const appliedRelative = this.applyRelativePanelPosition(panel, rect, windowWidth, windowHeight, EDGE_SPACING);
+            if (appliedRelative) {
+                rect = panel.getBoundingClientRect();
+            }
             const computedStyle = window.getComputedStyle(panel);
             
             // Get current position
@@ -2107,6 +2119,51 @@ class DrawingBoard {
                 panel.style.top = `${EDGE_SPACING}px`;
             }
         });
+    }
+
+    applyRelativePanelPosition(panel, rect, windowWidth, windowHeight, edgeSpacing) {
+        const relativeLeft = panel.dataset.relativeLeft;
+        const relativeTop = panel.dataset.relativeTop;
+        let applied = false;
+
+        if (relativeLeft !== undefined) {
+            const availableWidth = Math.max(1, windowWidth - rect.width);
+            const ratio = Math.min(1, Math.max(0, parseFloat(relativeLeft)));
+            const newLeft = availableWidth * ratio;
+            panel.style.left = `${Math.min(windowWidth - rect.width - edgeSpacing, Math.max(edgeSpacing, newLeft))}px`;
+            panel.style.right = 'auto';
+            applied = true;
+        }
+
+        if (relativeTop !== undefined) {
+            const availableHeight = Math.max(1, windowHeight - rect.height);
+            const ratio = Math.min(1, Math.max(0, parseFloat(relativeTop)));
+            const newTop = availableHeight * ratio;
+            panel.style.top = `${Math.min(windowHeight - rect.height - edgeSpacing, Math.max(edgeSpacing, newTop))}px`;
+            panel.style.bottom = 'auto';
+            applied = true;
+        }
+
+        return applied;
+    }
+
+    storePanelRelativePosition(panel) {
+        if (!panel) return;
+        const rect = panel.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const availableWidth = Math.max(1, windowWidth - rect.width);
+        const availableHeight = Math.max(1, windowHeight - rect.height);
+
+        const nextLeft = Math.min(1, Math.max(0, rect.left / availableWidth)).toFixed(3);
+        const nextTop = Math.min(1, Math.max(0, rect.top / availableHeight)).toFixed(3);
+
+        if (panel.dataset.relativeLeft !== nextLeft) {
+            panel.dataset.relativeLeft = nextLeft;
+        }
+        if (panel.dataset.relativeTop !== nextTop) {
+            panel.dataset.relativeTop = nextTop;
+        }
     }
     
     repositionModalsOnResize() {
@@ -2327,6 +2384,8 @@ class DrawingBoard {
                 if (this.draggedElement.id === 'config-area') {
                     this.draggedElement.dataset.userDragged = 'true';
                 }
+
+                this.storePanelRelativePosition(this.draggedElement);
                 
                 this.isDraggingPanel = false;
                 this.draggedElement = null;
@@ -2409,6 +2468,10 @@ class DrawingBoard {
             configArea.style.transformOrigin = 'center bottom';
             configArea.style.transform = `translateX(-50%) scale(${scale})`;
         }
+
+        requestAnimationFrame(() => {
+            this.repositionToolbarsOnResize();
+        });
     }
     
     positionFeatureArea() {
@@ -2424,6 +2487,9 @@ class DrawingBoard {
         featureArea.style.left = `${moreBtnRect.left}px`;
         featureArea.style.top = `${toolbarRect.top - 10}px`;
         featureArea.style.transform = 'translateY(-100%)';
+        requestAnimationFrame(() => {
+            this.repositionToolbarsOnResize();
+        });
     }
     
     setTool(tool, showConfig = true) {
@@ -4417,6 +4483,16 @@ class DrawingBoard {
                     penType: s.penType,
                     tool: s.tool,
                     rotation: s.rotation || 0
+                })),
+                stampedImages: this.drawingEngine.stampedImages.map(img => ({
+                    imageSrc: img.imageSrc || (img.imageElement ? img.imageElement.src : null),
+                    x: img.x,
+                    y: img.y,
+                    width: img.width,
+                    height: img.height,
+                    rotation: img.rotation || 0,
+                    flipHorizontal: img.flipHorizontal || false,
+                    flipVertical: img.flipVertical || false
                 }))
             };
 
@@ -4523,6 +4599,30 @@ class DrawingBoard {
                 // Restore strokes for selection support
                 if (settings.strokes && settings.strokes.length > 0) {
                     this.drawingEngine.strokes = settings.strokes;
+                }
+
+                // Restore stamped images for selection support
+                if (settings.stampedImages && settings.stampedImages.length > 0) {
+                    const loadImage = (src) => new Promise((resolve) => {
+                        const img = new Image();
+                        img.onload = () => resolve(img);
+                        img.onerror = () => resolve(null);
+                        img.src = src;
+                    });
+
+                    const stampedImages = await Promise.all(settings.stampedImages.map(async (imgData) => {
+                        const imageSrc = imgData.imageSrc || imgData.src;
+                        const imageElement = imageSrc ? await loadImage(imageSrc) : null;
+                        return {
+                            ...imgData,
+                            imageSrc: imageSrc || null,
+                            imageElement
+                        };
+                    }));
+
+                    this.drawingEngine.stampedImages = stampedImages;
+                } else {
+                    this.drawingEngine.stampedImages = [];
                 }
 
                 // Link selection manager to text manager for selection to work

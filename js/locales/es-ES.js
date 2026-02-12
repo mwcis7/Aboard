@@ -133,6 +133,9 @@ window.translations = {
             italic: 'Cursiva',
             underline: 'Subrayado',
             strikethrough: 'Tachado',
+            decorationStyle: 'Estilo de línea',
+            decorationWidth: 'Grosor de línea',
+            decorationColor: 'Color de línea',
             uploadFont: 'Cargar fuente',
             customFonts: 'Fuentes personalizadas',
             fontUploadSuccess: '¡Fuente cargada exitosamente!',
@@ -159,7 +162,12 @@ window.translations = {
         delete: 'Eliminar',
         done: 'Hecho',
         rotate90: 'Rotar 90°',
-        flipH: 'Voltear horizontal'
+        flipH: 'Voltear horizontal',
+        layer: 'Capa',
+        layerFront: 'Traer al frente',
+        layerBack: 'Enviar al fondo',
+        layerUp: 'Subir una capa',
+        layerDown: 'Bajar una capa'
     },
 
     // Line Style Modal
@@ -224,7 +232,12 @@ window.translations = {
         done: 'Listo',
         edit: 'Editar',
         rotate90: 'Rotar 90°',
-        flipH: 'Voltear horizontal'
+        flipH: 'Voltear horizontal',
+        layer: 'Capa',
+        layerFront: 'Traer al frente',
+        layerBack: 'Enviar al fondo',
+        layerUp: 'Subir una capa',
+        layerDown: 'Bajar una capa'
     },
 
     // Page Navigation

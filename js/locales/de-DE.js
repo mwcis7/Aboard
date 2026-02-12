@@ -135,6 +135,9 @@ window.translations = {
             italic: 'Kursiv',
             underline: 'Unterstrichen',
             strikethrough: 'Durchgestrichen',
+            decorationStyle: 'Linienstil',
+            decorationWidth: 'Linienstärke',
+            decorationColor: 'Linienfarbe',
             uploadFont: 'Schriftart hochladen',
             customFonts: 'Benutzerdefinierte Schriftarten',
             fontUploadSuccess: 'Schriftart erfolgreich hochgeladen!',
@@ -161,7 +164,12 @@ window.translations = {
         delete: 'Löschen',
         done: 'Fertig',
         rotate90: '90° drehen',
-        flipH: 'Horizontal spiegeln'
+        flipH: 'Horizontal spiegeln',
+        layer: 'Ebene',
+        layerFront: 'In den Vordergrund',
+        layerBack: 'In den Hintergrund',
+        layerUp: 'Eine Ebene nach vorne',
+        layerDown: 'Eine Ebene nach hinten'
     },
 
     // Line Style Modal
@@ -226,7 +234,12 @@ window.translations = {
         done: 'Fertig',
         edit: 'Bearbeiten',
         rotate90: '90° drehen',
-        flipH: 'Horizontal spiegeln'
+        flipH: 'Horizontal spiegeln',
+        layer: 'Ebene',
+        layerFront: 'In den Vordergrund',
+        layerBack: 'In den Hintergrund',
+        layerUp: 'Eine Ebene nach vorne',
+        layerDown: 'Eine Ebene nach hinten'
     },
 
     // Page Navigation
