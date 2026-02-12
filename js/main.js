@@ -1,5 +1,8 @@
 // Main Application Class
 // Integrates all modules and handles user interactions
+const DEFAULT_MIN_FIT_SCALE = 0.1;
+const DEFAULT_TARGET_COVERAGE = 0.7;
+const DEFAULT_MIN_DEFAULT_SCALE = 0.9;
 
 class DrawingBoard {
     constructor() {
@@ -190,14 +193,11 @@ class DrawingBoard {
         // Always calculate fit scale for applyZoom and default coverage logic.
         this.canvasFitScale = this.calculateCanvasFitScale();
         if (!savedScale) {
-            const MIN_FIT_SCALE = 0.01;
-            const TARGET_COVERAGE = 0.7;
-            const MIN_DEFAULT_SCALE = 0.9;
-            const safeFitScale = Math.max(MIN_FIT_SCALE, this.canvasFitScale);
+            const safeFitScale = Math.max(DEFAULT_MIN_FIT_SCALE, this.canvasFitScale);
             // Compute canvasScale so fitScale * canvasScale meets desired coverage.
-            const scaleForCoverage = TARGET_COVERAGE / safeFitScale;
+            const scaleForCoverage = DEFAULT_TARGET_COVERAGE / safeFitScale;
             // Keep a higher default scale so the canvas starts larger than the minimum target.
-            const boundedScale = Math.max(MIN_DEFAULT_SCALE, scaleForCoverage);
+            const boundedScale = Math.max(DEFAULT_MIN_DEFAULT_SCALE, scaleForCoverage);
             const initialScale = Math.min(this.MAX_CANVAS_SCALE, boundedScale);
             this.drawingEngine.canvasScale = initialScale;
             localStorage.setItem('canvasScale', initialScale);
