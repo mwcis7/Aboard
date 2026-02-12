@@ -125,6 +125,7 @@ window.translations = {
         },
         text: {
             insertTitle: 'テキスト挿入',
+            editTitle: 'テキスト編集',
             placeholder: 'ここにテキストを入力',
             size: 'サイズ',
             color: '色',
@@ -132,6 +133,8 @@ window.translations = {
             style: 'スタイル',
             bold: '太字',
             italic: '斜体',
+            underline: '下線',
+            strikethrough: '取り消し線',
             uploadFont: 'フォントをアップロード',
             customFonts: 'カスタムフォント',
             fontUploadSuccess: 'フォントがアップロードされました！',

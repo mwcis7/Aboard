@@ -123,6 +123,7 @@ window.translations = {
         },
         text: {
             insertTitle: 'Insertar texto',
+            editTitle: 'Editar texto',
             placeholder: 'Ingrese el texto aquí',
             size: 'Tamaño',
             color: 'Color',
@@ -130,6 +131,8 @@ window.translations = {
             style: 'Estilo',
             bold: 'Negrita',
             italic: 'Cursiva',
+            underline: 'Subrayado',
+            strikethrough: 'Tachado',
             uploadFont: 'Cargar fuente',
             customFonts: 'Fuentes personalizadas',
             fontUploadSuccess: '¡Fuente cargada exitosamente!',

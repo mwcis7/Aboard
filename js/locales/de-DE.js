@@ -125,6 +125,7 @@ window.translations = {
         },
         text: {
             insertTitle: 'Text einfügen',
+            editTitle: 'Text bearbeiten',
             placeholder: 'Text hier eingeben',
             size: 'Größe',
             color: 'Farbe',
@@ -132,6 +133,8 @@ window.translations = {
             style: 'Stil',
             bold: 'Fett',
             italic: 'Kursiv',
+            underline: 'Unterstrichen',
+            strikethrough: 'Durchgestrichen',
             uploadFont: 'Schriftart hochladen',
             customFonts: 'Benutzerdefinierte Schriftarten',
             fontUploadSuccess: 'Schriftart erfolgreich hochgeladen!',

@@ -1368,6 +1368,20 @@ class SelectionManager {
         const total = newStrokeIndices.length + newImageIndices.length + newTextIndices.length;
         if (total === 0) return false;
 
+        // Update clipboard positions so continuous Ctrl+V cascades
+        if (this.clipboard.strokes) {
+            this.clipboard.strokes = this.clipboard.strokes.map(s => ({
+                ...s,
+                points: s.points.map(p => ({ x: p.x + this.COPY_OFFSET, y: p.y + this.COPY_OFFSET }))
+            }));
+        }
+        if (this.clipboard.images) {
+            this.clipboard.images = this.clipboard.images.map(img => this.applyPasteOffset({ ...img }, this.COPY_OFFSET, this.COPY_OFFSET));
+        }
+        if (this.clipboard.texts) {
+            this.clipboard.texts = this.clipboard.texts.map(t => this.applyPasteOffset(this.createTextCopy(t), this.COPY_OFFSET, this.COPY_OFFSET));
+        }
+
         if (total === 1 && newStrokeIndices.length === 1) {
             this.selectStroke(newStrokeIndices[0]);
         } else if (total === 1 && newImageIndices.length === 1) {
@@ -1797,17 +1811,34 @@ class SelectionManager {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Redraw stamped images (preserves inserted images during selection operations)
-        this.drawingEngine.redrawStampedImages();
+        // Check if there is vector content to redraw
+        const hasVectorContent = this.drawingEngine.strokes.length > 0 ||
+            this.drawingEngine.stampedImages.length > 0 ||
+            (this.textManager && this.textManager.textObjects && this.textManager.textObjects.length > 0);
         
-        // Redraw all strokes
-        for (const stroke of this.drawingEngine.strokes) {
-            this.drawingEngine.redrawStroke(stroke);
-        }
-        
-        // Redraw all text objects
-        if (this.textManager) {
-            this.textManager.drawAllTextObjects();
+        if (hasVectorContent) {
+            // Redraw from vector data
+            // Redraw stamped images (preserves inserted images during selection operations)
+            this.drawingEngine.redrawStampedImages();
+            
+            // Redraw all strokes
+            for (const stroke of this.drawingEngine.strokes) {
+                this.drawingEngine.redrawStroke(stroke);
+            }
+            
+            // Redraw all text objects
+            if (this.textManager) {
+                this.textManager.drawAllTextObjects();
+            }
+        } else {
+            // No vector content: restore base canvas from history to preserve
+            // pixel content (e.g. after session restore where vector data is not available)
+            if (this.historyManager && this.historyManager.historyStep >= 0) {
+                const baseState = this.historyManager.history[this.historyManager.historyStep];
+                if (baseState) {
+                    this.ctx.putImageData(baseState, 0, 0);
+                }
+            }
         }
         
         // Draw selection border if something is selected

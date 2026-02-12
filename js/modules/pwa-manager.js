@@ -402,7 +402,7 @@ class PWAManager {
 
             // Version Row
             const versionRow = document.createElement('div');
-            versionRow.textContent = `${this.getTranslation('version')}: v2.2.0`;
+            versionRow.textContent = `${this.getTranslation('version')}: v2.3.0`;
             versionRow.style.color = '#666';
             versionRow.style.fontSize = '12px';
 
@@ -523,7 +523,7 @@ class PWAManager {
              const versionDiv = this.announcementStatusText.parentElement.nextSibling;
              // Update version text regardless of current version
              if (versionDiv && versionDiv.textContent.includes('v2.')) {
-                 versionDiv.textContent = `${this.getTranslation('version')}: v2.2.0`;
+                 versionDiv.textContent = `${this.getTranslation('version')}: v2.3.0`;
              }
         }
 

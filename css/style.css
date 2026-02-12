@@ -183,7 +183,7 @@ button, a, input[type="button"], input[type="submit"] {
     border-radius: 14px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     min-width: 280px;
-    max-width: 550px; /* Prevent excessive width */
+    max-width: min(550px, calc(100vw - 40px)); /* Responsive: fits within viewport */
     max-height: calc(100vh - 120px); /* Prevent touching top - leave space for positioning */
     overflow-y: auto; /* Add scroll if content exceeds max height */
     display: none;
@@ -946,7 +946,7 @@ button, a, input[type="button"], input[type="submit"] {
 .pen-type-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
+    gap: 4px;
 }
 
 .button-size-options.pattern-grid {
@@ -1142,25 +1142,27 @@ button, a, input[type="button"], input[type="submit"] {
 
 .pen-type-btn {
     flex: 1;
-    padding: 8px 10px;
-    border: 3px solid #ddd;
-    border-radius: 8px;
+    padding: 5px 6px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
     background-color: #ffffff;
     cursor: pointer;
     transition: all 0.2s ease;
     color: #666;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 500;
     white-space: nowrap;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 3px;
     touch-action: manipulation;
 }
 
 .pen-type-btn svg {
     flex-shrink: 0;
+    width: 14px;
+    height: 14px;
 }
 
 .pen-type-btn:hover {
@@ -1561,12 +1563,11 @@ button, a, input[type="button"], input[type="submit"] {
 }
 
 #selection-controls-box.text-selection-only {
-    border: none;
-    box-shadow: none;
+    /* Text selections now show the same border and resize handles as other types */
 }
 
 #selection-controls-box.text-selection-only .resize-handle {
-    display: none;
+    /* Show resize handles for text selections */
 }
 
 /* Resize handles */
@@ -2753,14 +2754,14 @@ button, a, input[type="button"], input[type="submit"] {
     .shape-type-grid,
     .button-size-options {
         grid-template-columns: repeat(2, 1fr);
-        gap: 6px;
+        gap: 4px;
     }
     
     .pen-type-btn,
     .shape-type-btn,
     .select-mode-btn {
-        padding: 8px 6px;
-        font-size: 11px;
+        padding: 5px 4px;
+        font-size: 10px;
     }
 }
 
@@ -2999,8 +3000,8 @@ button, a, input[type="button"], input[type="submit"] {
     .shape-type-btn,
     .select-mode-btn,
     .eraser-type-btn {
-        padding: 14px;
-        font-size: 14px;
+        padding: 10px;
+        font-size: 12px;
     }
     
     /* Larger checkboxes and radio buttons */

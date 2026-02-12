@@ -123,6 +123,7 @@ window.translations = {
         },
         text: {
             insertTitle: 'Insérer du texte',
+            editTitle: 'Modifier le texte',
             placeholder: 'Entrez le texte ici',
             size: 'Taille',
             color: 'Couleur',
@@ -130,6 +131,8 @@ window.translations = {
             style: 'Style',
             bold: 'Gras',
             italic: 'Italique',
+            underline: 'Souligné',
+            strikethrough: 'Barré',
             uploadFont: 'Télécharger police',
             customFonts: 'Polices personnalisées',
             fontUploadSuccess: 'Police téléchargée avec succès !',

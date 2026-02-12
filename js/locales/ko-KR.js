@@ -125,6 +125,7 @@ window.translations = {
         },
         text: {
             insertTitle: '텍스트 삽입',
+            editTitle: '텍스트 편집',
             placeholder: '여기에 텍스트 입력',
             size: '크기',
             color: '색상',
@@ -132,6 +133,8 @@ window.translations = {
             style: '스타일',
             bold: '굵게',
             italic: '기울임',
+            underline: '밑줄',
+            strikethrough: '취소선',
             uploadFont: '글꼴 업로드',
             customFonts: '사용자 정의 글꼴',
             fontUploadSuccess: '글꼴이 업로드되었습니다!',

@@ -131,6 +131,7 @@ window.translations = {
         },
         text: {
             insertTitle: 'Insert Text',
+            editTitle: 'Edit Text',
             placeholder: 'Enter text here',
             size: 'Size',
             color: 'Color',
@@ -138,6 +139,8 @@ window.translations = {
             style: 'Style',
             bold: 'Bold',
             italic: 'Italic',
+            underline: 'Underline',
+            strikethrough: 'Strikethrough',
             uploadFont: 'Upload Font',
             customFonts: 'Custom Fonts',
             fontUploadSuccess: 'Font uploaded successfully!',
