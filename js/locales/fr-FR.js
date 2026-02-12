@@ -42,6 +42,7 @@ window.translations = {
         pen: 'Stylo',
         shape: 'Forme',
         move: 'Déplacer',
+        select: 'Sélectionner',
         eraser: 'Gomme',
         clear: 'Effacer',
         background: 'Arrière-plan',
@@ -119,7 +120,46 @@ window.translations = {
             waveDensity: 'Densité des ondes',
             lineSpacing: 'Espacement des lignes',
             lineCount: 'Nombre de lignes'
+        },
+        text: {
+            insertTitle: 'Insérer du texte',
+            editTitle: 'Modifier le texte',
+            placeholder: 'Entrez le texte ici',
+            size: 'Taille',
+            color: 'Couleur',
+            font: 'Police',
+            style: 'Style',
+            bold: 'Gras',
+            italic: 'Italique',
+            underline: 'Souligné',
+            strikethrough: 'Barré',
+            uploadFont: 'Télécharger police',
+            customFonts: 'Polices personnalisées',
+            fontUploadSuccess: 'Police téléchargée avec succès !',
+            fontExists: 'Cette police existe déjà.',
+            invalidFontFormat: 'Format de police invalide. Veuillez utiliser des fichiers TTF, OTF, WOFF ou WOFF2.',
+            fontTooLarge: 'Le fichier de police est trop volumineux. La taille maximale est de 2 Mo.',
+            storageQuotaExceeded: 'Quota de stockage dépassé. Veuillez supprimer certaines polices personnalisées.'
+        },
+        select: {
+            mode: 'Mode de sélection',
+            clickMode: 'Clic',
+            rectMode: 'Sélection par zone',
+            lassoMode: 'Lasso',
+            transform: 'Transformer',
+            rotate90: 'Rotation 90°',
+            flipH: 'Retourner horizontalement',
+            flipV: 'Retourner verticalement'
         }
+    },
+
+    selection: {
+        edit: 'Modifier',
+        copy: 'Copier',
+        delete: 'Supprimer',
+        done: 'Terminé',
+        rotate90: 'Rotation 90°',
+        flipH: 'Retourner horizontalement'
     },
 
     // Line Style Modal
@@ -154,6 +194,11 @@ window.translations = {
         coordinate: 'Coordonnées',
         coordinateOriginHint: 'Double-cliquez pour sélectionner l\'origine en mode Déplacer, puis faites glisser',
         image: 'Image',
+        imagePrefix: 'Image',
+        density: 'Densité',
+        densityLabel: 'Densité : Actuelle',
+        size: 'Taille',
+        sizeLabel: 'Taille : Actuelle',
         opacity: 'Opacité de l\'arrière-plan',
         opacityHint: 'Ajuster la transparence de l\'arrière-plan, 100% est complètement opaque',
         contrast: 'Contraste',
@@ -170,6 +215,16 @@ window.translations = {
         flipHorizontal: 'Retourner horizontalement',
         flipVertical: 'Retourner verticalement',
         rotate: 'Rotation'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: 'Copier',
+        delete: 'Supprimer',
+        done: 'Terminé',
+        edit: 'Modifier',
+        rotate90: 'Rotation 90°',
+        flipH: 'Retourner horizontalement'
     },
 
     // Page Navigation
@@ -259,6 +314,7 @@ window.translations = {
                 redo: 'Rétablir',
                 pen: 'Stylo',
                 move: 'Déplacer',
+                select: 'Sélectionner',
                 eraser: 'Gomme',
                 clear: 'Effacer',
                 background: 'Arrière-plan',
@@ -273,7 +329,8 @@ window.translations = {
                 pagination: 'Boutons de pagination',
                 time: 'Affichage de l\'heure',
                 fullscreen: 'Bouton plein écran',
-                download: 'Bouton de téléchargement'
+                import: 'Bouton d\'importation',
+                export: 'Bouton d\'exportation'
             },
             controlPosition: 'Position du bouton de contrôle',
             controlPositionHint: 'Choisir où afficher les contrôles de zoom et de pagination',
@@ -440,7 +497,8 @@ window.translations = {
         timer: 'Minuteur',
         randomPicker: 'Sélecteur',
         scoreboard: 'Tableau',
-        insertImage: 'Image'
+        insertImage: 'Image',
+        insertText: 'Texte'
     },
 
     // Teaching Tools
@@ -512,6 +570,11 @@ window.translations = {
         titlePlaceholder: 'Entrer le titre du minuteur',
         fontSettings: 'Paramètres de police',
         fontSize: 'Taille de police',
+        titleFontSize: 'Taille titre',
+        timeFontSize: 'Taille heure',
+        fontSizeLabel: 'Taille : Actuelle',
+        minimal: 'Minimal',
+        minimalMode: 'Mode minimal',
         adjustColor: 'Ajuster la couleur',
         colorSettings: 'Paramètres de couleur',
         textColor: 'Couleur du texte',

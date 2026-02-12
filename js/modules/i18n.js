@@ -194,9 +194,24 @@ class I18n {
             }
         });
         
+        // Translate placeholder attributes (for elements that have data-i18n-placeholder but no data-i18n)
+        const placeholderElements = document.querySelectorAll('[data-i18n-placeholder]');
+        placeholderElements.forEach(el => {
+            const placeholderKey = el.getAttribute('data-i18n-placeholder');
+            if (placeholderKey) {
+                const translation = this.t(placeholderKey);
+                if (translation !== placeholderKey) {
+                    el.placeholder = translation;
+                }
+            }
+        });
+        
         // Translate title attributes
         const titleElements = document.querySelectorAll('[data-i18n-title]');
         titleElements.forEach(el => {
+            if (el === document.documentElement) {
+                return;
+            }
             const key = el.getAttribute('data-i18n-title');
             const translation = this.t(key);
             if (translation !== key) {
@@ -212,9 +227,13 @@ class I18n {
             // Default title translation
             document.title = this.t('app.title');
         }
+        if (document.documentElement.hasAttribute('title')) {
+            document.documentElement.removeAttribute('title');
+        }
         
         // Auto-translate common elements based on their ID or class
         this.autoTranslateElements();
+        this.applyFallbackTitles();
     }
     
     /**
@@ -278,6 +297,25 @@ class I18n {
         
         // Translate pagination and other controls
         this.translatePageControls();
+    }
+
+    /**
+     * Apply fallback titles for buttons without explicit title attributes.
+     */
+    applyFallbackTitles() {
+        const elements = document.querySelectorAll('button, [role="button"]');
+        elements.forEach(el => {
+            const currentTitle = el.getAttribute('title');
+            if (currentTitle && currentTitle.trim() !== '') {
+                return;
+            }
+            const label = el.getAttribute('aria-label') || el.textContent || '';
+            // Normalize whitespace (tabs, newlines, non-breaking spaces) to keep tooltips single-line and concise.
+            const cleanedLabel = label.replace(/\s+/g, ' ').trim();
+            if (cleanedLabel) {
+                el.title = cleanedLabel;
+            }
+        });
     }
     
     translatePageControls() {
@@ -343,7 +381,12 @@ class I18n {
         document.querySelectorAll('.pen-type-btn').forEach(btn => {
             const penType = btn.getAttribute('data-pen-type');
             if (penType && penTypeButtons[penType]) {
-                btn.textContent = this.t(penTypeButtons[penType]);
+                const span = btn.querySelector('span[data-i18n]');
+                if (span) {
+                    span.textContent = this.t(penTypeButtons[penType]);
+                } else {
+                    btn.textContent = this.t(penTypeButtons[penType]);
+                }
             }
         });
         
@@ -356,7 +399,13 @@ class I18n {
         document.querySelectorAll('.eraser-shape-btn').forEach(btn => {
             const shape = btn.getAttribute('data-eraser-shape');
             if (shape) {
-                btn.textContent = shape === 'circle' ? this.t('tools.eraser.shapeCircle') || '圆形' : this.t('tools.eraser.shapeRectangle') || '方形';
+                const text = shape === 'circle' ? this.t('tools.eraser.shapeCircle') || '圆形' : this.t('tools.eraser.shapeRectangle') || '方形';
+                const span = btn.querySelector('span[data-i18n]');
+                if (span) {
+                    span.textContent = text;
+                } else {
+                    btn.textContent = text;
+                }
             }
         });
         

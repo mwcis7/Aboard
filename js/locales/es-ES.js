@@ -42,6 +42,7 @@ window.translations = {
         pen: 'Bolígrafo',
         shape: 'Forma',
         move: 'Mover',
+        select: 'Seleccionar',
         eraser: 'Borrador',
         clear: 'Borrar',
         background: 'Fondo',
@@ -119,7 +120,46 @@ window.translations = {
             waveDensity: 'Densidad de ondas',
             lineSpacing: 'Espaciado de líneas',
             lineCount: 'Número de líneas'
+        },
+        text: {
+            insertTitle: 'Insertar texto',
+            editTitle: 'Editar texto',
+            placeholder: 'Ingrese el texto aquí',
+            size: 'Tamaño',
+            color: 'Color',
+            font: 'Fuente',
+            style: 'Estilo',
+            bold: 'Negrita',
+            italic: 'Cursiva',
+            underline: 'Subrayado',
+            strikethrough: 'Tachado',
+            uploadFont: 'Cargar fuente',
+            customFonts: 'Fuentes personalizadas',
+            fontUploadSuccess: '¡Fuente cargada exitosamente!',
+            fontExists: 'Esta fuente ya existe.',
+            invalidFontFormat: 'Formato de fuente no válido. Use archivos TTF, OTF, WOFF o WOFF2.',
+            fontTooLarge: 'El archivo de fuente es demasiado grande. El tamaño máximo es 2MB.',
+            storageQuotaExceeded: 'Cuota de almacenamiento excedida. Elimine algunas fuentes personalizadas.'
+        },
+        select: {
+            mode: 'Modo de selección',
+            clickMode: 'Clic',
+            rectMode: 'Selección por área',
+            lassoMode: 'Lazo',
+            transform: 'Transformar',
+            rotate90: 'Rotar 90°',
+            flipH: 'Voltear horizontal',
+            flipV: 'Voltear vertical'
         }
+    },
+
+    selection: {
+        edit: 'Editar',
+        copy: 'Copiar',
+        delete: 'Eliminar',
+        done: 'Hecho',
+        rotate90: 'Rotar 90°',
+        flipH: 'Voltear horizontal'
     },
 
     // Line Style Modal
@@ -154,6 +194,11 @@ window.translations = {
         coordinate: 'Coordenadas',
         coordinateOriginHint: 'Doble clic para seleccionar el origen en modo Mover, luego arrastre para moverlo',
         image: 'Imagen',
+        imagePrefix: 'Imagen',
+        density: 'Densidad',
+        densityLabel: 'Densidad: Actual',
+        size: 'Tamaño',
+        sizeLabel: 'Tamaño: Actual',
         opacity: 'Opacidad del fondo',
         opacityHint: 'Ajustar la transparencia del fondo, 100% es completamente opaco',
         contrast: 'Contraste',
@@ -170,6 +215,16 @@ window.translations = {
         flipHorizontal: 'Voltear horizontal',
         flipVertical: 'Voltear vertical',
         rotate: 'Rotar'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: 'Copiar',
+        delete: 'Eliminar',
+        done: 'Listo',
+        edit: 'Editar',
+        rotate90: 'Rotar 90°',
+        flipH: 'Voltear horizontal'
     },
 
     // Page Navigation
@@ -259,6 +314,7 @@ window.translations = {
                 redo: 'Rehacer',
                 pen: 'Lápiz',
                 move: 'Mover',
+                select: 'Seleccionar',
                 eraser: 'Borrador',
                 clear: 'Borrar',
                 background: 'Fondo',
@@ -273,7 +329,8 @@ window.translations = {
                 pagination: 'Botones de paginación',
                 time: 'Visualización de hora',
                 fullscreen: 'Botón de pantalla completa',
-                download: 'Botón de descarga'
+                import: 'Botón de importación',
+                export: 'Botón de exportación'
             },
             controlPosition: 'Posición del botón de control',
             controlPositionHint: 'Elegir dónde mostrar los controles de zoom y paginación',
@@ -440,7 +497,8 @@ window.translations = {
         timer: 'Temporizador',
         randomPicker: 'Selector',
         scoreboard: 'Marcador',
-        insertImage: 'Insertar imagen'
+        insertImage: 'Insertar imagen',
+        insertText: 'Insertar texto'
     },
 
     // Teaching Tools
@@ -512,6 +570,11 @@ window.translations = {
         titlePlaceholder: 'Introducir título del temporizador',
         fontSettings: 'Configuración de fuente',
         fontSize: 'Tamaño de fuente',
+        titleFontSize: 'Tamaño título',
+        timeFontSize: 'Tamaño hora',
+        fontSizeLabel: 'Tamaño: Actual',
+        minimal: 'Mínimo',
+        minimalMode: 'Modo mínimo',
         adjustColor: 'Ajustar color',
         colorSettings: 'Configuración de color',
         textColor: 'Color de texto',

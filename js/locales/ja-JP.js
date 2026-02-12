@@ -42,6 +42,7 @@ window.translations = {
         pen: 'ペン',
         shape: '図形',
         move: '移動',
+        select: '選択',
         eraser: '消しゴム',
         clear: 'クリア',
         background: '背景',
@@ -121,7 +122,46 @@ window.translations = {
             waveDensity: '波の密度',
             lineSpacing: '線の間隔',
             lineCount: '線の数'
+        },
+        text: {
+            insertTitle: 'テキスト挿入',
+            editTitle: 'テキスト編集',
+            placeholder: 'ここにテキストを入力',
+            size: 'サイズ',
+            color: '色',
+            font: 'フォント',
+            style: 'スタイル',
+            bold: '太字',
+            italic: '斜体',
+            underline: '下線',
+            strikethrough: '取り消し線',
+            uploadFont: 'フォントをアップロード',
+            customFonts: 'カスタムフォント',
+            fontUploadSuccess: 'フォントがアップロードされました！',
+            fontExists: 'このフォントは既に存在します。',
+            invalidFontFormat: '無効なフォント形式です。TTF、OTF、WOFF、またはWOFF2ファイルを使用してください。',
+            fontTooLarge: 'フォントファイルが大きすぎます。最大2MBまでです。',
+            storageQuotaExceeded: 'ストレージ容量を超えました。カスタムフォントを削除してください。'
+        },
+        select: {
+            mode: '選択モード',
+            clickMode: 'クリック',
+            rectMode: '範囲選択',
+            lassoMode: 'なげなわ',
+            transform: '変換',
+            rotate90: '90°回転',
+            flipH: '左右反転',
+            flipV: '上下反転'
         }
+    },
+
+    selection: {
+        edit: '編集',
+        copy: 'コピー',
+        delete: '削除',
+        done: '完了',
+        rotate90: '90°回転',
+        flipH: '左右反転'
     },
 
     // Line Style Modal
@@ -179,6 +219,16 @@ window.translations = {
         flipHorizontal: '左右反転',
         flipVertical: '上下反転',
         rotate: '回転'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: 'コピー',
+        delete: '削除',
+        done: '完了',
+        edit: '編集',
+        rotate90: '90°回転',
+        flipH: '左右反転'
     },
 
     // Page Navigation
@@ -268,6 +318,7 @@ window.translations = {
                 redo: 'やり直し',
                 pen: 'ペン',
                 move: '移動',
+                select: '選択',
                 eraser: '消しゴム',
                 clear: 'クリア',
                 background: '背景',
@@ -282,7 +333,8 @@ window.translations = {
                 pagination: 'ページネーションボタン',
                 time: '時刻表示',
                 fullscreen: 'フルスクリーンボタン',
-                download: 'ダウンロードボタン'
+                import: 'インポートボタン',
+                export: 'エクスポートボタン'
             },
             controlPosition: 'コントロールボタンの位置',
             controlPositionHint: 'ズームとページネーションコントロールの表示位置を選択',
@@ -431,7 +483,8 @@ window.translations = {
         timer: 'タイマー',
         randomPicker: '抽選器',
         scoreboard: 'スコアボード',
-        insertImage: '画像を挿入'
+        insertImage: '画像を挿入',
+        insertText: 'テキスト挿入'
     },
 
     // Teaching Tools

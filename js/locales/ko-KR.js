@@ -42,6 +42,7 @@ window.translations = {
         pen: '펜',
         shape: '도형',
         move: '이동',
+        select: '선택',
         eraser: '지우개',
         clear: '지우기',
         background: '배경',
@@ -121,7 +122,46 @@ window.translations = {
             waveDensity: '물결 밀도',
             lineSpacing: '선 간격',
             lineCount: '선 개수'
+        },
+        text: {
+            insertTitle: '텍스트 삽입',
+            editTitle: '텍스트 편집',
+            placeholder: '여기에 텍스트 입력',
+            size: '크기',
+            color: '색상',
+            font: '글꼴',
+            style: '스타일',
+            bold: '굵게',
+            italic: '기울임',
+            underline: '밑줄',
+            strikethrough: '취소선',
+            uploadFont: '글꼴 업로드',
+            customFonts: '사용자 정의 글꼴',
+            fontUploadSuccess: '글꼴이 업로드되었습니다!',
+            fontExists: '이 글꼴은 이미 존재합니다.',
+            invalidFontFormat: '잘못된 글꼴 형식입니다. TTF, OTF, WOFF 또는 WOFF2 파일을 사용하세요.',
+            fontTooLarge: '글꼴 파일이 너무 큽니다. 최대 2MB까지 허용됩니다.',
+            storageQuotaExceeded: '저장 공간이 초과되었습니다. 사용자 정의 글꼴을 삭제해 주세요.'
+        },
+        select: {
+            mode: '선택 모드',
+            clickMode: '클릭',
+            rectMode: '영역 선택',
+            lassoMode: '올가미',
+            transform: '변환',
+            rotate90: '90° 회전',
+            flipH: '좌우 반전',
+            flipV: '상하 반전'
         }
+    },
+
+    selection: {
+        edit: '편집',
+        copy: '복사',
+        delete: '삭제',
+        done: '완료',
+        rotate90: '90° 회전',
+        flipH: '좌우 반전'
     },
 
     // Line Style Modal
@@ -179,6 +219,16 @@ window.translations = {
         flipHorizontal: '좌우 반전',
         flipVertical: '상하 반전',
         rotate: '회전'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: '복사',
+        delete: '삭제',
+        done: '완료',
+        edit: '편집',
+        rotate90: '90° 회전',
+        flipH: '좌우 뒤집기'
     },
 
     // Page Navigation
@@ -268,6 +318,7 @@ window.translations = {
                 redo: '다시 실행',
                 pen: '펜',
                 move: '이동',
+                select: '선택',
                 eraser: '지우개',
                 clear: '지우기',
                 background: '배경',
@@ -282,7 +333,8 @@ window.translations = {
                 pagination: '페이지 매김 버튼',
                 time: '시간 표시',
                 fullscreen: '전체 화면 버튼',
-                download: '다운로드 버튼'
+                import: '가져오기 버튼',
+                export: '내보내기 버튼'
             },
             controlPosition: '컨트롤 버튼 위치',
             controlPositionHint: '확대/축소 및 페이지 매김 컨트롤 표시 위치 선택',
@@ -431,7 +483,8 @@ window.translations = {
         timer: '타이머',
         randomPicker: '추첨기',
         scoreboard: '점수판',
-        insertImage: '이미지 삽입'
+        insertImage: '이미지 삽입',
+        insertText: '텍스트 삽입'
     },
 
     // Teaching Tools

@@ -32,10 +32,11 @@ class DrawingEngine {
         this.multiLinePendingPoint = null; // Accumulate short segments
         
         // Multi-line drawing constants
-        this.MULTI_LINE_MIN_DISTANCE = 1.2; // Minimum distance threshold for multi-line drawing (balanced for smooth curves at slow speeds)
+        this.MULTI_LINE_MIN_DISTANCE = 0.3; // Minimum distance threshold for multi-line drawing (smooth response at slower speeds)
+        this.MULTI_LINE_POINT_DISTANCE = 0.25; // Point spacing threshold to capture slow movement without jitter
         this.MULTI_LINE_BLEND_MIN = 0.7; // Minimum blend factor for perpendicular smoothing
         this.MULTI_LINE_BLEND_MAX = 0.95; // Maximum blend factor
-        this.MULTI_LINE_BLEND_SCALE = 50; // Scale factor for blend calculation
+        this.MULTI_LINE_BLEND_SCALE = 80; // Scale factor for blend calculation
         
         // Drawing buffer
         this.points = [];
@@ -50,6 +51,10 @@ class DrawingEngine {
         this.selectedStrokeIndex = null;
         this.SELECTION_THRESHOLD = 10; // Distance threshold for stroke selection
         this.COPY_OFFSET = 20; // Offset for copied strokes
+        
+        // Stamped images storage (for redraw support)
+        this.stampedImages = [];
+        this.selectedImageIndex = null;
         
         // Canvas scaling and panning
         this.canvasScale = parseFloat(localStorage.getItem('canvasScale')) || 1.0;
@@ -249,9 +254,10 @@ class DrawingEngine {
                 }
             }
 
+            const minPointDistance = this.penLineStyle === 'multi' ? this.MULTI_LINE_POINT_DISTANCE : 0.5;
             if (this.lastPoint &&
-                Math.abs(pos.x - this.lastPoint.x) < 0.5 &&
-                Math.abs(pos.y - this.lastPoint.y) < 0.5) {
+                Math.abs(pos.x - this.lastPoint.x) < minPointDistance &&
+                Math.abs(pos.y - this.lastPoint.y) < minPointDistance) {
                 continue;
             }
 
@@ -363,11 +369,16 @@ class DrawingEngine {
         // Skip drawing if points are too close (causes unstable perpendiculars)
         // Minimum distance threshold to prevent dots and artifacts when drawing slowly
         if (length < this.MULTI_LINE_MIN_DISTANCE) {
-            // For very short segments, accumulate in pending point
             if (!this.multiLinePendingPoint) {
                 this.multiLinePendingPoint = currPoint;
+                return;
             }
-            return;
+            const pendingDx = currPoint.x - this.multiLinePendingPoint.x;
+            const pendingDy = currPoint.y - this.multiLinePendingPoint.y;
+            const pendingLength = Math.sqrt(pendingDx * pendingDx + pendingDy * pendingDy);
+            if (pendingLength < this.MULTI_LINE_MIN_DISTANCE) {
+                return;
+            }
         }
         
         // If we had a pending point, use it as the actual previous point
@@ -655,6 +666,7 @@ class DrawingEngine {
     clearCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.clearStrokes();
+        this.clearStampedImages();
     }
     
     setTool(tool) {
@@ -770,21 +782,9 @@ class DrawingEngine {
     }
     
     drawSelectionBorder() {
-        if (this.selectedStrokeIndex === null) return;
-        
-        const stroke = this.strokes[this.selectedStrokeIndex];
-        if (!stroke) return;
-        
-        const bounds = this.getStrokeBounds(stroke);
-        if (!bounds) return;
-        
-        this.ctx.save();
-        this.ctx.strokeStyle = '#999999';
-        this.ctx.lineWidth = 2;
-        this.ctx.setLineDash([5, 5]);
-        this.ctx.globalAlpha = 0.8;
-        this.ctx.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
-        this.ctx.restore();
+        // Selection border is now handled by CSS overlay (.image-controls-box)
+        // No need to draw additional border on canvas
+        return;
     }
     
     copySelectedStroke() {
@@ -799,7 +799,8 @@ class DrawingEngine {
             color: stroke.color,
             size: stroke.size,
             penType: stroke.penType,
-            tool: stroke.tool
+            tool: stroke.tool,
+            rotation: stroke.rotation || 0
         };
         
         this.strokes.push(copiedStroke);
@@ -875,5 +876,100 @@ class DrawingEngine {
     clearStrokes() {
         this.strokes = [];
         this.selectedStrokeIndex = null;
+    }
+    
+    // Stamped image management
+    addStampedImage(imageData) {
+        this.stampedImages.push(imageData);
+    }
+    
+    redrawStampedImages() {
+        for (const img of this.stampedImages) {
+            if (!img.imageElement) continue;
+            
+            this.ctx.save();
+            const centerX = img.x + img.width / 2;
+            const centerY = img.y + img.height / 2;
+            this.ctx.translate(centerX, centerY);
+            this.ctx.rotate(img.rotation * Math.PI / 180);
+            
+            const flipScaleX = img.flipHorizontal ? -1 : 1;
+            const flipScaleY = img.flipVertical ? -1 : 1;
+            this.ctx.scale(flipScaleX, flipScaleY);
+            
+            this.ctx.drawImage(
+                img.imageElement,
+                -img.width / 2,
+                -img.height / 2,
+                img.width,
+                img.height
+            );
+            this.ctx.restore();
+        }
+    }
+    
+    clearStampedImages() {
+        this.stampedImages = [];
+        this.selectedImageIndex = null;
+    }
+
+    findImageAtPoint(x, y) {
+        for (let i = this.stampedImages.length - 1; i >= 0; i--) {
+            const img = this.stampedImages[i];
+            if (!img) continue;
+            const cx = img.x + img.width / 2;
+            const cy = img.y + img.height / 2;
+            const rot = -(img.rotation || 0) * Math.PI / 180;
+            const dx = x - cx;
+            const dy = y - cy;
+            const localX = dx * Math.cos(rot) - dy * Math.sin(rot) + cx;
+            const localY = dx * Math.sin(rot) + dy * Math.cos(rot) + cy;
+            if (localX >= img.x && localX <= img.x + img.width &&
+                localY >= img.y && localY <= img.y + img.height) {
+                return i;
+            }
+        }
+        return null;
+    }
+
+    selectImage(index) {
+        this.selectedImageIndex = index;
+    }
+
+    deselectImage() {
+        this.selectedImageIndex = null;
+    }
+
+    getImageBounds(img) {
+        if (!img) return null;
+        return { x: img.x, y: img.y, width: img.width, height: img.height };
+    }
+
+    copySelectedImage() {
+        if (this.selectedImageIndex === null) return false;
+        const img = this.stampedImages[this.selectedImageIndex];
+        if (!img) return false;
+        const copy = {
+            imageElement: img.imageElement,
+            x: img.x + this.COPY_OFFSET,
+            y: img.y + this.COPY_OFFSET,
+            width: img.width,
+            height: img.height,
+            rotation: img.rotation || 0,
+            flipHorizontal: img.flipHorizontal || false,
+            flipVertical: img.flipVertical || false
+        };
+        this.stampedImages.push(copy);
+        this.selectedImageIndex = this.stampedImages.length - 1;
+        return true;
+    }
+
+    deleteSelectedImage() {
+        if (this.selectedImageIndex === null) return false;
+        const img = this.stampedImages[this.selectedImageIndex];
+        if (!img) return false;
+        this.stampedImages.splice(this.selectedImageIndex, 1);
+        this.selectedImageIndex = null;
+        return true;
     }
 }

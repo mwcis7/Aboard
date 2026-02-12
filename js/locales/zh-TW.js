@@ -44,6 +44,7 @@ window.translations = {
         pen: '筆',
         shape: '形狀',
         move: '移動',
+        select: '選擇',
         eraser: '擦除',
         clear: '清空',
         background: '背景',
@@ -124,7 +125,46 @@ window.translations = {
             waveDensity: '波浪密度',
             lineSpacing: '線條間距',
             lineCount: '線條數量'
+        },
+        text: {
+            insertTitle: '插入文字',
+            editTitle: '編輯文字',
+            placeholder: '在此輸入文字',
+            size: '大小',
+            color: '顏色',
+            font: '字體',
+            style: '樣式',
+            bold: '粗體',
+            italic: '斜體',
+            underline: '底線',
+            strikethrough: '刪除線',
+            uploadFont: '上傳字體',
+            customFonts: '自訂字體',
+            fontUploadSuccess: '字體上傳成功！',
+            fontExists: '該字體已存在。',
+            invalidFontFormat: '無效的字體格式。請使用 TTF、OTF、WOFF 或 WOFF2 檔案。',
+            fontTooLarge: '字體檔案過大，最大允許 2MB。',
+            storageQuotaExceeded: '儲存空間不足，請刪除一些自訂字體。'
+        },
+        select: {
+            mode: '選擇模式',
+            clickMode: '點選',
+            rectMode: '框選',
+            lassoMode: '套索',
+            transform: '變換',
+            rotate90: '旋轉90°',
+            flipH: '水平翻轉',
+            flipV: '垂直翻轉'
         }
+    },
+
+    selection: {
+        edit: '編輯',
+        copy: '複製',
+        delete: '刪除',
+        done: '完成',
+        rotate90: '旋轉90°',
+        flipH: '水平翻轉'
     },
 
     // Line Style Modal
@@ -183,6 +223,16 @@ window.translations = {
         flipHorizontal: '水平翻轉',
         flipVertical: '垂直翻轉',
         rotate: '旋轉'
+    },
+
+    // Selection Controls
+    selection: {
+        copy: '複製',
+        delete: '刪除',
+        done: '完成',
+        edit: '編輯',
+        rotate90: '旋轉90°',
+        flipH: '水平翻轉'
     },
 
     // Page Navigation
@@ -255,7 +305,7 @@ window.translations = {
         general: {
             title: '通用設定',
             language: '語言',
-            languageHint: '選擇界面語言 / Choose interface language',
+            languageHint: '選擇介面語言',
             globalFont: '全局字體',
             globalFontHint: '選擇套用程序使用的字體',
             fonts: {
@@ -292,6 +342,7 @@ window.translations = {
                 redo: '重做',
                 pen: '筆',
                 move: '移動',
+                select: '選擇',
                 eraser: '擦除',
                 clear: '清空',
                 background: '背景',
@@ -306,7 +357,8 @@ window.translations = {
                 pagination: '分頁按鈕',
                 time: '時間顯示',
                 fullscreen: '全螢幕按鈕',
-                download: '下載按鈕'
+                import: '匯入按鈕',
+                export: '匯出按鈕'
             },
             controlPosition: '控制按鈕位置',
             controlPositionHint: '選擇縮放和分頁控件在屏幕上的顯示位置',
@@ -469,7 +521,8 @@ window.translations = {
         timer: '計時',
         randomPicker: '點名器',
         scoreboard: '計分板',
-        insertImage: '插入圖片'
+        insertImage: '插入圖片',
+        insertText: '插入文字'
     },
 
     // Random Picker

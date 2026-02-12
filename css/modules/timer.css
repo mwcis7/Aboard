@@ -749,16 +749,16 @@
 .timer-font-size-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: var(--theme-color);
     cursor: pointer;
 }
 
 .timer-font-size-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: var(--theme-color);
     cursor: pointer;
@@ -899,8 +899,8 @@
 .timer-fullscreen-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 20px;
-    height: 20px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background: white;
     cursor: pointer;
@@ -908,8 +908,8 @@
 }
 
 .timer-fullscreen-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
     background: white;
     cursor: pointer;
@@ -1024,11 +1024,20 @@
 
 .speed-control input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
     background: var(--theme-color);
     cursor: pointer;
+}
+
+.speed-control input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--theme-color);
+    cursor: pointer;
+    border: none;
 }
 
 .speed-control span {
@@ -1120,4 +1129,81 @@
     background-color: #e8e8e8;
     color: #333;
     border-color: #ccc;
+}
+
+
+/* Timer Responsive Styles */
+@media (max-width: 480px) {
+    .timer-modal-content {
+        width: 95%;
+        max-height: 85vh;
+    }
+    
+    .timer-modal-header {
+        padding: 16px 18px 10px;
+    }
+    
+    .timer-modal-header h2 {
+        font-size: 18px;
+    }
+    
+    .timer-modal-body {
+        padding: 16px 18px;
+    }
+    
+    .timer-input-row {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .timer-input-group {
+        min-width: 60px;
+    }
+    
+    .timer-input-group input {
+        width: 50px;
+        font-size: 24px;
+    }
+    
+    .timer-display-time {
+        font-size: 28px;
+    }
+    
+    #timer-display {
+        min-width: 160px;
+    }
+    
+    .timer-control-btn {
+        padding: 8px 12px;
+        min-height: var(--touch-target-size);
+        min-width: var(--touch-target-size);
+    }
+    
+    .sound-presets-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+    
+    .sound-preset-btn {
+        padding: 10px 8px;
+        font-size: 11px;
+        min-height: var(--touch-target-size);
+    }
+}
+
+/* Touch device improvements for timer */
+@media (hover: none) and (pointer: coarse) {
+    .timer-input-group input {
+        font-size: 32px;
+        min-height: 48px;
+    }
+    
+    .timer-control-btn {
+        min-height: var(--touch-target-size);
+        min-width: var(--touch-target-size);
+    }
+    
+    .sound-preset-btn {
+        min-height: var(--touch-target-size);
+    }
 }
