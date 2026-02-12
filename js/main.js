@@ -187,21 +187,17 @@ class DrawingBoard {
         // On startup or refresh, set canvas to a larger default scale and center it
         // Only apply if no saved scale exists
         const savedScale = localStorage.getItem('canvasScale');
+        this.canvasFitScale = this.calculateCanvasFitScale();
         if (!savedScale) {
-            this.canvasFitScale = this.calculateCanvasFitScale();
             const MIN_FIT_SCALE = 0.01;
             const desiredCoverage = 0.7;
             const minimumScale = 0.9;
             const safeFitScale = Math.max(MIN_FIT_SCALE, this.canvasFitScale);
-            const coverageScale = desiredCoverage / safeFitScale; // Final scale = fitScale * canvasScale.
+            const coverageScale = desiredCoverage / safeFitScale; // coverage = fitScale * canvasScale.
             const targetScale = Math.max(minimumScale, coverageScale);
             const initialScale = Math.min(this.MAX_CANVAS_SCALE, targetScale);
             this.drawingEngine.canvasScale = initialScale;
             localStorage.setItem('canvasScale', initialScale);
-        }
-        
-        if (!this.canvasFitScale) {
-            this.canvasFitScale = this.calculateCanvasFitScale();
         }
         
         // Always center the canvas on startup/refresh
