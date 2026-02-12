@@ -4417,6 +4417,16 @@ class DrawingBoard {
                     penType: s.penType,
                     tool: s.tool,
                     rotation: s.rotation || 0
+                })),
+                stampedImages: this.drawingEngine.stampedImages.map(img => ({
+                    imageSrc: img.imageSrc || (img.imageElement ? img.imageElement.src : null),
+                    x: img.x,
+                    y: img.y,
+                    width: img.width,
+                    height: img.height,
+                    rotation: img.rotation || 0,
+                    flipHorizontal: img.flipHorizontal || false,
+                    flipVertical: img.flipVertical || false
                 }))
             };
 
@@ -4523,6 +4533,30 @@ class DrawingBoard {
                 // Restore strokes for selection support
                 if (settings.strokes && settings.strokes.length > 0) {
                     this.drawingEngine.strokes = settings.strokes;
+                }
+
+                // Restore stamped images for selection support
+                if (settings.stampedImages && settings.stampedImages.length > 0) {
+                    const loadImage = (src) => new Promise((resolve) => {
+                        const img = new Image();
+                        img.onload = () => resolve(img);
+                        img.onerror = () => resolve(null);
+                        img.src = src;
+                    });
+
+                    const stampedImages = await Promise.all(settings.stampedImages.map(async (imgData) => {
+                        const imageSrc = imgData.imageSrc || imgData.src;
+                        const imageElement = imageSrc ? await loadImage(imageSrc) : null;
+                        return {
+                            ...imgData,
+                            imageSrc: imageSrc || null,
+                            imageElement
+                        };
+                    }));
+
+                    this.drawingEngine.stampedImages = stampedImages;
+                } else {
+                    this.drawingEngine.stampedImages = [];
                 }
 
                 // Link selection manager to text manager for selection to work

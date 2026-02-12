@@ -161,7 +161,12 @@ window.translations = {
         delete: '削除',
         done: '完了',
         rotate90: '90°回転',
-        flipH: '左右反転'
+        flipH: '左右反転',
+        layer: 'レイヤー',
+        layerFront: '最前面へ',
+        layerBack: '最背面へ',
+        layerUp: '前面へ',
+        layerDown: '背面へ'
     },
 
     // Line Style Modal
@@ -228,7 +233,12 @@ window.translations = {
         done: '完了',
         edit: '編集',
         rotate90: '90°回転',
-        flipH: '左右反転'
+        flipH: '左右反転',
+        layer: 'レイヤー',
+        layerFront: '最前面へ',
+        layerBack: '最背面へ',
+        layerUp: '前面へ',
+        layerDown: '背面へ'
     },
 
     // Page Navigation

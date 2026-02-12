@@ -161,7 +161,12 @@ window.translations = {
         delete: '삭제',
         done: '완료',
         rotate90: '90° 회전',
-        flipH: '좌우 반전'
+        flipH: '좌우 반전',
+        layer: '레이어',
+        layerFront: '맨 앞으로',
+        layerBack: '맨 뒤로',
+        layerUp: '앞으로 한 단계',
+        layerDown: '뒤로 한 단계'
     },
 
     // Line Style Modal
@@ -228,7 +233,12 @@ window.translations = {
         done: '완료',
         edit: '편집',
         rotate90: '90° 회전',
-        flipH: '좌우 뒤집기'
+        flipH: '좌우 뒤집기',
+        layer: '레이어',
+        layerFront: '맨 앞으로',
+        layerBack: '맨 뒤로',
+        layerUp: '앞으로 한 단계',
+        layerDown: '뒤로 한 단계'
     },
 
     // Page Navigation

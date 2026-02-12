@@ -159,7 +159,12 @@ window.translations = {
         delete: 'Supprimer',
         done: 'Terminé',
         rotate90: 'Rotation 90°',
-        flipH: 'Retourner horizontalement'
+        flipH: 'Retourner horizontalement',
+        layer: 'Calque',
+        layerFront: 'Mettre au premier plan',
+        layerBack: 'Envoyer à l’arrière',
+        layerUp: 'Avancer d’un niveau',
+        layerDown: 'Reculer d’un niveau'
     },
 
     // Line Style Modal
@@ -224,7 +229,12 @@ window.translations = {
         done: 'Terminé',
         edit: 'Modifier',
         rotate90: 'Rotation 90°',
-        flipH: 'Retourner horizontalement'
+        flipH: 'Retourner horizontalement',
+        layer: 'Calque',
+        layerFront: 'Mettre au premier plan',
+        layerBack: 'Envoyer à l’arrière',
+        layerUp: 'Avancer d’un niveau',
+        layerDown: 'Reculer d’un niveau'
     },
 
     // Page Navigation

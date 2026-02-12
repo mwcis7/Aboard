@@ -159,7 +159,12 @@ window.translations = {
         delete: 'Eliminar',
         done: 'Hecho',
         rotate90: 'Rotar 90°',
-        flipH: 'Voltear horizontal'
+        flipH: 'Voltear horizontal',
+        layer: 'Capa',
+        layerFront: 'Traer al frente',
+        layerBack: 'Enviar al fondo',
+        layerUp: 'Subir una capa',
+        layerDown: 'Bajar una capa'
     },
 
     // Line Style Modal
@@ -224,7 +229,12 @@ window.translations = {
         done: 'Listo',
         edit: 'Editar',
         rotate90: 'Rotar 90°',
-        flipH: 'Voltear horizontal'
+        flipH: 'Voltear horizontal',
+        layer: 'Capa',
+        layerFront: 'Traer al frente',
+        layerBack: 'Enviar al fondo',
+        layerUp: 'Subir una capa',
+        layerDown: 'Bajar una capa'
     },
 
     // Page Navigation

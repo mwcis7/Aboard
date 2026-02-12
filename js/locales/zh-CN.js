@@ -167,7 +167,12 @@ window.translations = {
         delete: '删除',
         done: '完成',
         rotate90: '旋转90°',
-        flipH: '水平翻转'
+        flipH: '水平翻转',
+        layer: '图层',
+        layerFront: '置于顶层',
+        layerBack: '置于底层',
+        layerUp: '上移一层',
+        layerDown: '下移一层'
     },
 
     // Line Style Modal
@@ -235,7 +240,12 @@ window.translations = {
         done: '完成',
         edit: '编辑',
         rotate90: '旋转90°',
-        flipH: '水平翻转'
+        flipH: '水平翻转',
+        layer: '图层',
+        layerFront: '置于顶层',
+        layerBack: '置于底层',
+        layerUp: '上移一层',
+        layerDown: '下移一层'
     },
 
     // Page Navigation
