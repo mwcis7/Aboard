@@ -28,7 +28,7 @@ jobs:
             before=$(git rev-parse "${after}^" 2>/dev/null || true)
           fi
 
-          version=$(grep -oP 'v\\d+\\.\\d+\\.\\d+' index.html | head -1 | sed 's/^v//')
+          version=$(grep -oP 'v\d+\.\d+\.\d+' index.html | head -1 | sed 's/^v//')
           if [ -z "$version" ]; then
             echo "Version not found in index.html" >&2
             exit 1
@@ -36,7 +36,7 @@ jobs:
 
           previous_version=""
           if [ -n "$before" ]; then
-            previous_version=$(git show "${before}:index.html" 2>/dev/null | grep -oP 'v\\d+\\.\\d+\\.\\d+' | head -1 | sed 's/^v//' || true)
+            previous_version=$(git show "${before}:index.html" 2>/dev/null | grep -oP 'v\d+\.\d+\.\d+' | head -1 | sed 's/^v//' || true)
           fi
 
           if [ -n "$previous_version" ] && [ "$previous_version" = "$version" ]; then
