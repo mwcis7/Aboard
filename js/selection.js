@@ -895,7 +895,7 @@ class SelectionManager {
             }
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
-            if (this.textManager && typeof this.textManager.normalizeTextObjectScale === 'function') {
+            if (typeof this.textManager.normalizeTextObjectScale === 'function') {
                 this.textManager.normalizeTextObjectScale(textObj);
             }
             const bounds = this.getTextObjectBounds(this.selectedIndex);
@@ -933,7 +933,7 @@ class SelectionManager {
                 for (const idx of this.selectedTexts) {
                     const textObj = this.textManager.textObjects[idx];
                     if (textObj) {
-                        if (this.textManager && typeof this.textManager.normalizeTextObjectScale === 'function') {
+                        if (typeof this.textManager.normalizeTextObjectScale === 'function') {
                             this.textManager.normalizeTextObjectScale(textObj);
                         }
                         const bounds = this.getTextObjectBounds(idx);
