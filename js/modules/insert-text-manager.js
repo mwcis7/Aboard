@@ -53,7 +53,7 @@ class InsertTextManager {
         this.editingTextIndex = null; // Index of text being edited
 
         this.DEFAULT_DECORATION_WIDTH = 2;
-        this.DOTTED_SPACING_MULTIPLIER = 2.2; // Tuned so dotted lines keep readable gaps at small sizes.
+        this.DOTTED_LINE_GAP_MULTIPLIER = 2.2; // Tuned so dotted lines keep readable gaps at small sizes.
         this.MIN_FONT_SIZE = 12;
 
         this.createControls();
@@ -828,6 +828,7 @@ class InsertTextManager {
         const fontWeight = this.textConfig.bold ? 'bold' : 'normal';
         const baseFontSize = this.textConfig.fontSize;
         const effectiveFontSize = baseFontSize * this.textScale;
+        // Normalize to a single font size before inserting the text object.
         this.textConfig.fontSize = effectiveFontSize;
         this.textScale = 1.0;
         
@@ -964,7 +965,7 @@ class InsertTextManager {
         if (style === 'dashed') {
             this.ctx.setLineDash([lineWidth * 4, lineWidth * 2]);
         } else if (style === 'dotted') {
-            this.ctx.setLineDash([lineWidth, lineWidth * this.DOTTED_SPACING_MULTIPLIER]);
+            this.ctx.setLineDash([lineWidth, lineWidth * this.DOTTED_LINE_GAP_MULTIPLIER]);
         } else {
             this.ctx.setLineDash([]);
         }

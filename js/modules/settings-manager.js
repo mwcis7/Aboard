@@ -7,7 +7,9 @@ class SettingsManager {
     constructor() {
         const storedToolbarSize = localStorage.getItem('toolbarSize');
         const storedConfigScale = localStorage.getItem('configScale');
-        const isHighResDisplay = window.innerWidth >= LARGE_SCREEN_WIDTH || (window.devicePixelRatio || 1) >= HIGH_DPI_RATIO;
+        const isLargeScreen = window.innerWidth >= LARGE_SCREEN_WIDTH;
+        const isHighDpi = (window.devicePixelRatio || 1) >= HIGH_DPI_RATIO;
+        const isHighResDisplay = isLargeScreen || isHighDpi;
         this.toolbarSize = storedToolbarSize ? parseInt(storedToolbarSize) : (isHighResDisplay ? 75 : 65);
         this.configScale = storedConfigScale ? parseFloat(storedConfigScale) : (isHighResDisplay ? 1.1 : 1.0);
         this.controlPosition = localStorage.getItem('controlPosition') || 'top-right';
