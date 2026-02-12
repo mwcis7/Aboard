@@ -413,14 +413,15 @@ class SelectionManager {
             });
         }
 
-        if (!this.layerMenuOutsideListener) {
-            this.layerMenuOutsideListener = (e) => {
-                if (!this.layerMenuVisible || !this.layerMenu || !this.layerButton) return;
-                if (this.layerMenu.contains(e.target) || this.layerButton.contains(e.target)) return;
-                this.hideLayerMenu();
-            };
-            document.addEventListener('mousedown', this.layerMenuOutsideListener);
+        if (this.layerMenuOutsideListener) {
+            document.removeEventListener('mousedown', this.layerMenuOutsideListener);
         }
+        this.layerMenuOutsideListener = (e) => {
+            if (!this.layerMenuVisible || !this.layerMenu || !this.layerButton) return;
+            if (this.layerMenu.contains(e.target) || this.layerButton.contains(e.target)) return;
+            this.hideLayerMenu();
+        };
+        document.addEventListener('mousedown', this.layerMenuOutsideListener);
     }
 
     toggleLayerMenu() {
@@ -446,9 +447,9 @@ class SelectionManager {
 
     updateLayerMenuVisibility() {
         if (!this.layerButton) return;
-        const canShow = this.selectionType && this.selectionType !== 'multi';
-        this.layerButton.style.display = canShow ? '' : 'none';
-        if (!canShow) {
+        const shouldShowLayerButton = this.selectionType && this.selectionType !== 'multi';
+        this.layerButton.style.display = shouldShowLayerButton ? '' : 'none';
+        if (!shouldShowLayerButton) {
             this.hideLayerMenu();
         }
     }
