@@ -953,6 +953,7 @@ class InsertTextManager {
     }
 
     drawDecorationLine(x, y, width, style, lineWidth, color) {
+        const DOTTED_SPACING_MULTIPLIER = 2.2;
         this.ctx.save();
         this.ctx.strokeStyle = color;
         this.ctx.lineWidth = lineWidth;
@@ -962,7 +963,7 @@ class InsertTextManager {
         if (style === 'dashed') {
             this.ctx.setLineDash([lineWidth * 4, lineWidth * 2]);
         } else if (style === 'dotted') {
-            this.ctx.setLineDash([lineWidth, lineWidth * 2.2]);
+            this.ctx.setLineDash([lineWidth, lineWidth * DOTTED_SPACING_MULTIPLIER]);
         } else {
             this.ctx.setLineDash([]);
         }

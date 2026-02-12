@@ -2119,7 +2119,7 @@ class DrawingBoard {
         let applied = false;
 
         if (relativeLeft !== undefined) {
-            const availableWidth = Math.max(0, windowWidth - rect.width);
+            const availableWidth = Math.max(1, windowWidth - rect.width);
             const ratio = Math.min(1, Math.max(0, parseFloat(relativeLeft)));
             const newLeft = availableWidth * ratio;
             panel.style.left = `${Math.min(windowWidth - rect.width - edgeSpacing, Math.max(edgeSpacing, newLeft))}px`;
@@ -2128,7 +2128,7 @@ class DrawingBoard {
         }
 
         if (relativeTop !== undefined) {
-            const availableHeight = Math.max(0, windowHeight - rect.height);
+            const availableHeight = Math.max(1, windowHeight - rect.height);
             const ratio = Math.min(1, Math.max(0, parseFloat(relativeTop)));
             const newTop = availableHeight * ratio;
             panel.style.top = `${Math.min(windowHeight - rect.height - edgeSpacing, Math.max(edgeSpacing, newTop))}px`;
