@@ -220,7 +220,7 @@ class PWAManager {
                     console.warn('Empty version in version.txt.');
                     return;
                 }
-                const semverPattern = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/;
+                const semverPattern = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
                 if (!semverPattern.test(version)) {
                     console.warn('Invalid version format in version.txt:', version);
                     return;
