@@ -245,7 +245,7 @@ class InsertTextManager {
                                 </div>
                             </div>
 
-                            <div id="text-decoration-settings" class="text-decoration-settings">
+                            <div id="text-decoration-settings" class="text-decoration-settings" aria-hidden="true">
                                 <div class="text-control-group">
                                     <label data-i18n="tools.text.decorationStyle">Line Style</label>
                                     <select id="insert-text-decoration-style" class="format-select" aria-label="Decoration style">
@@ -771,6 +771,7 @@ class InsertTextManager {
         if (!decorationSettings) return;
         const shouldShow = this.textConfig.underline || this.textConfig.strikethrough;
         decorationSettings.style.display = shouldShow ? 'flex' : 'none';
+        decorationSettings.setAttribute('aria-hidden', (!shouldShow).toString());
     }
 
     updateSizeSliderRange() {
