@@ -217,7 +217,8 @@ class PWAManager {
             .then(text => {
                 const version = text.trim();
                 if (!version) return;
-                if (!/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(version)) {
+                const semverPattern = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/;
+                if (!semverPattern.test(version)) {
                     console.warn('Invalid version format in version.txt:', version);
                     return;
                 }
