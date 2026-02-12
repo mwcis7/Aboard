@@ -2026,7 +2026,11 @@ class DrawingBoard {
         panels.forEach(panel => {
             if (!panel) return;
             
-            const rect = panel.getBoundingClientRect();
+            let rect = panel.getBoundingClientRect();
+            const appliedRelative = this.applyRelativePanelPosition(panel, rect, windowWidth, windowHeight, EDGE_SPACING);
+            if (appliedRelative) {
+                rect = panel.getBoundingClientRect();
+            }
             const computedStyle = window.getComputedStyle(panel);
             
             // Get current position
@@ -2107,6 +2111,44 @@ class DrawingBoard {
                 panel.style.top = `${EDGE_SPACING}px`;
             }
         });
+    }
+
+    applyRelativePanelPosition(panel, rect, windowWidth, windowHeight, edgeSpacing) {
+        const relativeLeft = panel.dataset.relativeLeft;
+        const relativeTop = panel.dataset.relativeTop;
+        let applied = false;
+
+        if (relativeLeft !== undefined) {
+            const availableWidth = Math.max(0, windowWidth - rect.width);
+            const ratio = Math.min(1, Math.max(0, parseFloat(relativeLeft)));
+            const newLeft = availableWidth * ratio;
+            panel.style.left = `${Math.min(windowWidth - rect.width - edgeSpacing, Math.max(edgeSpacing, newLeft))}px`;
+            panel.style.right = 'auto';
+            applied = true;
+        }
+
+        if (relativeTop !== undefined) {
+            const availableHeight = Math.max(0, windowHeight - rect.height);
+            const ratio = Math.min(1, Math.max(0, parseFloat(relativeTop)));
+            const newTop = availableHeight * ratio;
+            panel.style.top = `${Math.min(windowHeight - rect.height - edgeSpacing, Math.max(edgeSpacing, newTop))}px`;
+            panel.style.bottom = 'auto';
+            applied = true;
+        }
+
+        return applied;
+    }
+
+    storePanelRelativePosition(panel) {
+        if (!panel) return;
+        const rect = panel.getBoundingClientRect();
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        const availableWidth = Math.max(1, windowWidth - rect.width);
+        const availableHeight = Math.max(1, windowHeight - rect.height);
+
+        panel.dataset.relativeLeft = Math.min(1, Math.max(0, rect.left / availableWidth)).toFixed(4);
+        panel.dataset.relativeTop = Math.min(1, Math.max(0, rect.top / availableHeight)).toFixed(4);
     }
     
     repositionModalsOnResize() {
@@ -2327,6 +2369,8 @@ class DrawingBoard {
                 if (this.draggedElement.id === 'config-area') {
                     this.draggedElement.dataset.userDragged = 'true';
                 }
+
+                this.storePanelRelativePosition(this.draggedElement);
                 
                 this.isDraggingPanel = false;
                 this.draggedElement = null;
@@ -2409,6 +2453,10 @@ class DrawingBoard {
             configArea.style.transformOrigin = 'center bottom';
             configArea.style.transform = `translateX(-50%) scale(${scale})`;
         }
+
+        requestAnimationFrame(() => {
+            this.repositionToolbarsOnResize();
+        });
     }
     
     positionFeatureArea() {
@@ -2424,6 +2472,9 @@ class DrawingBoard {
         featureArea.style.left = `${moreBtnRect.left}px`;
         featureArea.style.top = `${toolbarRect.top - 10}px`;
         featureArea.style.transform = 'translateY(-100%)';
+        requestAnimationFrame(() => {
+            this.repositionToolbarsOnResize();
+        });
     }
     
     setTool(tool, showConfig = true) {

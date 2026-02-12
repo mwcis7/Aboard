@@ -895,6 +895,9 @@ class SelectionManager {
             }
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
+            if (this.textManager && typeof this.textManager.normalizeTextObjectScale === 'function') {
+                this.textManager.normalizeTextObjectScale(textObj);
+            }
             const bounds = this.getTextObjectBounds(this.selectedIndex);
             if (!bounds) return;
             this.resizeStartBounds = {
@@ -902,7 +905,7 @@ class SelectionManager {
                 y: bounds.y,
                 width: bounds.width,
                 height: bounds.height,
-                scale: textObj.scale
+                fontSize: textObj.fontSize
             };
         } else if (this.selectionType === 'image') {
             const img = this.drawingEngine.stampedImages[this.selectedIndex];
@@ -930,8 +933,11 @@ class SelectionManager {
                 for (const idx of this.selectedTexts) {
                     const textObj = this.textManager.textObjects[idx];
                     if (textObj) {
+                        if (this.textManager && typeof this.textManager.normalizeTextObjectScale === 'function') {
+                            this.textManager.normalizeTextObjectScale(textObj);
+                        }
                         const bounds = this.getTextObjectBounds(idx);
-                        this.multiTextResizeStart.push({ idx, x: textObj.x, y: textObj.y, width: bounds.width, height: bounds.height, scale: textObj.scale });
+                        this.multiTextResizeStart.push({ idx, x: textObj.x, y: textObj.y, width: bounds.width, height: bounds.height, fontSize: textObj.fontSize });
                     }
                 }
             }
@@ -1001,7 +1007,8 @@ class SelectionManager {
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             const scaleRatio = newBounds.width / startBounds.width;
-            textObj.scale = Math.max(0.1, startBounds.scale * scaleRatio);
+            textObj.fontSize = Math.max(1, startBounds.fontSize * scaleRatio);
+            textObj.scale = 1;
             textObj.x = newBounds.x;
             textObj.y = newBounds.y;
         } else if (this.selectionType === 'image') {
@@ -1048,7 +1055,8 @@ class SelectionManager {
                         const scaleRatio = newBounds.width / startBounds.width;
                         textObj.x = newBounds.x + relX * newBounds.width;
                         textObj.y = newBounds.y + relY * newBounds.height;
-                        textObj.scale = Math.max(0.1, start.scale * scaleRatio);
+                        textObj.fontSize = Math.max(1, start.fontSize * scaleRatio);
+                        textObj.scale = 1;
                     }
                 }
             }
@@ -2264,7 +2272,7 @@ class SelectionManager {
         if (!this.textManager || !this.textManager.textObjects) return null;
         const textObj = this.textManager.textObjects[index];
         if (!textObj) return null;
-        const fontSize = textObj.fontSize * textObj.scale;
+        const fontSize = textObj.fontSize * (textObj.scale || 1);
         const text = textObj.text || '';
         const lines = text.split('\n');
         let maxWidth = 0;

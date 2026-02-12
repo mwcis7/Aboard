@@ -3,8 +3,11 @@
 
 class SettingsManager {
     constructor() {
-        this.toolbarSize = parseInt(localStorage.getItem('toolbarSize')) || 65;
-        this.configScale = parseFloat(localStorage.getItem('configScale')) || 1.0;
+        const storedToolbarSize = localStorage.getItem('toolbarSize');
+        const storedConfigScale = localStorage.getItem('configScale');
+        const isHighResDisplay = window.innerWidth >= 1920 || (window.devicePixelRatio || 1) >= 1.5;
+        this.toolbarSize = storedToolbarSize ? parseInt(storedToolbarSize) : (isHighResDisplay ? 75 : 65);
+        this.configScale = storedConfigScale ? parseFloat(storedConfigScale) : (isHighResDisplay ? 1.1 : 1.0);
         this.controlPosition = localStorage.getItem('controlPosition') || 'top-right';
         this.edgeSnapEnabled = localStorage.getItem('edgeSnapEnabled') !== 'false';
         this.touchZoomEnabled = localStorage.getItem('touchZoomEnabled') !== 'false';
