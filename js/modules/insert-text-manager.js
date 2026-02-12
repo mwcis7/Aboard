@@ -53,7 +53,7 @@ class InsertTextManager {
         this.editingTextIndex = null; // Index of text being edited
 
         this.DEFAULT_DECORATION_WIDTH = 2;
-        this.DOTTED_LINE_GAP_MULTIPLIER = 2.2; // Tuned so dotted lines keep readable gaps at small sizes.
+        this.DOTTED_LINE_GAP_MULTIPLIER = 2.2; // Gap = lineWidth * 2.2 keeps dots legible down to 12px fonts.
         this.MIN_FONT_SIZE = 12;
 
         this.createControls();
@@ -973,8 +973,9 @@ class InsertTextManager {
         if (style === 'wavy') {
             const amplitude = Math.max(1, lineWidth * 1.2);
             const wavelength = Math.max(6, lineWidth * 4);
+            const step = Math.max(2, wavelength / 4);
             this.ctx.beginPath();
-            for (let offset = 0; offset <= width; offset += 2) {
+            for (let offset = 0; offset <= width; offset += step) {
                 const waveY = y + Math.sin((offset / wavelength) * Math.PI * 2) * amplitude;
                 if (offset === 0) {
                     this.ctx.moveTo(x + offset, waveY);

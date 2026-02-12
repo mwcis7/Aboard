@@ -1,14 +1,14 @@
 // Settings Management Module
 // Handles application settings and preferences
-const LARGE_SCREEN_WIDTH = 1920;
-const HIGH_DPI_RATIO = 1.5;
+const largeScreenWidth = 1920;
+const highDpiRatio = 1.5;
 
 class SettingsManager {
     constructor() {
         const storedToolbarSize = localStorage.getItem('toolbarSize');
         const storedConfigScale = localStorage.getItem('configScale');
-        const isLargeScreen = window.innerWidth >= LARGE_SCREEN_WIDTH;
-        const isHighDpi = (window.devicePixelRatio || 1) >= HIGH_DPI_RATIO;
+        const isLargeScreen = window.innerWidth >= largeScreenWidth;
+        const isHighDpi = (window.devicePixelRatio || 1) >= highDpiRatio;
         const isHighResDisplay = isLargeScreen || isHighDpi;
         this.toolbarSize = storedToolbarSize ? parseInt(storedToolbarSize) : (isHighResDisplay ? 75 : 65);
         this.configScale = storedConfigScale ? parseFloat(storedConfigScale) : (isHighResDisplay ? 1.1 : 1.0);
