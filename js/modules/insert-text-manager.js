@@ -56,6 +56,7 @@ class InsertTextManager {
         this.DOTTED_LINE_GAP_MULTIPLIER = 2.2; // Gap = lineWidth * 2.2 keeps dots legible down to 12px fonts.
         this.MIN_FONT_SIZE = 12;
         this.DEFAULT_MAX_FONT_SIZE = 200;
+        this.MAX_FONT_SIZE_LIMIT = 10000;
 
         this.createControls();
         this.setupEventListeners();
@@ -778,7 +779,7 @@ class InsertTextManager {
         const sizeSlider = document.getElementById('insert-text-size-slider');
         if (!sizeSlider) return;
         const maxValue = Math.max(this.DEFAULT_MAX_FONT_SIZE, Math.ceil(this.textConfig.fontSize));
-        sizeSlider.max = maxValue;
+        sizeSlider.max = Math.min(this.MAX_FONT_SIZE_LIMIT, maxValue);
     }
 
     showOverlay() {
