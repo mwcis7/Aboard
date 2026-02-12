@@ -53,7 +53,8 @@ class InsertTextManager {
         this.editingTextIndex = null; // Index of text being edited
 
         this.DEFAULT_DECORATION_WIDTH = 2;
-        this.DOTTED_SPACING_MULTIPLIER = 2.2;
+        this.DOTTED_SPACING_MULTIPLIER = 2.2; // Tuned so dotted lines keep readable gaps at small sizes.
+        this.MIN_FONT_SIZE = 12;
 
         this.createControls();
         this.setupEventListeners();
@@ -1236,7 +1237,7 @@ class InsertTextManager {
         // Sensitivity
         const sensitivity = 0.01;
         const scaleFactor = Math.max(0.1, this.resizeStartScale + (change * sensitivity));
-        const newFontSize = Math.max(12, Math.round(this.resizeStartFontSize * scaleFactor));
+        const newFontSize = Math.max(this.MIN_FONT_SIZE, Math.round(this.resizeStartFontSize * scaleFactor));
         this.textConfig.fontSize = newFontSize;
         this.textScale = 1.0;
 

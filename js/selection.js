@@ -1007,7 +1007,8 @@ class SelectionManager {
         } else if (this.selectionType === 'text' && this.textManager) {
             const textObj = this.textManager.textObjects[this.selectedIndex];
             const scaleRatio = newBounds.width / startBounds.width;
-            textObj.fontSize = Math.max(12, startBounds.fontSize * scaleRatio);
+            const minFontSize = (this.textManager && this.textManager.MIN_FONT_SIZE) ? this.textManager.MIN_FONT_SIZE : 12;
+            textObj.fontSize = Math.max(minFontSize, startBounds.fontSize * scaleRatio);
             textObj.scale = 1;
             textObj.x = newBounds.x;
             textObj.y = newBounds.y;
@@ -1053,9 +1054,10 @@ class SelectionManager {
                         const relX = (start.x - startBounds.x) / startBounds.width;
                         const relY = (start.y - startBounds.y) / startBounds.height;
                         const scaleRatio = newBounds.width / startBounds.width;
+                        const minFontSize = (this.textManager && this.textManager.MIN_FONT_SIZE) ? this.textManager.MIN_FONT_SIZE : 12;
                         textObj.x = newBounds.x + relX * newBounds.width;
                         textObj.y = newBounds.y + relY * newBounds.height;
-                        textObj.fontSize = Math.max(12, start.fontSize * scaleRatio);
+                        textObj.fontSize = Math.max(minFontSize, start.fontSize * scaleRatio);
                         textObj.scale = 1;
                     }
                 }
