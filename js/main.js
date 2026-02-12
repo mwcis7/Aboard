@@ -189,10 +189,12 @@ class DrawingBoard {
         const savedScale = localStorage.getItem('canvasScale');
         if (!savedScale) {
             this.canvasFitScale = this.calculateCanvasFitScale();
+            const MIN_FIT_SCALE = 0.01;
             const desiredCoverage = 0.7;
-            const preferredScale = 0.9;
-            const safeFitScale = Math.max(0.01, this.canvasFitScale);
-            const targetScale = Math.max(preferredScale, desiredCoverage / safeFitScale);
+            const minimumScale = 0.9;
+            const safeFitScale = Math.max(MIN_FIT_SCALE, this.canvasFitScale);
+            const coverageScale = desiredCoverage / safeFitScale; // Final scale = fitScale * canvasScale.
+            const targetScale = Math.max(minimumScale, coverageScale);
             const initialScale = Math.min(this.MAX_CANVAS_SCALE, targetScale);
             this.drawingEngine.canvasScale = initialScale;
             localStorage.setItem('canvasScale', initialScale);
