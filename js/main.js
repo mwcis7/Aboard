@@ -2446,13 +2446,14 @@ class DrawingBoard {
         const isVertical = toolbar.classList.contains('vertical');
         const tool = this.drawingEngine.currentTool;
         const gap = TOOL_CONFIG_PANEL_GAP;
+        const toolLabel = tool ?? 'unknown';
         const toolButtonId = this.toolButtonIds[tool];
         if (!toolButtonId) {
-            console.warn(`No toolbar button mapping found for tool '${tool}'. Expected one of: ${Object.keys(this.toolButtonIds).join(', ')}.`);
+            console.warn(`No toolbar button mapping found for tool '${toolLabel}'. Expected one of: ${Object.keys(this.toolButtonIds).join(', ')}.`);
         }
         const toolButton = toolButtonId ? document.getElementById(toolButtonId) : null;
         if (toolButtonId && !toolButton) {
-            console.warn(`Toolbar button element not found for tool '${tool}' (ID: ${toolButtonId}).`);
+            console.warn(`Toolbar button element not found for tool '${toolLabel}' (ID: ${toolButtonId}).`);
         }
         const toolRect = toolButton ? toolButton.getBoundingClientRect() : null;
         const referenceRect = toolRect || toolbarRect;
@@ -2469,7 +2470,7 @@ class DrawingBoard {
         
         if (isVertical) {
             // Toolbar is on left or right side
-            const toolbarMidY = referenceRect.top + referenceRect.height / 2;
+            const referenceMidY = referenceRect.top + referenceRect.height / 2;
             if (toolbarRect.left < window.innerWidth / 2) {
                 // Toolbar on left side - position config to the right of toolbar
                 configArea.style.left = `${toolbarRect.right + gap}px`;
@@ -2478,15 +2479,15 @@ class DrawingBoard {
                 configArea.style.right = `${window.innerWidth - toolbarRect.left + gap}px`;
                 configArea.style.left = 'auto';
             }
-            configArea.style.top = `${toolbarMidY}px`;
+            configArea.style.top = `${referenceMidY}px`;
             configArea.style.transformOrigin = 'center center';
             configArea.style.transform = `translateY(-50%) scale(${scale})`;
         } else {
             // Toolbar is horizontal (bottom)
-            const toolbarCenterX = referenceRect.left + referenceRect.width / 2;
-            const toolbarTop = referenceRect.top;
-            configArea.style.left = `${toolbarCenterX}px`;
-            configArea.style.bottom = `${window.innerHeight - toolbarTop + gap}px`;
+            const referenceCenterX = referenceRect.left + referenceRect.width / 2;
+            const referenceTop = referenceRect.top;
+            configArea.style.left = `${referenceCenterX}px`;
+            configArea.style.bottom = `${window.innerHeight - referenceTop + gap}px`;
             configArea.style.top = 'auto';
             configArea.style.transformOrigin = 'center bottom';
             configArea.style.transform = `translateX(-50%) scale(${scale})`;
