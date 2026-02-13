@@ -3,6 +3,7 @@
 const DEFAULT_MIN_FIT_SCALE = 0.1;
 const DEFAULT_TARGET_COVERAGE = 0.7;
 const DEFAULT_MIN_DEFAULT_SCALE = 0.9;
+const TOOL_CONFIG_PANEL_GAP = 8;
 
 class DrawingBoard {
     constructor() {
@@ -42,6 +43,14 @@ class DrawingBoard {
         this.collapsibleManager = new CollapsibleManager();
         this.announcementManager = new AnnouncementManager();
         this.teachingToolsManager = new TeachingToolsManager(this.canvas, this.ctx, this.historyManager);
+        this.toolButtonIds = {
+            pen: 'pen-btn',
+            eraser: 'eraser-btn',
+            background: 'background-btn',
+            select: 'select-btn',
+            // Shape tool is launched from the More menu button.
+            shape: 'more-btn'
+        };
         
         // Set callback for teaching tools insertion to auto-switch to pen
         this.teachingToolsManager.onToolsInserted = () => {
@@ -2435,6 +2444,23 @@ class DrawingBoard {
         
         const toolbarRect = toolbar.getBoundingClientRect();
         const isVertical = toolbar.classList.contains('vertical');
+        const tool = this.drawingEngine.currentTool;
+        const gap = TOOL_CONFIG_PANEL_GAP;
+        let toolButtonId = null;
+        if (!tool) {
+            console.warn('No active tool found for toolbar mapping.');
+        } else {
+            toolButtonId = this.toolButtonIds[tool];
+            if (!toolButtonId) {
+                console.warn(`No toolbar button mapping found for tool '${tool}'. Expected one of: ${Object.keys(this.toolButtonIds).join(', ')}.`);
+            }
+        }
+        const toolButton = toolButtonId ? document.getElementById(toolButtonId) : null;
+        if (toolButtonId && !toolButton) {
+            console.warn(`Toolbar button element not found for tool '${tool}' (ID: ${toolButtonId}).`);
+        }
+        const toolRect = toolButton ? toolButton.getBoundingClientRect() : null;
+        const referenceRect = toolRect || toolbarRect;
         
         // Reset inline styles first to get proper dimensions
         configArea.style.left = '';
@@ -2448,22 +2474,24 @@ class DrawingBoard {
         
         if (isVertical) {
             // Toolbar is on left or right side
-            const toolbarMidY = toolbarRect.top + toolbarRect.height / 2;
+            const referenceCenterY = referenceRect.top + referenceRect.height / 2;
             if (toolbarRect.left < window.innerWidth / 2) {
                 // Toolbar on left side - position config to the right of toolbar
-                configArea.style.left = `${toolbarRect.right + 10}px`;
+                configArea.style.left = `${referenceRect.right + gap}px`;
             } else {
                 // Toolbar on right side - position config to the left of toolbar
-                configArea.style.right = `${window.innerWidth - toolbarRect.left + 10}px`;
+                configArea.style.right = `${window.innerWidth - referenceRect.left + gap}px`;
                 configArea.style.left = 'auto';
             }
-            configArea.style.top = `${toolbarMidY}px`;
+            configArea.style.top = `${referenceCenterY}px`;
             configArea.style.transformOrigin = 'center center';
             configArea.style.transform = `translateY(-50%) scale(${scale})`;
         } else {
             // Toolbar is horizontal (bottom)
-            configArea.style.left = '50%';
-            configArea.style.bottom = `${window.innerHeight - toolbarRect.top + 10}px`;
+            const referenceCenterX = referenceRect.left + referenceRect.width / 2;
+            const referenceTop = referenceRect.top;
+            configArea.style.left = `${referenceCenterX}px`;
+            configArea.style.bottom = `${window.innerHeight - referenceTop + gap}px`;
             configArea.style.top = 'auto';
             configArea.style.transformOrigin = 'center bottom';
             configArea.style.transform = `translateX(-50%) scale(${scale})`;

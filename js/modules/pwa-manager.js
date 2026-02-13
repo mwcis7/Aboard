@@ -13,6 +13,8 @@ class PWAManager {
 
         // Update elements
         this.updateModal = null;
+        this.version = null;
+        this.announcementVersionRow = null;
 
         // Local Translations
         this.translations = {
@@ -186,6 +188,51 @@ class PWAManager {
         return dict[key] || key;
     }
 
+    getVersionText(withPrefix = false) {
+        if (!this.version) {
+            return '--';
+        }
+        return withPrefix ? `v${this.version}` : this.version;
+    }
+
+    updateVersionDisplays() {
+        const aboutVersion = document.getElementById('app-version');
+        if (aboutVersion) {
+            aboutVersion.textContent = this.getVersionText(false);
+        }
+
+        if (this.announcementVersionRow) {
+            this.announcementVersionRow.textContent = `${this.getTranslation('version')}: ${this.getVersionText(true)}`;
+        }
+    }
+
+    loadVersion() {
+        fetch('version.txt')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to load version.txt: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(text => {
+                const version = text.trim();
+                if (!version) {
+                    console.warn('Empty version in version.txt.');
+                    return;
+                }
+                const semverPattern = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
+                if (!semverPattern.test(version)) {
+                    console.warn('Invalid version format in version.txt:', version);
+                    return;
+                }
+                this.version = version;
+                this.updateVersionDisplays();
+            })
+            .catch(error => {
+                console.warn('Failed to load version.txt:', error);
+            });
+    }
+
     registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -308,6 +355,7 @@ class PWAManager {
     setupUI() {
         this.injectSettingsUI();
         this.injectAnnouncementUI();
+        this.loadVersion();
     }
 
     injectSettingsUI() {
@@ -402,7 +450,7 @@ class PWAManager {
 
             // Version Row
             const versionRow = document.createElement('div');
-            versionRow.textContent = `${this.getTranslation('version')}: v2.3.0`;
+            versionRow.textContent = `${this.getTranslation('version')}: ${this.getVersionText(true)}`;
             versionRow.style.color = '#666';
             versionRow.style.fontSize = '12px';
 
@@ -425,6 +473,7 @@ class PWAManager {
             this.announcementStatusIndicator = indicator;
             this.announcementStatusText = text;
             this.announcementInstallBtn = installBtn;
+            this.announcementVersionRow = versionRow;
 
             this.updateOnlineStatus();
         }
@@ -518,14 +567,7 @@ class PWAManager {
         if (this.announcementStatusText) this.announcementStatusText.textContent = statusText;
         if (this.announcementInstallBtn) this.announcementInstallBtn.textContent = this.getTranslation('install');
 
-        // Update Version Label in Announcement (rough heuristic)
-        if (this.announcementStatusText && this.announcementStatusText.parentElement && this.announcementStatusText.parentElement.nextSibling) {
-             const versionDiv = this.announcementStatusText.parentElement.nextSibling;
-             // Update version text regardless of current version
-             if (versionDiv && versionDiv.textContent.includes('v2.')) {
-                 versionDiv.textContent = `${this.getTranslation('version')}: v2.3.0`;
-             }
-        }
+        this.updateVersionDisplays();
 
         // Update Modal if open
         if (this.updateModal && this.updateModal.classList.contains('show')) {
