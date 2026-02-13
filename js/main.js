@@ -2446,14 +2446,16 @@ class DrawingBoard {
         const isVertical = toolbar.classList.contains('vertical');
         const tool = this.drawingEngine.currentTool;
         const gap = TOOL_CONFIG_PANEL_GAP;
-        const toolLabel = tool ?? 'unknown';
+        const toolName = tool ?? null;
         const toolButtonId = this.toolButtonIds[tool];
-        if (!toolButtonId) {
-            console.warn(`No toolbar button mapping found for tool '${toolLabel}'. Expected one of: ${Object.keys(this.toolButtonIds).join(', ')}.`);
+        if (!toolName) {
+            console.warn('No active tool found for toolbar mapping.');
+        } else if (!toolButtonId) {
+            console.warn(`No toolbar button mapping found for tool '${toolName}'. Expected one of: ${Object.keys(this.toolButtonIds).join(', ')}.`);
         }
         const toolButton = toolButtonId ? document.getElementById(toolButtonId) : null;
         if (toolButtonId && !toolButton) {
-            console.warn(`Toolbar button element not found for tool '${toolLabel}' (ID: ${toolButtonId}).`);
+            console.warn(`Toolbar button element not found for tool '${toolName}' (ID: ${toolButtonId}).`);
         }
         const toolRect = toolButton ? toolButton.getBoundingClientRect() : null;
         const referenceRect = toolRect || toolbarRect;
