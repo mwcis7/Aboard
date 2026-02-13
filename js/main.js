@@ -2437,8 +2437,14 @@ class DrawingBoard {
         const isVertical = toolbar.classList.contains('vertical');
         const tool = this.drawingEngine.currentTool;
         const gap = 8;
-        const toolButton = document.querySelector(`.tool-btn[data-tool="${tool}"]`) ||
-            (tool === 'shape' ? document.getElementById('more-btn') : null);
+        const toolButtonIds = {
+            pen: 'pen-btn',
+            eraser: 'eraser-btn',
+            background: 'background-btn',
+            select: 'select-btn',
+            shape: 'more-btn'
+        };
+        const toolButton = toolButtonIds[tool] ? document.getElementById(toolButtonIds[tool]) : null;
         const toolRect = toolButton ? toolButton.getBoundingClientRect() : null;
         
         // Reset inline styles first to get proper dimensions
@@ -2467,8 +2473,9 @@ class DrawingBoard {
             configArea.style.transform = `translateY(-50%) scale(${scale})`;
         } else {
             // Toolbar is horizontal (bottom)
-            const toolbarCenterX = toolRect ? toolRect.left + toolRect.width / 2 : toolbarRect.left + toolbarRect.width / 2;
-            const toolbarTop = toolRect ? toolRect.top : toolbarRect.top;
+            const referenceRect = toolRect || toolbarRect;
+            const toolbarCenterX = referenceRect.left + referenceRect.width / 2;
+            const toolbarTop = referenceRect.top;
             configArea.style.left = `${toolbarCenterX}px`;
             configArea.style.bottom = `${window.innerHeight - toolbarTop + gap}px`;
             configArea.style.top = 'auto';
