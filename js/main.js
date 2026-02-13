@@ -3,6 +3,7 @@
 const DEFAULT_MIN_FIT_SCALE = 0.1;
 const DEFAULT_TARGET_COVERAGE = 0.7;
 const DEFAULT_MIN_DEFAULT_SCALE = 0.9;
+const TOOL_CONFIG_PANEL_GAP = 8;
 
 class DrawingBoard {
     constructor() {
@@ -47,6 +48,7 @@ class DrawingBoard {
             eraser: 'eraser-btn',
             background: 'background-btn',
             select: 'select-btn',
+            // Shape tool is launched from the More menu button.
             shape: 'more-btn'
         };
         
@@ -2443,10 +2445,10 @@ class DrawingBoard {
         const toolbarRect = toolbar.getBoundingClientRect();
         const isVertical = toolbar.classList.contains('vertical');
         const tool = this.drawingEngine.currentTool;
-        const gap = 8;
+        const gap = TOOL_CONFIG_PANEL_GAP;
         const toolButtonId = this.toolButtonIds[tool];
         if (!toolButtonId) {
-            console.warn(`No toolbar button mapping for tool: ${tool}. Expected one of: ${Object.keys(this.toolButtonIds).join(', ')}.`);
+            console.warn(`No toolbar button mapping for tool: ${tool}. Add a mapping in toolButtonIds or verify the tool name. Expected one of: ${Object.keys(this.toolButtonIds).join(', ')}.`);
         }
         const toolButton = toolButtonId ? document.getElementById(toolButtonId) : null;
         if (toolButtonId && !toolButton) {
