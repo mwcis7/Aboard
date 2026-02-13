@@ -292,9 +292,9 @@ button, a, input[type="button"], input[type="submit"] {
 }
 
 #background-config .pattern-grid-compact .pattern-option-btn {
-    min-height: 32px;
-    padding: 10px 8px;
-    font-size: 10px;
+    min-height: 30px;
+    padding: 6px 8px;
+    font-size: 11px;
 }
 
 #background-config .pattern-grid-compact .pattern-option-btn svg {
@@ -303,7 +303,7 @@ button, a, input[type="button"], input[type="submit"] {
 }
 
 #background-config .upload-text {
-    font-size: 10px;
+    font-size: 11px;
 }
 
 .config-group {
