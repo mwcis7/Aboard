@@ -42,6 +42,13 @@ class DrawingBoard {
         this.collapsibleManager = new CollapsibleManager();
         this.announcementManager = new AnnouncementManager();
         this.teachingToolsManager = new TeachingToolsManager(this.canvas, this.ctx, this.historyManager);
+        this.toolButtonIds = {
+            pen: 'pen-btn',
+            eraser: 'eraser-btn',
+            background: 'background-btn',
+            select: 'select-btn',
+            shape: 'more-btn'
+        };
         
         // Set callback for teaching tools insertion to auto-switch to pen
         this.teachingToolsManager.onToolsInserted = () => {
@@ -2437,14 +2444,14 @@ class DrawingBoard {
         const isVertical = toolbar.classList.contains('vertical');
         const tool = this.drawingEngine.currentTool;
         const gap = 8;
-        const toolButtonIds = {
-            pen: 'pen-btn',
-            eraser: 'eraser-btn',
-            background: 'background-btn',
-            select: 'select-btn',
-            shape: 'more-btn'
-        };
-        const toolButton = toolButtonIds[tool] ? document.getElementById(toolButtonIds[tool]) : null;
+        const toolButtonId = this.toolButtonIds[tool];
+        if (!toolButtonId) {
+            console.warn('No toolbar button mapping for tool:', tool);
+        }
+        const toolButton = toolButtonId ? document.getElementById(toolButtonId) : null;
+        if (toolButtonId && !toolButton) {
+            console.warn('Toolbar button not found for tool:', tool);
+        }
         const toolRect = toolButton ? toolButton.getBoundingClientRect() : null;
         
         // Reset inline styles first to get proper dimensions
