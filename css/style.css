@@ -280,6 +280,30 @@ button, a, input[type="button"], input[type="submit"] {
 /* Background config panel: center content vertically */
 #background-config.active {
     align-items: center;
+    gap: 12px;
+}
+
+#background-config .config-group-compact {
+    gap: 4px;
+}
+
+#background-config .pattern-grid-compact {
+    gap: 6px;
+}
+
+#background-config .pattern-grid-compact .pattern-option-btn {
+    min-height: 32px;
+    padding: 10px 8px;
+    font-size: 10px;
+}
+
+#background-config .pattern-grid-compact .pattern-option-btn svg {
+    width: 12px;
+    height: 12px;
+}
+
+#background-config .upload-text {
+    font-size: 10px;
 }
 
 .config-group {
