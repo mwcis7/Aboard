@@ -2446,13 +2446,14 @@ class DrawingBoard {
         const gap = 8;
         const toolButtonId = this.toolButtonIds[tool];
         if (!toolButtonId) {
-            console.warn('No toolbar button mapping for tool:', tool);
+            console.warn(`No toolbar button mapping for tool: ${tool}. Expected one of: ${Object.keys(this.toolButtonIds).join(', ')}.`);
         }
         const toolButton = toolButtonId ? document.getElementById(toolButtonId) : null;
         if (toolButtonId && !toolButton) {
-            console.warn('Toolbar button not found for tool:', tool);
+            console.warn(`Toolbar button not found for tool: ${tool}. The button may not be rendered yet.`);
         }
         const toolRect = toolButton ? toolButton.getBoundingClientRect() : null;
+        const referenceRect = toolRect || toolbarRect;
         
         // Reset inline styles first to get proper dimensions
         configArea.style.left = '';
@@ -2466,7 +2467,7 @@ class DrawingBoard {
         
         if (isVertical) {
             // Toolbar is on left or right side
-            const toolbarMidY = toolRect ? toolRect.top + toolRect.height / 2 : toolbarRect.top + toolbarRect.height / 2;
+            const toolbarMidY = referenceRect.top + referenceRect.height / 2;
             if (toolbarRect.left < window.innerWidth / 2) {
                 // Toolbar on left side - position config to the right of toolbar
                 configArea.style.left = `${toolbarRect.right + gap}px`;
@@ -2480,7 +2481,6 @@ class DrawingBoard {
             configArea.style.transform = `translateY(-50%) scale(${scale})`;
         } else {
             // Toolbar is horizontal (bottom)
-            const referenceRect = toolRect || toolbarRect;
             const toolbarCenterX = referenceRect.left + referenceRect.width / 2;
             const toolbarTop = referenceRect.top;
             configArea.style.left = `${toolbarCenterX}px`;
