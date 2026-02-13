@@ -2448,11 +2448,11 @@ class DrawingBoard {
         const gap = TOOL_CONFIG_PANEL_GAP;
         const toolButtonId = this.toolButtonIds[tool];
         if (!toolButtonId) {
-            console.warn(`No toolbar button mapping for tool: ${tool}. Add a mapping in toolButtonIds or verify the tool name. Expected one of: ${Object.keys(this.toolButtonIds).join(', ')}.`);
+            console.warn(`No toolbar button mapping found for tool '${tool}'. Expected one of: ${Object.keys(this.toolButtonIds).join(', ')}.`);
         }
         const toolButton = toolButtonId ? document.getElementById(toolButtonId) : null;
         if (toolButtonId && !toolButton) {
-            console.warn(`Toolbar button not found for tool: ${tool}. The button may not be rendered yet.`);
+            console.warn(`Toolbar button element not found for tool '${tool}' (ID: ${toolButtonId}).`);
         }
         const toolRect = toolButton ? toolButton.getBoundingClientRect() : null;
         const referenceRect = toolRect || toolbarRect;
