@@ -2474,16 +2474,16 @@ class DrawingBoard {
         
         if (isVertical) {
             // Toolbar is on left or right side
-            const referenceMidY = referenceRect.top + referenceRect.height / 2;
+            const referenceCenterY = referenceRect.top + referenceRect.height / 2;
             if (toolbarRect.left < window.innerWidth / 2) {
                 // Toolbar on left side - position config to the right of toolbar
-                configArea.style.left = `${toolbarRect.right + gap}px`;
+                configArea.style.left = `${referenceRect.right + gap}px`;
             } else {
                 // Toolbar on right side - position config to the left of toolbar
-                configArea.style.right = `${window.innerWidth - toolbarRect.left + gap}px`;
+                configArea.style.right = `${window.innerWidth - referenceRect.left + gap}px`;
                 configArea.style.left = 'auto';
             }
-            configArea.style.top = `${referenceMidY}px`;
+            configArea.style.top = `${referenceCenterY}px`;
             configArea.style.transformOrigin = 'center center';
             configArea.style.transform = `translateY(-50%) scale(${scale})`;
         } else {
