@@ -1682,7 +1682,9 @@ class DrawingBoard {
         const clearLocalCacheBtn = document.getElementById('clear-local-cache-btn');
         if (clearLocalCacheBtn) {
             clearLocalCacheBtn.addEventListener('click', async () => {
-                const confirmMessage = '此操作会清空本地缓存、画布内容和设置，并恢复为首次加载状态。确定继续吗？';
+                const confirmMessage = window.i18n
+                    ? window.i18n.t('settings.more.clearLocalDataConfirm')
+                    : 'This will clear local cache, canvas data, and settings, then restore first-load state. Continue?';
                 if (!window.confirm(confirmMessage)) return;
                 await this.clearAllLocalData();
                 window.location.reload();
@@ -4746,9 +4748,10 @@ class DrawingBoard {
             await this.clearSessionData();
             this.storageManager?.closeDB();
 
-            if ('indexedDB' in window) {
+            const dbName = this.storageManager?.dbName;
+            if ('indexedDB' in window && dbName) {
                 await new Promise((resolve) => {
-                    const request = indexedDB.deleteDatabase('AboardDB');
+                    const request = indexedDB.deleteDatabase(dbName);
                     request.onsuccess = () => resolve();
                     request.onerror = () => {
                         console.warn('Failed to delete IndexedDB:', request.error);
