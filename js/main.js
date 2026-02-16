@@ -4741,29 +4741,35 @@ class DrawingBoard {
 
     async clearAllLocalData() {
         this.isClearingLocalData = true;
-        if (this.saveTimeout) clearTimeout(this.saveTimeout);
-        await this.clearSessionData();
+        try {
+            if (this.saveTimeout) clearTimeout(this.saveTimeout);
+            await this.clearSessionData();
+            this.storageManager?.closeDB();
 
-        if (this.storageManager?.db) {
-            this.storageManager.db.close();
-            this.storageManager.db = null;
-        }
+            if ('indexedDB' in window) {
+                await new Promise((resolve) => {
+                    const request = indexedDB.deleteDatabase('AboardDB');
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => {
+                        console.warn('Failed to delete IndexedDB:', request.error);
+                        resolve();
+                    };
+                    request.onblocked = () => {
+                        console.warn('IndexedDB deletion blocked');
+                        resolve();
+                    };
+                });
+            }
 
-        if ('indexedDB' in window) {
-            await new Promise((resolve) => {
-                const request = indexedDB.deleteDatabase('AboardDB');
-                request.onsuccess = () => resolve();
-                request.onerror = () => resolve();
-                request.onblocked = () => resolve();
-            });
-        }
+            localStorage.clear();
+            sessionStorage.clear();
 
-        localStorage.clear();
-        sessionStorage.clear();
-
-        if ('caches' in window) {
-            const cacheKeys = await caches.keys();
-            await Promise.all(cacheKeys.map(key => caches.delete(key)));
+            if ('caches' in window) {
+                const cacheKeys = await caches.keys();
+                await Promise.all(cacheKeys.map(key => caches.delete(key)));
+            }
+        } finally {
+            this.isClearingLocalData = false;
         }
     }
 }
