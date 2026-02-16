@@ -1679,6 +1679,16 @@ class DrawingBoard {
             input.click();
         });
 
+        const clearLocalCacheBtn = document.getElementById('clear-local-cache-btn');
+        if (clearLocalCacheBtn) {
+            clearLocalCacheBtn.addEventListener('click', async () => {
+                const confirmMessage = '此操作会清空本地缓存、画布内容和设置，并恢复为首次加载状态。确定继续吗？';
+                if (!window.confirm(confirmMessage)) return;
+                await this.clearAllLocalData();
+                window.location.reload();
+            });
+        }
+
         // Diff Modal Actions
         document.getElementById('config-diff-cancel-btn').addEventListener('click', () => {
             document.getElementById('config-diff-modal').classList.remove('show');
@@ -4468,6 +4478,7 @@ class DrawingBoard {
     
     // Save session data to IndexedDB via StorageManager
     async saveSession() {
+        if (this.isClearingLocalData) return;
         try {
             // Save current page to pages array first
             if (this.currentPage > 0 && this.currentPage <= this.pages.length) {
@@ -4725,6 +4736,34 @@ class DrawingBoard {
             localStorage.removeItem('savedCurrentPage');
         } catch (e) {
             console.warn('Failed to clear session:', e);
+        }
+    }
+
+    async clearAllLocalData() {
+        this.isClearingLocalData = true;
+        if (this.saveTimeout) clearTimeout(this.saveTimeout);
+        await this.clearSessionData();
+
+        if (this.storageManager?.db) {
+            this.storageManager.db.close();
+            this.storageManager.db = null;
+        }
+
+        if ('indexedDB' in window) {
+            await new Promise((resolve) => {
+                const request = indexedDB.deleteDatabase('AboardDB');
+                request.onsuccess = () => resolve();
+                request.onerror = () => resolve();
+                request.onblocked = () => resolve();
+            });
+        }
+
+        localStorage.clear();
+        sessionStorage.clear();
+
+        if ('caches' in window) {
+            const cacheKeys = await caches.keys();
+            await Promise.all(cacheKeys.map(key => caches.delete(key)));
         }
     }
 }
